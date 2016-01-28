@@ -302,36 +302,7 @@
 	)
 	
 )
-;;; Button actions for drawing/undrawing mechanism (with and without mesh),
-(define-method work-area-button1-action mechanism-collection (params)
-	(case params
 
-		(:draw-sewn-wo-mesh
-			(loop for link in !link-ref-list
-				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
-				)
-			)
-		)
-		(:draw-sewn-with-mesh
-			(loop for link in !link-ref-list
-				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
-					(draw (the link-mesh-model (:from link)))
-				)
-			)
-		)
-		(:undraw
-			(undraw self)
-		)
-		(:bdf-export
-			(loop for link in !link-ref-list 
-				do (the analysis nastran-interface run-nastran@ (:from link))
-			)
-		)
-	)
-	
-)
 ;;; Defines the data-model for folders
 (define-class folder-info-model
   :inherit-from (object)
@@ -455,7 +426,36 @@
                    )
                )
   )
+;;; Button actions for drawing/undrawing mechanism (with and without mesh),
+(define-method work-area-button1-action mechanism-collection (params)
+	(case params
 
+		(:draw-sewn-wo-mesh
+			(loop for link in !link-ref-list
+				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+				)
+			)
+		)
+		(:draw-sewn-with-mesh
+			(loop for link in !link-ref-list
+				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+					(draw (the link-mesh-model (:from link)))
+				)
+			)
+		)
+		(:undraw
+			(undraw self)
+		)
+		(:bdf-export
+			(loop for link in !link-ref-list 
+				do (the analysis nastran-interface run-nastran@ (:from link))
+			)
+		)
+	)
+	
+)
 ;;; Writes the mechanism to a simulation file (.fsi)
 (define-method write-save-fedem-solver  mechanism-collection ()
   (let (
