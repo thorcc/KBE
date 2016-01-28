@@ -1,0 +1,85 @@
+;;; -----------------------------
+;;; DATA MODEL DEFINITIONS
+;;; -----------------------------
+
+;;; Use point-object to define position properties
+(define-class point-data-model
+  :inherit-from (point-object data-model-node-mixin)
+  :properties (
+               (coordinates :class 'editable-data-property-class
+                    label "Coordinates"
+                   )
+
+               property-objects-list (list 
+                                      (list (the superior coordinates self) 
+                                            '(apply-formula? t)) 
+                                      ) 
+               )
+  )
+
+;;; Direction vector
+(define-class vector-data-model
+  :inherit-from (vector-class data-model-node-mixin)
+  :properties (
+               ;;; Superior reference traverse
+               point-ref (default ^point-default)
+               (point-default :class 'point-data-model
+                   coordinates '(0 0 0)
+                   )
+               (direction :class 'editable-data-property-class
+                   label "Direction"
+                   formula (default)
+                   )
+               length 0.2
+
+               base-point (the coordinates (:from (the superior point-ref)) )
+               
+               property-objects-list (list 
+                                      (list (the coordinates self (:from (the superior point-ref)) ) 
+                                            '(apply-formula? t))
+                                      (list (the superior direction self)
+                                            '(apply-formula? t))
+                                      )
+               
+
+               )
+  )
+
+
+;;; Frame, coordinate system
+(define-class frame-data-model
+  :inherit-from (coordinate-system-class)
+  :properties (
+               ;;traverse to superior reference
+               point-ref (default (the point-default (:from ^z-vector-ref)) )
+               z-vector-ref (default ^z-vector-default)
+               (z-vector-default :class 'vector-data-model
+                   direction '(0 0 1)
+                   )
+               x-vector-ref (default ^x-vector-default)
+               (x-vector-default :class 'vector-data-model
+                   direction '(1 0 0)
+                   )
+               vector-k (the direction (:from ^z-vector-ref))
+               vector-i (the direction (:from ^x-vector-ref))
+               origin (the coordinates (:from ^point-ref))
+               vector-j (cross-product ^vector-k ^vector-i)
+               length 0.1
+               
+               property-objects-list (list
+                                      "Coordinates:"
+                                      (list  (the coordinates self (:from ^point-ref) )
+                                            '(apply-formula? t))
+                                      "Z Axis:"
+                                      (list (the direction self (:from ^z-vector-ref) )
+                                            '(apply-formula? t))
+                                      "X Axis:"
+                                      (list  (the direction self (:from ^x-vector-ref) )    
+                                            '(apply-formula? t))
+                                      )
+               )
+  )
+  
+;;; -----------------------------
+;;; END DATA MODEL DEFINITIONS
+;;; -----------------------------

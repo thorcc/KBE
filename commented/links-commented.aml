@@ -1,0 +1,750 @@
+
+(defun connection-combinations (n)
+   (loop for j from 0 to (- n 2)
+     append (loop for k from (1+ j) to (1- n)
+             collect (list j k)                   
+          )
+     )
+   )
+
+;;; Returns possible connections between joints list list, or p joints
+(defun list-combinations (p)
+  (let (
+        (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ) ) ) )
+        (n (length l))
+        )
+    (loop for j from 0 to (- n 2)
+      append (loop for k from (1+ j) to (1- n)
+               collect (list (nth j l) (nth k l))                   
+               )
+      )
+    )
+  )
+
+(defun connections-on-constraints (n)
+  (let (
+        (combi (connection-combinations n))
+        (tot-length (/ (* n (1- n) ) 2) )
+        )
+    (loop for c from 0 to (1- n)
+      collect (loop for i from 0 to tot-length
+                when (member c (nth i combi))
+                collect i
+                )
+      )
+    )
+  )
+
+  
+(defun sweep-loop-combinations (n)
+  (let (
+        (c-loops (3-edge-loop-combinations n) )
+        (sweep-con (connection-combinations n) )
+        )
+    (loop for ci from 0 to (1- (length c-loops))
+      for list-com = (list-combinations (nth ci c-loops))
+      collect (loop for si from 0 to (1- (length list-com))
+                collect (position (nth si list-com) sweep-con)
+                )
+      )
+    )
+  )
+
+;;; Binomial: C(n,3) = 3! / ( 3! (n - 3)! 
+;;; Output: List unique combinations of three, given n numbers
+(defun 3-edge-loop-combinations (n)
+   (loop for i from 0 to (- n 3)   
+     append (loop for j from (1+ i) to (- n 2)
+              append (loop for k from (1+ j) to (1- n)
+                       collect (list i j k)
+                       )
+              )
+     )
+   )
+(defun list-3-subset-combinations (p)
+  (let (
+        (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ) ) ) )
+        (n (length l))
+        )
+    (loop for i from 0 to (- n 3)   
+      append (loop for j from (1+ i) to (- n 2)
+               append (loop for k from (1+ j) to (1- n)
+                        collect (list (nth i l) (nth j l) (nth k l))                   
+                        )
+               )
+      )
+    )
+  )
+
+(defun it-tolerance (d &optional (grade 5))
+  (* (expt 10 (* 0.2 (- grade 1))) (+ (* 0.45 (expt d (/ 1 3))) (* 0.001 d)))
+  )
+
+;;; Model creating a thickened surface from three connected curves
+(define-class surface-data-model
+  :inherit-from (tagging-object surface-thickened-class)
+  :properties (
+               tag-dimensions '(1 2)
+               tag-attributes (list ^^max-element-size .1
+                                    0 0.1 0 20.0 1.0e-5)
+									
+               (display? :class 'flag-property-class
+                   formula  (loop for i in ^edge-combination
+                              when (or (not (the display? (:from (nth i ^members-ref-list)))) (not (the connection geom (:from (nth i ^members-ref-list)))) )
+                              do (return nil)
+                              finally (> ^thickness 0)
+                              )
+                   )
+               edge-combination nil
+               source-object ^surface
+
+               ;;; Surface thickness 20% of smallest cross-section height
+               thickness (* 0.2 (loop for i in ^edge-combination
+                           minimize (max-height (the cross-section_D (:from (nth i ^members-ref-list))))
+                           ))
+               front-thickness (/ ^thickness 2)
+               back-thickness (/ ^thickness 2)
+               render 'shaded
+               color 'red
+
+               property-objects-list (list 
+                                      (list (the superior display? self)
+                                            '(automatic-apply? t)
+                                            )
+                                      )
+               )
+  :subobjects (
+               (surface :class 'surface-from-three-edge-curves-class
+			       ;;; the connection is a nurb-curve-object
+                   edge-1-object (the connection (:from (nth (nth 0 ^edge-combination) ^members-ref-list)) )
+                   edge-2-object (the connection (:from (nth (nth 1 ^edge-combination) ^members-ref-list)) )
+                   edge-3-object (the connection (:from (nth (nth 2 ^edge-combination) ^members-ref-list)) )
+                   )
+               )
+  )
+;;; Not in use from ------->
+(define-method error-recovery-method surface-data-model ()
+	(message (format nil "The object ~a is recovering from its last error"
+		(object-name self)))
+	nil
+ )
+ 
+(defun error-recovery-function (object system-error-message)
+	(message system-error-message)
+	(error-recovery-method object)
+ ) 
+;;; Not in use to <--------
+
+;;; Instantiates every surface-data-model on a link 
+(define-class surfaces-on-link-collection
+  :inherit-from (series-object)
+  :properties (
+;;;                closed-loops-combinations (3-edge-loop-combinations (length ^sweeps-ref-list))
+;;;                closed-loops-combinations (3-edge-loop-combinations (length ^constraints-incident-on-link-list))
+               closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
+               visible-members-index (loop for mem in ^visible-members-ref-list
+                                       collect (the index (:from mem))
+                                       )
+               valid-surface-loops (intersection ^closed-loops-combinations (list-3-subset-combinations ^visible-members-index))
+               quantity (length ^valid-surface-loops)
+               class-expression 'surface-data-model
+               series-prefix 'surface
+               init-form '(
+                           edge-combination (nth ^index ^valid-surface-loops)
+                           )
+               )
+  )
+
+ 
+
+;;; -----------------------------
+;;; Sheth-Uicker DEFINITIONS
+;;; -----------------------------
+
+;;; Model creating a NURBS curve between two endpoints
+(define-class connection-model
+  :inherit-from (nurb-curve-object)
+  :properties (
+               ;; traverse to superior reference for
+;;;                frame_D (the sub-frame (:from 
+;;;                frame_A 
+               pij (convert-coords ^frame_D '(0 0 0) :from :local :to :global)
+               wij (convert-vector ^frame_D '(0 0 1) :from :local :to :global)
+
+               pjk (convert-coords ^frame_A '(0 0 0) :from :local :to :global)
+               wjk (convert-vector ^frame_A '(0 0 1) :from :local :to :global)
+
+               weight-points (append (the weight-list (:from ^shape-ref))
+                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref))) (length (the weight-list (:from ^shape-ref))))
+                                                    :initial-element 1)
+                                     )
+               start-point (the origin (:from ^frame_D))
+               end-point (the origin (:from ^frame_A))
+
+               middle-points (case ^line-config
+                               ('paralell (let (
+                                                (start-tangent (add-vectors ^start-point (multiply-vector-by-scalar (normalize ^perpendicular-dir) (half ^param_b) ) ))
+                                                (end-tangent (add-vectors ^end-point (multiply-vector-by-scalar (normalize ^perpendicular-dir) (- (half ^param_b)) ) ))
+                                                (start-weight (list 0.5))
+                                                (end-weight (list 0.5))
+                                                )
+                                            (if (roughly-same-point start-tangent end-tangent)
+                                                (list (append start-tangent start-weight) )
+                                              (list (append start-tangent start-weight) (append end-tangent end-weight) )
+                                              )
+                                            ) )
+                               ;; if param_a == param_c && paramb=0
+                               ('intersecting (let (
+                                                    (center (nth 0 ^inter_points ))
+
+                                                    (middle-point (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors ^start-point center) (subtract-vectors ^end-point center ))) ^param_a) ) )
+                                                    (angle-start-middle (/ (angle-between-2-vectors (subtract-vectors ^start-point center) (subtract-vectors middle-point center )) 2 ))
+                                                    (start-tangent (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors ^start-point center) (subtract-vectors middle-point center ))) (/ ^param_a (cosd angle-start-middle))) ) )
+
+                                                    (angle-middle-end (/ (angle-between-2-vectors (subtract-vectors middle-point center) (subtract-vectors ^end-point center )) 2))
+                                                    (end-tangent (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors middle-point center) (subtract-vectors ^end-point center ))) (/ ^param_a (cosd angle-middle-end))) ) )
+                                                    
+                                                    (start-weight (list (sind (/ (angle-between-2-vectors
+                                                                            (subtract-vectors start-tangent ^start-point)
+                                                                            (subtract-vectors start-tangent middle-point)
+                                                                            ) 2) ) ) )
+                                                    (middle-weight (list 1))
+                                                    (end-weight (list (sind (/ (angle-between-2-vectors
+                                                                            (subtract-vectors end-tangent middle-point)
+                                                                            (subtract-vectors end-tangent ^end-point)
+                                                                            ) 2) ) ) )
+                                                    )
+                                                 (list (append start-tangent start-weight) (append middle-point middle-weight) (append end-tangent end-weight) )
+                                                )
+                                              )
+                               )
+               start-weight (list (append ^start-point (list 1)))
+               end-weight (list (append ^end-point (list 1)))
+               
+               points (let (
+                            (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
+                                            for w in ^weight-points
+                                            collect (append (the coordinates (:from (nth p-index ^point-ref-list)) ) (list w)) ))
+                            )
+                        (if shape-points
+                            (append ^start-weight shape-points ^end-weight)
+                          (append ^start-weight ^middle-points ^end-weight)
+                          )
+                        )
+               rational? t
+               homogeneous? t
+               degree 2
+               
+               line-config (line-pose (the superior))
+               inter_points (inter_section (the superior) ^line-config )
+               perpendicular-dir (perp-dir (the superior) ^line-config )
+
+               param_a (vector-length (subtract-vectors (the origin (:from ^frame_A)) (the origin (:from ^frame_B))))
+               param_b (vector-length (subtract-vectors (the origin (:from ^frame_B)) (the origin (:from ^frame_C))))
+               param_c (vector-length (subtract-vectors (the origin (:from ^frame_C)) (the origin (:from ^frame_D))))
+
+               )
+  :subobjects (
+;;;               cross section at start of spline
+               (spline-frame_start :class 'frame-data-model
+;;;                    reference-object ^frame_D
+                   point-ref ^point-ref_D
+                   z-vector-ref ^z-vector-ref_D
+                   
+                   (x-vector-ref :class 'vector-data-model
+;;;                                  direction ^^perpendicular-dir
+                                 direction (subtract-vectors (nth 1 ^points)  (nth 0 ^points))
+                                 )
+                   )
+;;;               cross section at end of spline
+               (spline-frame_end :class 'frame-data-model
+;;;                    reference-object ^frame_A
+                   point-ref ^point-ref_A
+                   z-vector-ref ^z-vector-ref_A
+                   
+                   (x-vector-ref :class 'vector-data-model
+;;;                                   direction ^^perpendicular-dir
+                                 direction (subtract-vectors (nth (1- (length ^points)) ^points) (nth (- (length ^points) 2) ^points))
+                                 )
+                   )
+               ;;augumented frames from SU-convention
+               (frame_B :class 'frame-data-model
+                   (point-ref :class 'point-data-model
+                              coordinates (nth 0 ^^^inter_points)
+                              )
+                   (z-vector-ref :class 'vector-data-model
+;;;                                  direction (the direction (:from ^^z-vector-ref_D) )
+                                 direction ^^wij
+                                 )
+                   (x-vector-ref :class 'vector-data-model
+                                 direction ^^perpendicular-dir 
+                                 )
+                   )
+               
+               (frame_C :class 'frame-data-model
+                   (point-ref :class 'point-data-model
+                               coordinates (nth 1 ^^^inter_points)
+                               )
+                   (z-vector-ref :class 'vector-data-model
+;;;                                   direction (the direction (:from ^^z-vector-ref_A) )
+                                 direction ^^wjk
+                                 )
+                   (x-vector-ref :class 'vector-data-model
+                                  direction ^^perpendicular-dir 
+                                  )
+                   )
+               
+               )
+  )
+ 
+
+;;; Middle point
+(defun m-point (p1 d1 p2 d2)
+  (add-vectors p1 (proj_v d1 (multiply-vector-by-scalar (subtract-vectors p2 p1) 0.5) ) )
+  )
+;;; Closest point
+(defun cl-point (p1 d1 p2 d2)
+  (let (
+        (n1x (cross-product d1 d2))
+        (n1d (dot-product n1x (cross-product p2 d2)) ) 
+        (n2d (dot-product n1x (cross-product p1 d2)) )      
+        (d1s (dot-product n1x n1x))
+        
+        (l1s (multiply-vector-by-scalar d1 (/ n1d d1s)))
+        (l2s (multiply-vector-by-scalar d1 (/ n2d d1s)))
+        
+        )
+    (add-vectors p1 (subtract-vectors l1s l2s))
+      )
+  )
+
+
+;;; Determine configuration of two lines in relation too eachother
+(define-method line-pose connection-model ()
+  (let (
+        (v0_1 (cross-product !pij !wij) )
+        (v0_2 (cross-product !pij !wij) )
+        (coplan  (* 0.5  (+ (dot-product !wij v0_2) (dot-product v0_1 !wjk)) ))
+        
+        (normal-mag (vector-length (cross-product !wij !wjk) ) )
+        (coincident (vector-length (cross-product (subtract-vectors !pjk !pij) !wij) ) )
+        )
+    (if (/= 0 coplan) 'skew (if (/= 0 normal-mag) 'intersecting (if (= 0 coincident) 'coincident 'paralell) ) )
+    )
+  )
+
+;;; Generalized closest points
+;;; If lines Gij Gjk are intersecting or skew: closest point
+;;; If lines Gij Gjk are coincident or parallel: mid-point
+;;; Calculate intersection between lines
+(define-method inter_section connection-model (line-config)
+   (case line-config
+     ('skew
+      )
+      (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
+     ('intersecting
+      (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
+      )
+     ('coincident
+      (list (m-point !pij !wij !pjk !wjk) (m-point !pjk !wjk !pij !wij) )
+      )
+     ('paralell
+      (list (m-point !pij !wij !pjk !wjk) (m-point !pjk !wjk !pij !wij) )
+      )
+     )
+   )
+;;; Get Generalized perpendicular direction                    
+(define-method perp-dir connection-model (line-config)
+  (let (
+        (cross (cross-product !wij !wjk) )
+        (ortho-comp (orthogonal-projection-complement !wij (subtract-vectors !pjk !pij)) )
+        )
+    (case line-config
+      ('skew cross )
+      ('intersecting cross )
+      ('coincident (read-from-string (pop-up-text-prompt
+                                      :nb-entries 1
+                                      :title "Please specify direction"
+                                      :prompt "Type in x-vector"
+                                      :init-text "(1 0 0)"
+                                      :x-offset (/ (nth 0 (get-screen-size)) 2)
+                                      :y-offset (/ (nth 1 (get-screen-size)) 2))))
+      ('paralell ortho-comp )
+      )
+    ) 
+  )
+
+
+;;; The orthogonal projection of a vector b onto some vector a
+;;; pi_a(b)
+(defun proj_v (a b)
+  (multiply-vector-by-scalar a (/ (dot-product b a ) (dot-product a a )) )
+  )
+
+;;; The orthogonal projection of a vector b into the orthogonal complement of a of some vector a
+;;; tau_a(b) 
+(defun orthogonal-projection-complement (a b)
+  (subtract-vectors b (proj_v a b) )
+  )
+;;; -----------------------------
+;;; END Sheth-Uicker DEFINITIONS
+;;; -----------------------------
+
+(defun ellipse-find-minor-axis (a r theta)
+  (/ (* r a (sin theta)) (sqrt (- (* a a) (* r r (cos theta) (cos theta)))))
+  )
+
+;;; Model for a link member
+(define-class member-solid-model
+  :inherit-from (tagging-object general-sweep-class)
+  :properties(
+              tag-dimensions '(1 2 3)
+              tag-attributes (list ^^max-element-size .1
+                                   0 0.1 0 20.0 1.0e-5)
+              
+              (display? :class 'flag-property-class
+                  formula (when (the cross-section-type (:from ^shape-ref)) t)
+                  )
+              
+              connection-between-constraints nil
+              frame_D (the sub-frame (:from (nth 0 ^connection-between-constraints) ))
+              frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
+              point-ref_D (the point-ref (:from ^frame_D ))
+              point-ref_A (the point-ref (:from ^frame_A ))
+              
+              z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
+              z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
+
+              
+              ;;unused property, should differentiate between commen-sweeps on start and end constraint
+              common-sweeps (loop for constraint in ^connection-between-constraints
+                              collect (remove !superior (the link-ref-on-constraint (:from constraint)))
+                              )
+    
+              
+              ;;cross section dimension, width 0.04 / height 0.04
+              shape-ref nil
+              width (nth 0 (the solid-dimensions (:from ^shape-ref)))
+              height (if (< 1 (length (the solid-dimensions (:from ^shape-ref))))
+                         (nth 1 (the solid-dimensions (:from ^shape-ref)))
+                       (nth 0 (the solid-dimensions (:from ^shape-ref)))
+                       )
+              width-end (if (< 2 (length (the solid-dimensions (:from ^shape-ref))))
+                            (nth 2 (the solid-dimensions (:from ^shape-ref)))
+                          (nth 0 (the solid-dimensions (:from ^shape-ref)))
+                          )
+              height-end (if (< 3 (length (the solid-dimensions (:from ^shape-ref))))
+                            (nth 3 (the solid-dimensions (:from ^shape-ref)))
+                          (nth 1 (the solid-dimensions (:from ^shape-ref)))
+                          )
+              
+              ;;; Sweep parameters
+              profile-objects-list (list
+                                    ^cross-section_D
+                                    ^cross-section_A
+                                    )
+              path-points-coords-list (list
+                                       (the origin (:from ^frame_D))
+                                       (the origin (:from ^frame_A))
+                                       )
+              profile-match-points-coords-list (list
+                                                (vertex-of-object ^cross-section_D)
+                                                (vertex-of-object ^cross-section_A)
+                                                )
+
+              path-object ^connection
+              tangential-sweep? t
+                               
+              ;;; If two cross-sections, only nil works, with one cross-section t gives best mesh
+              simplify? nil
+              render 'shaded
+
+              ;;; cross-section selection
+              (cross-section-type :class 'option-property-class
+                  label "Cross-section Type"
+                  mode 'menu
+                  formula (if (the cross-section-type (:from ^shape-ref))
+                              (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) !labels-list)  !options-list)
+                            (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) !labels-list)  !options-list) )
+                  options-list (reverse (class-direct-defined-subclasses 'section-model))
+                  labels-list (loop for option in !options-list
+                                collect (remove "-section" (write-to-string option))
+                                )
+                  )
+
+              property-objects-list (list 
+                                     (list (the superior cross-section-type self) 
+                                           '(automatic-apply? t)
+                                           )
+                                     (the superior width self)
+                                     (the superior height self)
+                                     (the superior width-end self)
+                                     (the superior height-end self)
+                                     (list (the superior display? self)
+                                           '(automatic-apply? t)
+                                           )
+                                     '("Draw..." (button1-parameters :draw button3-parameters :draw)
+                                       ui-work-area-action-button-class)
+                                     '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
+                                       ui-work-area-action-button-class)
+									   ""
+									 '("Set end frame equal to start frame (remove twisting)" (button1-parameters :remove-twisting)
+                                       ui-work-area-action-button-class)
+									 '("Reset values" (button1-parameters :reset-values)
+                                       ui-work-area-action-button-class)
+                                     )
+              )
+  :subobjects (
+               (connection :class 'connection-model
+                   )
+               
+               (cross-section_D :class !cross-section-type
+                   reference-object (the spline-frame_start (:from ^connection))
+                   orientation (list
+                                (rotate 90 :x-axis)
+                                (rotate 90 :z-axis)
+                                )
+                   )
+               (cross-section_A :class !cross-section-type
+                   width ^width-end 
+                   height ^height-end
+                   reference-object (the spline-frame_end (:from ^connection))
+                   orientation (list
+                                (rotate 90 :x-axis)
+                                (rotate 90 :z-axis)
+                                )
+                   )
+               )
+  )
+
+ ;;; Left-click button methods for member-solid-model
+(define-method work-area-button1-action member-solid-model (params)
+  (case params
+    (:draw
+     (draw self :draw-subobjects? nil)
+     )
+    (:undraw
+     (undraw self :subobjects? nil)
+     )
+	(:remove-twisting
+		(let (
+			  (start (the spline-frame_start (:from !connection)))
+			  (end (the spline-frame_end (:from !connection)))
+			  )
+			(if (or (not (equal (the z-vector-ref (:from start))
+								(the z-vector-ref (:from end))))
+					(not (equal (the direction (:from (the x-vector-ref (:from start))))
+								(the direction (:from (the x-vector-ref (:from end)))))
+                     )
+				 )
+				 (progn (change-value (the z-vector-ref (:from end))
+							   (the z-vector-ref (:from start)))
+					    (change-value (the x-vector-ref (:from end))
+							   (the x-vector-ref (:from start)))
+					    (draw self :draw-subobjects? nil)
+					)
+				 nil
+				)
+		)
+	 )
+	(:reset-values
+		(progn 
+			(smash-value (the z-vector-ref (:from (the spline-frame_end (:from !connection)))))
+			(smash-value (the x-vector-ref (:from (the spline-frame_end (:from !connection)))))
+			(draw self :draw-subobjects? nil)
+		)
+	)
+	
+    )
+  )
+
+ ;;; Right-click button methods for member-solid-model 
+(define-method work-area-button3-action member-solid-model (params)
+  (case params
+    (:draw
+     (draw self :draw-subobjects? t)
+     )
+    (:undraw
+     (undraw self :subobjects? t)
+     )
+    )
+  )
+
+;;; Instantiates every member on a link 
+(define-class members-on-link-collection
+  :inherit-from (series-object)
+  :properties (               
+               quantity (length ^connection-between-2-constraints-combinations)
+               class-expression 'member-solid-model
+               series-prefix 'member
+               init-form '(
+                           connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
+
+                           shape-ref (nth ^index ^^shapes-on-link)          
+                           )
+               )
+  )
+
+;;; Class generating a link's total geometry, including joints
+(define-class link-geometry-class
+  :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
+  :properties (
+			   property-objects-list (list
+										"Link sewn with incident joint element"
+										'("Draw" (button1-parameters :draw-sewn-geometry)
+                                        ui-work-area-action-button-class)
+										'("Draw with mesh" (button1-parameters :draw-with-mesh)
+                                        ui-work-area-action-button-class)
+										'("Undraw" (button1-parameters :undraw-sewn)
+                                        ui-work-area-action-button-class)
+										)
+               ;;; Used for geometry-with-split-periodic-faces-clas
+               source-object ^difference-element
+			   
+               max-element-size 0.005
+               tag-dimensions '(1 2)
+               tag-attributes (list ^max-element-size .1
+                                    0 0.1 0 20.0 1.0e-5)
+
+
+               default-shape (let(
+                                  (def (loop for shape in (children ^^^shapes :class 'shape-data-model)
+                                         when (and
+                                               (equal 'default (the sweep-index (:from shape)))
+                                               (equal ^link-index (the link-ref (:from shape)))
+                                               )
+                                         do (return shape)
+                                         )
+                                       )
+                                  )
+                               (if def def ^^default-shape)
+                               )
+               shapes-on-link (let (
+                                    (shape-list (make-sequence 'list (length ^constraint-connection-combination) :initial-element ^default-shape) )
+                                    )
+                                (loop for shape in (children ^^^shapes :class 'shape-data-model)
+                                  when (and (equal ^link-index (the link-ref (:from shape))) (not (equal 'default (the sweep-index (:from shape)))) )
+                                  do (replace shape-list (list shape) :start1 (the sweep-index (:from shape)) )
+                                  finally (return shape-list)
+                                  )
+                                )
+
+               constraint-connection-combination (connection-combinations (length ^constraints-incident-on-link-list))
+               
+               surfaces-ref-list (children ^surfaces :class 'surface-data-model :test '(and !geom !display?))		
+			   ;; only include sweeps which are not "turned off"
+               members-ref-list (children ^sweeps :class 'member-solid-model)
+               visible-members-ref-list (children ^sweeps :class 'member-solid-model :test '!display?)
+			   ;mating-surface-list (loop for c in ^constraints-incident-on-link-list
+				;						append (the mating-surface-nodes (:from c))
+				;						)
+               ;mating-surface-list (the mating-surface-nodes (:from (the male-element-solid-model (:from (nth 0 ^constraints-incident-on-link-list)))))
+;;;                solid-constraints-ref-list (children ^solid-constraints :class 'solid-constraint-model)
+               
+			   
+               union-list (loop for constraint in ^constraints-incident-on-link-list
+                            append (the union-list (:from constraint))
+                            )
+               difference-list (loop for constraint in ^constraints-incident-on-link-list
+                                 append (the difference-list (:from constraint))
+                                 )
+			   ;;; List of the final geometry
+               object-list (append
+                            (list ^union-element)
+                            ^difference-list
+                            )
+               simplify? nil
+               
+               (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
+                   tag-dimensions '(1 2)
+                   tag-attributes (list ^max-element-size .1
+                                        0 0.1 0 20.0 1.0e-5)
+                   source-object ^^union-element
+                   )
+
+               (imprint-constraint-points :class '(tagging-object imprint-class)
+                   target-object ^^imprint-union-element
+                   tool-object-list (loop for c in ^constraints-incident-on-link-list
+                                      collect (the point-ref (:from c))
+                                      )
+                   )
+               (difference-element :class '(tagging-object difference-object)
+                   tag-dimensions '(1 2)
+                   tag-attributes (list ^max-element-size .1
+                                        0 0.1 0 20.0 1.0e-5)
+                   object-list (append
+                                (list ^union-element)
+;;;                             (list ^imprint-union-element)
+                                ^difference-list
+                                )
+                   simplify? t
+
+                   )
+                                
+               (union-element :class '(tagging-object union-object)
+                   tag-dimensions '(1 2)
+                   tag-attributes (list ^max-element-size .1
+                                        0 0.1 0 20.0 1.0e-5)
+                   object-list (append  ^surfaces-ref-list
+;;;                                         (list ^sewn-links)
+                                        ^visible-members-ref-list
+                                        ^^union-list)
+                   ;;; simplify? t removes common boundaries in the geometry
+				   ;;; simplify? nil keeps them
+				   simplify? t
+                   )
+				render 'shaded   
+               )
+  :subobjects (
+               (surfaces :class 'surfaces-on-link-collection
+                   )
+               (sweeps :class 'members-on-link-collection
+                   )
+               )
+  )
+;;; Right-click button methods for member-solid-model  
+(define-method work-area-button1-action link-geometry-class (params)
+  (case params
+    ;;; Sewn geometry refers to the union of a member and a joint
+    (:draw-sewn-geometry
+     (draw self :draw-subobjects? nil)
+     )
+    (:undraw-sewn
+     (undraw self :subobjects? t)
+	 (undraw (the superior link-mesh-model))
+     )
+	(:draw-with-mesh
+		(draw self :draw-subobjects? nil)
+		(with-error-handler (:show-system-error? t)
+			(draw (the superior link-mesh-model))
+		)
+	 )
+    )
+  )  
+
+
+;;; Model used to hold the link geometry and its mesh
+(define-class link-model-class
+  :inherit-from (object)
+  :properties (
+               ;; properties set from parent init-form
+               constraints-incident-on-link-list nil
+               connection-between-2-constraints-combinations (list-combinations ^constraints-incident-on-link-list)
+               link-index nil
+			   
+               )
+  :subobjects (
+               (link-solid-geometry :class 'link-geometry-class
+                   )
+               (link-mesh-model :class 'link-mesh-class
+                   geometry-model-object ^link-solid-geometry
+                   mesh-database ^^mesh-database
+                   )
+               (analysis :class 'analysis-link-model-class
+                   mesh-model-object ^^link-mesh-model
+                   )               
+               )
+  )
+
+              
+     

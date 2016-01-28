@@ -1,0 +1,24 @@
+;;;----------------------------------------------------
+;;; System : :mechanism-system
+;;; Purpose : AML Mechanism Model
+;;;
+;;;
+;;; Author : Rasmus Korvald Skaare
+;;;
+
+(in-package :AML)
+
+(defvar #MECHANISM-LIBRARY# "")
+(setf #MECHANISM-LIBRARY# (logical-path :mechanism-system "library"))
+
+(define-system :mechanism-system
+  :files '(
+           "data-models.aml"
+           "constraints.aml"
+           "cross-sections.aml"
+           "analysis.aml"
+           "links.aml"
+           "collections.aml"
+           )
+  )
+
