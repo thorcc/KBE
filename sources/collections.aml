@@ -9,7 +9,7 @@
 (define-method read-from-file collection-class ()
   (let (
         (file-name (write-to-string !collection-type ))
-        (file-path (logical-path (the path (:from ^mechanism-selection)) (concatenate file-name ".txt") ) )
+        (file-path (logical-path (the version-path (:from ^version-selection)) (concatenate file-name ".txt") ) )
         (function-name (read-from-string (concatenate "read-" file-name "-from-file")) )
         )
     (if (and
@@ -334,7 +334,7 @@
 )
 ;;; Defines the data-model for folders
 (define-class folder-info-model
-  :inherit-from (object)
+  :inherit-from (series-object)
   :properties (
                path nil
                folder (subseq (remove #MECHANISM-LIBRARY# ^path) 1)
@@ -347,8 +347,26 @@
                               name
                               )
                             )
+				
+				version-list (rest (rest (directory ^path)))
+				class-expression 'mechanism-version-info
+				series-prefix 'version
+				quantity (length ^version-list)
+				init-form '(
+							version-path (nth ^index ^^version-list)
+							version-name (subseq (remove ^^path ^version-path) 1)
+						    )
                )
   )
+  
+(define-class mechanism-version-info 
+	:inherit-from (object)
+	:properties (
+				 version-path nil				 
+				 version-name nil
+				 )
+	)
+  
 ;;; Reads all subfolders of the library folder in the file system and creates a subobject for each folder 
 ;;; as a series-object of the type folder-info-model
 (define-class folder-collection
@@ -356,6 +374,7 @@
   :properties (
                
                ;; Removing ../ and ./
+			   ;; Returns a list of the contents in the library directory
                library-subfolder-list (rest (rest (directory #mechanism-library#)) )
                quantity (length ^library-subfolder-list)
                class-expression 'folder-info-model
@@ -366,9 +385,9 @@
                )
   )
   
-(defun read-design-variables-from-file()
+(define-method read-design-variables-from-file mechanism-collection()
 	(let (
-        (file-path (logical-path (the path (:from ^mechanism-selection)) "design-variables.txt" ) )
+        (file-path (logical-path (the path (:from ^version-selection)) "design-variables.txt" ) )
         )
     (if (and
          file-path
@@ -379,8 +398,7 @@
           (loop for line = (read-line file  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for design-data = (list
-			(nth 0 ls) (nth 1 ls) (nth 2 ls) )
+			for design-data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) )
 			append design-data
 			)
           )
@@ -400,6 +418,7 @@
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
 
+			   ;; mechanism-selection is a list of folder-info-models
                (mechanism-selection :class 'option-property-class
                    labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
                                 when (the path (:from subfolder))
@@ -410,15 +429,23 @@
                    
                    mode 'menu
                    formula (nth (position "four bar" !labels-list) !options-list)
+				   label "Select Mechanism"
                    )
 				   
-				(design-variables :class 'option-property-class
+				(version-selection :class 'option-property-class
+					options-list (children ^^mechanism-selection :class 'mechanism-version-info)
+					labels-list (loop for version in !options-list
+									collect (the version-name (:from version))
+									)
 					mode 'menu
-					options-list (read-design-variables-from-file)
-				)
+					formula (nth (- (length !options-list) 1) !options-list)
+					label "Select Version"
+					)
 
                property-objects-list (list 
 											(list (the superior mechanism-selection self) 
+												'(automatic-apply? t))
+											(list (the superior version-selection self) 
 												'(automatic-apply? t))
 											""
 											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
@@ -430,7 +457,6 @@
 											ui-work-area-action-button-class)
 											'("Export to .bdf" (button1-parameters :bdf-export)
 											ui-work-area-action-button-class)
-											(list (the superior design-variables self) )
                                      )
 ;;;                Storage
                
@@ -464,7 +490,7 @@
         (superelements nil)
         (triads nil)
         )
-    (with-open-file (stream (logical-path (the path (:from !mechanism-selection)) (concatenate "fedem_solver" ".fsi") )
+    (with-open-file (stream (logical-path (the path (:from !version-selection)) (concatenate "fedem_solver" ".fsi") )
                           :direction :output
                           :if-exists :overwrite
                           )
