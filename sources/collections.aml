@@ -246,7 +246,7 @@
                default-shape (let(
                                   (def (loop for shape in (children ^^shapes :class 'shape-data-model)
                                          when (equal 'default (the link-ref (:from shape)))
-                                         do(return shape)
+                                         do (return shape)
                                          ) )
                                   )
                                (if def def ^init-default-shape)
@@ -433,10 +433,26 @@
 					formula (nth (- (length !options-list) 1) !options-list)
 					label "Select Version"
 					)
-
-               (dv :class 'editable-data-property-class 
-					formula (the dv-name (:from (nth 0 ^dv-ref-list)))
+					
+			   (dv :class 'data-matrix-property-class
+					mode 'pop-up
+					columns-labels-list (list "Value")
+					rows-labels-list (loop for dv in ^dv-ref-list
+						collect (string (the dv-name (:from dv)))
+						)
+					formula (loop for dv in ^dv-ref-list
+						collect (list (the dv-name (:from dv)))
+						)
 					)
+			   
+			   ;dv :class 'option-property-class
+				;	;options-list ^dv-ref-list
+				;	mode 'menu
+				;	options-list (loop for dv in ^dv-ref-list
+				;		collect (the dv-name (:from dv))
+				;		)
+				;	;formula (the dv-name (:from (nth 0 ^dv-ref-list)))
+				;	)
 			   
 			   property-objects-list (list 
 											(list (the superior mechanism-selection self) 
@@ -454,7 +470,7 @@
 											'("Export to .bdf" (button1-parameters :bdf-export)
 											ui-work-area-action-button-class)
 											(list (the superior dv self)
-												'(apply-formula? t))
+												'(automatic-apply? t))
                                      )
                
                ;;Property storing folders from library
@@ -478,7 +494,7 @@
                    )
                )
   )
-
+  
 (define-method work-area-button1-action mechanism-collection (params)
 	(case params
 
