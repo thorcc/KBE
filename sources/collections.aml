@@ -9,7 +9,7 @@
 (define-method read-from-file collection-class ()
   (let (
         (file-name (write-to-string !collection-type ))
-        (file-path (logical-path (the path (:from ^mechanism-selection)) (concatenate file-name ".txt") ) )
+        (file-path (logical-path (the version-path (:from ^version-selection)) (concatenate file-name ".txt") ) )
         (function-name (read-from-string (concatenate "read-" file-name "-from-file")) )
         )
     (if (and
@@ -121,26 +121,28 @@
 (define-class point-collection
   :inherit-from (series-object collection-class)
   :properties (
-;;;                points-list (FORMATTED-list-FROM-FILE (logical-path MECHANISM-LIBRARY "coordinates.txt") :element-format '(x y z))
                collection-type 'coordinates
                points-list (read-from-file !superior)
                quantity (length ^points-list)
                class-expression 'point-data-model
                series-prefix 'p
                init-form '(
-                           coordinates (nth ^index ^points-list)
+						   name (nth 0 (nth ^index ^points-list))
+                           coordinates (list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
+						   dv-values (nth 4 (nth ^index ^points-list))
                            )
                )
   )
 ;;; Reads each line of the coordinats file and adds this to a list  
 ;;; - later to be used to create subobects of points
 (defun read-coordinates-from-file (stream)
-;;;   (with-open-file (file (logical-path (the path (:from (the superior mechanism-selection)) ) "coordinates.txt") :direction :input)
   (when stream
     (loop for line = (read-line stream nil :eof)
       until (equal line :eof)
-      for xyz = (read-from-string (format nil "(~a)" line)) 
-      collect xyz 
+	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+	  for coord-line = (list
+	  (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (read-from-string (nth 4 ls)))
+      collect coord-line
       )
     )
   )
@@ -302,10 +304,10 @@
 	)
 	
 )
-
+;;; Button actions for drawing/undrawing mechanism (with and without mesh),
 ;;; Defines the data-model for folders
 (define-class folder-info-model
-  :inherit-from (object)
+  :inherit-from (series-object)
   :properties (
                path nil
                folder (subseq (remove #MECHANISM-LIBRARY# ^path) 1)
@@ -318,8 +320,26 @@
                               name
                               )
                             )
+				
+				version-list (rest (rest (directory ^path)))
+				class-expression 'mechanism-version-info
+				series-prefix 'version
+				quantity (length ^version-list)
+				init-form '(
+							version-path (nth ^index ^^version-list)
+							version-name (subseq (remove ^^path ^version-path) 1)
+						    )
                )
   )
+  
+(define-class mechanism-version-info 
+	:inherit-from (object)
+	:properties (
+				 version-path nil				 
+				 version-name nil
+				 )
+	)
+  
 ;;; Reads all subfolders of the library folder in the file system and creates a subobject for each folder 
 ;;; as a series-object of the type folder-info-model
 (define-class folder-collection
@@ -327,6 +347,7 @@
   :properties (
                
                ;; Removing ../ and ./
+			   ;; Returns a list of the contents in the library directory
                library-subfolder-list (rest (rest (directory #mechanism-library#)) )
                quantity (length ^library-subfolder-list)
                class-expression 'folder-info-model
@@ -336,32 +357,51 @@
                            )
                )
   )
-  
-(defun read-design-variables-from-file()
-	(let (
-        (file-path (logical-path (the path (:from ^mechanism-selection)) "design-variables.txt" ) )
-        )
-    (if (and
-         file-path
-         (stringp file-path)
-         (probe-file file-path)
-         )
-        (with-open-file (file file-path :direction :input)
-          (loop for line = (read-line file  nil :eof)
+ 
+(define-class design-variable-class
+	:inherit-from (object)
+	:properties (
+				 dv-name nil
+				 direction nil
+				 affected-coordinates-list nil
+				 )
+	)
+ 
+(define-class design-variables-collection 
+	:inherit-from (series-object collection-class)
+	:properties (
+				 collection-type 'design-variables
+				 dv-list (read-from-file !superior)
+				 quantity (length ^dv-list)
+				 series-prefix 'dv
+				 class-expression 'design-variable-class
+				 init-form '(
+							 dv-name (nth 0 (nth ^index ^dv-list))
+							 direction (nth 1 (nth ^index ^dv-list))
+							 affected-coordinates-list 
+									(remove nil (loop for point-entry in ^^point-ref-list
+										if (the dv-values (:from point-entry))
+											 collect (loop for dv in (the dv-values (:from point-entry))
+												if (string-equal (string dv) (string ^dv-name))
+													;do (message point-entry)
+													collect point-entry
+												 )
+										)
+									)
+                             )
+				 )
+	 )
+ 
+(defun read-design-variables-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for design-data = (list
-			(nth 0 ls) (nth 1 ls) (nth 2 ls) )
-			append design-data
+			for design-data = (list (read-from-string (nth 0 ls)) (read-from-string (nth 1 ls)) )
+			collect design-data
 			)
-          )
-      (progn
-        (message (format nil "\"~a\" is not a valid file path." file-path) :append? t)
-        nil
-        )
-      )
-    )
-   )  
+		)
+   )
   
 ;;; Creates the different collections (constraint, point, link, shape and meshdb) as subobjects
 (define-class mechanism-collection
@@ -370,26 +410,38 @@
                point-ref-list  (children ^points :class 'point-data-model )
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
-
+			   dv-ref-list (children ^design-variables :class 'design-variable-class)
+			   
+			   ;; mechanism-selection is a list of folder-info-models
                (mechanism-selection :class 'option-property-class
                    labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
                                 when (the path (:from subfolder))
                                 collect (the label (:from subfolder))
                                 )
-;;;                    labels-list (select-object :from ^folders :class 'folder-info-model :test '(the path) :eval '(the label) )
                    options-list (children ^folders :class 'folder-info-model)
-                   
                    mode 'menu
                    formula (nth (position "four bar" !labels-list) !options-list)
+				   label "Select Mechanism"
                    )
 				   
-				(design-variables :class 'option-property-class
+			   (version-selection :class 'option-property-class
+					options-list (children ^^mechanism-selection :class 'mechanism-version-info)
+					labels-list (loop for version in !options-list
+									collect (the version-name (:from version))
+									)
 					mode 'menu
-					options-list (read-design-variables-from-file)
-				)
+					formula (nth (- (length !options-list) 1) !options-list)
+					label "Select Version"
+					)
 
-               property-objects-list (list 
+               (dv :class 'editable-data-property-class 
+					formula (the dv-name (:from (nth 0 ^dv-ref-list)))
+					)
+			   
+			   property-objects-list (list 
 											(list (the superior mechanism-selection self) 
+												'(automatic-apply? t))
+											(list (the superior version-selection self) 
 												'(automatic-apply? t))
 											""
 											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
@@ -401,15 +453,15 @@
 											ui-work-area-action-button-class)
 											'("Export to .bdf" (button1-parameters :bdf-export)
 											ui-work-area-action-button-class)
-											(list (the superior design-variables self) )
+											(list (the superior dv self)
+												'(apply-formula? t))
                                      )
-;;;                Storage
                
-               ;;Property storing folder from library
+               ;;Property storing folders from library
                (folders :class 'folder-collection
                    )
 
-               write-to-file (write-save-fedem-solver !superior)
+			   write-to-file (write-save-fedem-solver !superior)
                )
   :subobjects (               
                (constraints :class 'constraint-collection
@@ -418,15 +470,15 @@
                    )
                (links :class 'link-collection
                    )
-
                (shapes :class 'shape-collection
                    )
-               
+               (design-variables :class 'design-variables-collection
+					)
                (mesh-database :class 'meshdb-class
                    )
                )
   )
-;;; Button actions for drawing/undrawing mechanism (with and without mesh),
+
 (define-method work-area-button1-action mechanism-collection (params)
 	(case params
 
@@ -453,9 +505,9 @@
 				do (the analysis nastran-interface run-nastran@ (:from link))
 			)
 		)
-	)
-	
-)
+	)	
+)  
+  
 ;;; Writes the mechanism to a simulation file (.fsi)
 (define-method write-save-fedem-solver  mechanism-collection ()
   (let (
@@ -464,38 +516,38 @@
         (superelements nil)
         (triads nil)
         )
-    (with-open-file (stream (logical-path (the path (:from !mechanism-selection)) (concatenate "fedem_solver" ".fsi") )
+    (with-open-file (stream (logical-path (the path (:from !version-selection)) (concatenate "fedem_solver" ".fsi") )
                           :direction :output
                           :if-exists :overwrite
                           )
       (progn
-        (loop for link in !link-ref-list         
-          do
-          (setf idcount (1+ idcount))
-          (setf extidcount (1+ extidcount))
-          (setf superelements (append superelements (list idcount)))
-          
-          (loop for triad in (the solid-constraints-ref-list (:from link))
-            for frame =  (vector-to-list (get-position-matrix (the main-frame (:from triad)) ) )
-            when (not (and (equal 0 (the index (:from link))) (equal "open" (superior (the constraint-element (:from triad)))) ))
-            do
-            (setf idcount (1+ idcount))
-            (setf extidcount (1+ extidcount))
-            (format stream "~a~%" "&TRIAD")
-            (format stream "~t id = ~d~%" idcount)
-            (format stream "~t extId = ~d~%" extidcount)
-            (format stream "~t nDOFs = ~d~%" (if (equal 0 (the index (:from link))) 0 6) )
-            (format stream "~t ur = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
-                                                                 (append (subseq frame 4 7) (list (nth 13 frame)))
-                                                                 (append (subseq frame 8 11) (list (nth 14 frame)))
-                                                                 ) )
-            (format stream "~%/~2%")
-            
-            and collect idcount into trs
-            finally (setf triads (append triads (list trs)))  
-            )
-          
-          )
+        ;(loop for link in !link-ref-list         
+        ;  do
+        ;  (setf idcount (1+ idcount))
+        ;  (setf extidcount (1+ extidcount))
+        ;  (setf superelements (append superelements (list idcount)))
+        ;  
+        ;  (loop for triad in (the solid-constraints-ref-list (:from link))
+        ;    for frame =  (vector-to-list (get-position-matrix (the main-frame (:from triad)) ) )
+        ;    when (not (and (equal 0 (the index (:from link))) (equal "open" (superior (the constraint-element (:from triad)))) ))
+        ;    do
+        ;    (setf idcount (1+ idcount))
+        ;    (setf extidcount (1+ extidcount))
+        ;    (format stream "~a~%" "&TRIAD")
+        ;    (format stream "~t id = ~d~%" idcount)
+        ;    (format stream "~t extId = ~d~%" extidcount)
+        ;    (format stream "~t nDOFs = ~d~%" (if (equal 0 (the index (:from link))) 0 6) )
+        ;    (format stream "~t ur = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
+        ;                                                         (append (subseq frame 4 7) (list (nth 13 frame)))
+        ;                                                         (append (subseq frame 8 11) (list (nth 14 frame)))
+        ;                                                         ) )
+        ;    (format stream "~%/~2%")
+        ;    
+        ;    and collect idcount into trs
+        ;    finally (setf triads (append triads (list trs)))  
+        ;    )
+        ;  
+        ;  )
         (print triads)
         (setf extidcount 0)
         (loop for link in !link-ref-list
