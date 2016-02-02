@@ -9,7 +9,8 @@
                (coordinates :class 'editable-data-property-class
                     label "Coordinates"
                    )
-
+			   name nil
+			   dv-values nil
                property-objects-list (list 
                                       (list (the superior coordinates self) 
                                             '(apply-formula? t)) 
