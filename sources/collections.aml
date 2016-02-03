@@ -130,6 +130,7 @@
 						   name (nth 0 (nth ^index ^points-list))
                            coordinates (list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
 						   dv-values (nth 4 (nth ^index ^points-list))
+						   id ^index
                            )
                )
   )
@@ -364,9 +365,30 @@
 				 dv-name nil
 				 direction nil
 				 affected-coordinates-list nil
+				 coord-pos (position 1 ^direction)
+				 (dv-value :class 'editable-data-property-class
+					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-coordinates-list) ^point-ref-list))))
+					label ^dv-name
+					)
+				 
+				 property-objects-list (list 
+										 (list (the superior dv-value self)
+												'(automatic-apply? t))
+										 '("Update design variable changes" (button1-parameters :update-dvs)
+											ui-work-area-action-button-class)
+										)
 				 )
 	)
- 
+(define-method work-area-button1-action design-variable-class (params)
+	(case params
+		(:update-dvs
+			(loop for id in !affected-coordinates-list
+				do (setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
+				)
+		)
+	)
+)
+	
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
 	:properties (
@@ -381,10 +403,10 @@
 							 affected-coordinates-list 
 									(remove nil (loop for point-entry in ^^point-ref-list
 										if (the dv-values (:from point-entry))
-											 collect (loop for dv in (the dv-values (:from point-entry))
+											 append (loop for dv in (the dv-values (:from point-entry))
 												if (string-equal (string dv) (string ^dv-name))
 													;do (message point-entry)
-													collect point-entry
+													collect (the id (:from point-entry))
 												 )
 										)
 									)
@@ -435,13 +457,14 @@
 					)
 					
 			   (dv :class 'data-matrix-property-class
+					label "Edit design variables"
 					mode 'pop-up
 					columns-labels-list (list "Value")
 					rows-labels-list (loop for dv in ^dv-ref-list
 						collect (string (the dv-name (:from dv)))
 						)
 					formula (loop for dv in ^dv-ref-list
-						collect (list (the dv-name (:from dv)))
+						collect (list (the dv-value (:from dv)))
 						)
 					)
 			   
@@ -477,9 +500,9 @@
                (folders :class 'folder-collection
                    )
 
-			   write-to-file (write-save-fedem-solver !superior)
+			   ;write-to-file (write-save-fedem-solver !superior)
                )
-  :subobjects (               
+  :subobjects (
                (constraints :class 'constraint-collection
                    )
                (points :class 'point-collection
@@ -591,21 +614,21 @@
                                                                                   ) )
           (format stream "~%/~2%")
           (print (the solid-constraints-ref-list (:from link)) )
-          (loop for triad in (the solid-constraints-ref-list (:from link))
-            for i = (the index (:from triad) )
-;;;             for un_frame = (vector-to-list (matrix-multiply (get-position-matrix (the main-frame (:from triad))) (matrix-inverse frame) ))
-            do
-            (print i)
-            (print triader)
-            (format stream "~a~%" "&TRIAD_UNDPOS")
-            (format stream "~t supElId = ~d~%" idcount)
-            (format stream "~t triadId = ~d~%" (nth i triader) )
-;;;             (format stream "~t undPosInSupElSystem = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq un_frame 0 3) (list (nth 12 un_frame)))
-;;;                                                                                   (append (subseq un_frame 4 7) (list (nth 13 un_frame)))
-;;;                                                                                   (append (subseq un_frame 8 11) (list (nth 14 un_frame)))
-;;;                                                                                   ) )
-            (format stream "~%/~2%")
-           )
+         ; (loop for triad in (the solid-constraints-ref-list (:from link))
+         ;   for i = (the index (:from triad) )
+;;;      ;       for un_frame = (vector-to-list (matrix-multiply (get-position-matrix (the main-frame (:from triad))) (matrix-inverse frame) ))
+         ;   do
+         ;   (print i)
+         ;   (print triader)
+         ;   (format stream "~a~%" "&TRIAD_UNDPOS")
+         ;   (format stream "~t supElId = ~d~%" idcount)
+         ;   (format stream "~t triadId = ~d~%" (nth i triader) )
+;;;      ;       (format stream "~t undPosInSupElSystem = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq un_frame 0 3) (list (nth 12 un_frame)))
+;;;      ;                                                                             (append (subseq un_frame 4 7) (list (nth 13 un_frame)))
+;;;      ;                                                                             (append (subseq un_frame 8 11) (list (nth 14 un_frame)))
+;;;      ;                                                                             ) )
+         ;   (format stream "~%/~2%")
+         ;  )
           )
         )
       )
