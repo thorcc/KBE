@@ -130,6 +130,8 @@
 						   name (nth 0 (nth ^index ^points-list))
                            coordinates (list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
 						   dv-values (nth 4 (nth ^index ^points-list))
+						   depends-on-group (nth 5 (nth ^index ^points-list))
+						   is-fixed? (nth 6 (nth ^index ^points-list))
 						   id ^index
                            )
                )
@@ -142,7 +144,7 @@
       until (equal line :eof)
 	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
 	  for coord-line = (list
-	  (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (read-from-string (nth 4 ls)))
+	  (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (read-from-string (nth 4 ls)) (read-from-string (nth 5 ls)) (nth 6 ls) )
       collect coord-line
       )
     )
@@ -379,6 +381,7 @@
 										)
 				 )
 	)
+	
 (define-method work-area-button1-action design-variable-class (params)
 	(case params
 		(:update-dvs
@@ -388,7 +391,7 @@
 		)
 	)
 )
-	
+
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
 	:properties (
