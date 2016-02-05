@@ -392,6 +392,26 @@
 	)
 )
 
+(defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
+	(if (= (nth 0 direction) 1)
+		( (list 1 0 0)
+			(list 
+			 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)) ) (- (nth 1 dv2) (nth 1 dv1)) ))
+			 (nth 1 dv2)
+			 (nth 2 dv2)
+			)
+		)
+		(
+			(list
+			 (nth 0 dv2)
+			 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) (- (nth 0 dv2) (nth 0 dv1)) ))
+			 (nth 2 dv2)
+			)
+		)
+	)
+)
+
+
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
 	:properties (
