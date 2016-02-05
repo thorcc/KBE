@@ -11,6 +11,9 @@
                    )
 			   name nil
 			   dv-values nil
+			   depends-on-group (default nil)
+			   is-fixed? (default nil)
+			   id nil
                property-objects-list (list 
                                       (list (the superior coordinates self) 
                                             '(apply-formula? t)) 
