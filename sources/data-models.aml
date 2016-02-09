@@ -4,16 +4,19 @@
 
 ;;; Use point-object to define position properties
 (define-class point-data-model
-  :inherit-from (point-object data-model-node-mixin)
+  :inherit-from (point-object data-model-node-mixin create-event)
   :properties (
                (coordinates :class 'editable-data-property-class
                     label "Coordinates"
                    )
 			   name nil
 			   dv-values nil
-			   depends-on-group (default nil)
+			   line-group (default nil)
 			   is-fixed? (default nil)
 			   id nil
+			   
+			   after-create ()
+			   
                property-objects-list (list 
                                       (list (the superior coordinates self) 
                                             '(apply-formula? t)) 

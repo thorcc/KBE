@@ -1,3 +1,6 @@
+;;; List created from input files, collecting lists of the points that are to be on the same line in space (2D space for now).
+(defvar *line-groups* '())
+
 ;;; Constructs a generic collecion-class, used by the different collections
 (define-class collection-class
   :inherit-from (object)
@@ -130,7 +133,7 @@
 						   name (nth 0 (nth ^index ^points-list))
                            coordinates (list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
 						   dv-values (nth 4 (nth ^index ^points-list))
-						   depends-on-group (nth 5 (nth ^index ^points-list))
+						   line-group (nth 5 (nth ^index ^points-list))
 						   is-fixed? (nth 6 (nth ^index ^points-list))
 						   id ^index
                            )
@@ -366,10 +369,12 @@
 	:properties (
 				 dv-name nil
 				 direction nil
-				 affected-coordinates-list nil
+				 line-name nil
+				 points-on-line nil
+				 affected-translation-coords-list nil
 				 coord-pos (position 1 ^direction)
 				 (dv-value :class 'editable-data-property-class
-					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-coordinates-list) ^point-ref-list))))
+					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-translation-coords-list) ^point-ref-list))))
 					label ^dv-name
 					)
 				 
@@ -385,12 +390,32 @@
 (define-method work-area-button1-action design-variable-class (params)
 	(case params
 		(:update-dvs
-			(loop for id in !affected-coordinates-list
+			(loop for id in !affected-translation-coords-list
 				do (setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
 				)
 		)
 	)
 )
+
+(defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
+	(if (= (nth 0 direction) 1)
+		( (list 1 0 0)
+			(list 
+			 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)) ) (- (nth 1 dv2) (nth 1 dv1)) ))
+			 (nth 1 dv2)
+			 (nth 2 dv2)
+			)
+		)
+		(
+			(list
+			 (nth 0 dv2)
+			 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) (- (nth 0 dv2) (nth 0 dv1)) ))
+			 (nth 2 dv2)
+			)
+		)
+	)
+)
+
 
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
@@ -403,19 +428,50 @@
 				 init-form '(
 							 dv-name (nth 0 (nth ^index ^dv-list))
 							 direction (nth 1 (nth ^index ^dv-list))
-							 affected-coordinates-list 
+							 line-name (nth 0 (remove-duplicates (remove nil 
+												(loop for point-entry in ^^point-ref-list
+													if (the dv-values (:from point-entry)) 
+														append (loop for dv in (the dv-values (:from point-entry))
+															if (and (string-equal (string dv) (string ^dv-name)) (the line-group (:from point-entry)))
+																collect (the line-group (:from point-entry))
+															)
+														)
+													)
+												))
+											
+							 points-on-line (remove nil 
+												(loop for point-entry in ^^point-ref-list
+													if (string-equal ^line-name (the line-group (:from point-entry)))
+														collect (the id (:from point-entry))
+													)
+												)
+												
+							 affected-translation-coords-list 
 									(remove nil (loop for point-entry in ^^point-ref-list
 										if (the dv-values (:from point-entry))
 											 append (loop for dv in (the dv-values (:from point-entry))
 												if (string-equal (string dv) (string ^dv-name))
-													;do (message point-entry)
 													collect (the id (:from point-entry))
 												 )
 										)
 									)
+							 ;affected-coords-on-line-list 
+							;		(loop for point-entry in ^^point-ref-list
+							;			if (string-equal (the line-group (:from point-entry)) !points-on-line)
+							;				append (the id (:from point-entry))
+							;			)
                              )
 				 )
 	 )
+ 
+(define-class points-on-line-class
+	:inherit-from (object)
+	:properties (
+				 line-name nil
+				 dv-points nil
+				 fixed-point nil
+				)
+)
  
 (defun read-design-variables-from-file (stream)
 	(when stream
@@ -432,10 +488,18 @@
 (define-class mechanism-collection
   :inherit-from (data-model-node-mixin)
   :properties (
-               point-ref-list  (children ^points :class 'point-data-model )
+               point-ref-list (children ^points :class 'point-data-model )
+			   build (remove nil(loop for point in ^point-ref-list
+							do collect (add-point-to-line-group point)
+							)
+						)
+						
+				
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
+			   ;a (add-point-to-line-group (nth 1 ^point-ref-list))
+
 			   
 			   ;; mechanism-selection is a list of folder-info-models
                (mechanism-selection :class 'option-property-class
@@ -520,6 +584,39 @@
                    )
                )
   )
+
+;(define-method add-point-to-line-group mechanism-collection ()
+;	(let (
+;		  (line-groups-list '() )
+;		  (group-names '() )
+;		  )
+;		 
+;			(loop for point in !point-ref-list
+;			if (the line-group (:from point))
+;				do (and
+;					(append group-names (the line-group (:from point)))
+;					(append line-groups-list (list (the line-group (:from point)) (list point)))
+;				)
+;			)
+;			line-groups-list
+;		 
+;	)
+;)
+ 
+ 
+(defun add-point-to-line-group (point)
+	(if (the line-group (:from point))
+		(if (not *line-groups*) ;; Empty list check
+			(append *line-groups* (list (the line-group (:from point)) (list point)))
+			(loop for group in *line-groups*
+				if (= (the line-group (:from point)) (nth 0 group))
+					do (append (nth 1 group) point)
+					do (append *line-groups* (list (the line-group (:from point)) (list point)))
+			)
+		)
+	)
+)
+
   
 (define-method work-area-button1-action mechanism-collection (params)
 	(case params
