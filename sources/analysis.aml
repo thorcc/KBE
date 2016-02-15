@@ -13,15 +13,28 @@
                    )
                )
   :subobjects (
-               (link-mesh :class 'paver-mesh-class
-                   ;;; geometry-model-object is the link-solid-geometry in link-model-class
-				   object-to-mesh ^^geometry-model-object
-                   mesh-database-object ^^mesh-database
-				   
-                   element-shape :tet
-                   solid-mesh? t
-                   )
-               
+               (mesh-db :class 'mesh-database-class
+					)
+			   (link-mesh :class 'paver-mesh-database-class
+					edge-element-size 0.01
+					surface-element-size 0.01
+					element-shape :tri
+					mesh-database-object ^^mesh-db
+					object-to-mesh ^^geometry-model-object
+					)
+			   (tet-mesh :class 'tet-mesh-class
+					mesh-database-object ^^mesh-db
+					object-to-mesh (the superior superior link-mesh surface-elements-query)
+					)
+			   
+			   ;(link-mesh :class 'paver-mesh-class
+               ;    ;;; geometry-model-object is the link-solid-geometry in link-model-class
+				;   object-to-mesh ^^geometry-model-object
+               ;    mesh-database-object ^^mesh-database
+				;   
+               ;    element-shape :tet
+               ;    solid-mesh? t
+               ;    )
                (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
                    tagged-object-list (append
                                        (the union-list (:from ^^geometry-model-object))
@@ -30,7 +43,6 @@
                                       
                    mesh-object ^^link-mesh
                    )
-
                (link-mesh-solid-elements :class 'mesh-elements-3d-query-class
                    tagged-object-list (append
                                        (the union-list (:from ^^geometry-model-object))
@@ -38,13 +50,10 @@
                                        )
                    mesh-object ^^link-mesh
                    )
-
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    ;tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
                    mesh-object ^^link-mesh
                    )
-                                   
-                              
                (fixed-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list
                                        (the fixed-edge (:from ^^geometry-model-object))
@@ -52,7 +61,7 @@
 ;                    mesh-object ^^link-mesh
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
-                   interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
+                   ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
                )

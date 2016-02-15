@@ -107,7 +107,6 @@
 	)  
 )
 ;;; Reads each line of the constraints file and adds this to a list 
-;;; - later used to create subobjects of constraints 
 (defun read-constraints-from-file (stream)
   (when stream
     (loop for line = (read-line stream nil :eof)
@@ -140,7 +139,6 @@
                )
   )
 ;;; Reads each line of the coordinats file and adds this to a list  
-;;; - later to be used to create subobects of points
 (defun read-coordinates-from-file (stream)
   (when stream
     (loop for line = (read-line stream nil :eof)
@@ -188,7 +186,6 @@
   )
 
 ;;; Reads each line of the shapes file and adds this to a list 
-;;; - later to be used to create subobjects of shapes
 (defun read-shapes-from-file (stream)
 ;;;   (with-open-file (file (logical-path (the path (:from ^mechanism-selection) ) "shapes.txt") :direction :input)
  (when stream
@@ -373,6 +370,7 @@
 				 points-on-line nil
 				 affected-translation-coords-list nil
 				 coord-pos (position 1 ^direction)
+				 
 				 (dv-value :class 'editable-data-property-class
 					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-translation-coords-list) ^point-ref-list))))
 					label ^dv-name
@@ -387,12 +385,19 @@
 				 )
 	)
 	
+	
+	
 (define-method work-area-button1-action design-variable-class (params)
 	(case params
 		(:update-dvs
-			(loop for id in !affected-translation-coords-list
-				do (setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
+			(progn 
+				(loop for id in !affected-translation-coords-list do 
+					(setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
 				)
+				(loop for id in !points-on-line do
+					;(setq (the coordinates (:from (nth id ^point-ref-list))) )
+				)
+			)
 		)
 	)
 )
@@ -428,6 +433,7 @@
 				 init-form '(
 							 dv-name (nth 0 (nth ^index ^dv-list))
 							 direction (nth 1 (nth ^index ^dv-list))
+							 ;; TODO: Handle the possibility of more than one group of points on a line
 							 line-name (nth 0 (remove-duplicates (remove nil 
 												(loop for point-entry in ^^point-ref-list
 													if (the dv-values (:from point-entry)) 
@@ -442,7 +448,7 @@
 							 points-on-line (remove nil 
 												(loop for point-entry in ^^point-ref-list
 													if (string-equal ^line-name (the line-group (:from point-entry)))
-														collect (the id (:from point-entry))
+														collect (list (the id (:from point-entry)) (the is-fixed? (:from point-entry)) )
 													)
 												)
 												
@@ -455,23 +461,10 @@
 												 )
 										)
 									)
-							 ;affected-coords-on-line-list 
-							;		(loop for point-entry in ^^point-ref-list
-							;			if (string-equal (the line-group (:from point-entry)) !points-on-line)
-							;				append (the id (:from point-entry))
-							;			)
                              )
 				 )
 	 )
- 
-(define-class points-on-line-class
-	:inherit-from (object)
-	:properties (
-				 line-name nil
-				 dv-points nil
-				 fixed-point nil
-				)
-)
+
  
 (defun read-design-variables-from-file (stream)
 	(when stream
@@ -631,7 +624,7 @@
 		(:draw-sewn-with-mesh
 			(loop for link in !link-ref-list
 				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+					;(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
 					(draw (the link-mesh-model (:from link)))
 				)
 			)
@@ -644,7 +637,7 @@
 				do (the analysis nastran-interface run-nastran@ (:from link))
 			)
 		)
-	)	
+	)
 )  
   
 ;;; Writes the mechanism to a simulation file (.fsi)

@@ -598,7 +598,7 @@
 										'("Undraw" (button1-parameters :undraw-sewn)
                                         ui-work-area-action-button-class)
 										)
-               ;;; Used for geometry-with-split-periodic-faces-clas
+               ;;; Used for geometry-with-split-periodic-faces-class
                source-object ^difference-element
 			   
                max-element-size 0.005
@@ -650,7 +650,7 @@
                                  )
 			   ;;; List of the final geometry
                object-list (append
-                            (list ^union-element)
+                            (list ^imprint-union-element)
                             ^difference-list
                             )
                simplify? nil
@@ -661,7 +661,7 @@
                                         0 0.1 0 20.0 1.0e-5)
                    source-object ^^union-element
                    )
-
+			   ;;; Imprints the union-element with the 
                (imprint-constraint-points :class '(tagging-object imprint-class)
                    target-object ^^imprint-union-element
                    tool-object-list (loop for c in ^constraints-incident-on-link-list
