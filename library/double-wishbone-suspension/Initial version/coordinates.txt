@@ -1,18 +1,18 @@
-0.0	0.0	0.0
-0.25	0.0	1.0
-0.25	0.0	-1.0
-0.1	0.5	0.0
-1.25	0.5	1.0
-1.25	-0.5	1.0
-1.25	0.5	-1.0
-1.25	-0.5	-1.0
-1.75	0.25	0.0
-1.5	0.0	1.0
-1.5	0.0	-1.0
-0.0	0.0	0.8
-0.0	0.0	-0.8
-1.0	-0.5	1.0
-1.0	0.5	1.0
-1.0	-0.5	-1.0
-1.0	0.5	-1.0
-0.0	0.3	0.0
+"Spindle"		0.0	0.0	0.0	nil	nil	nil
+"Upper kingpin joint"	0.25	0.0	1.0	nil	nil	nil
+"Lower kingpin joint"	0.25	0.0	-1.0	nil	nil	nil
+"Steering joint"	0.1	0.5	0.0	nil	nil	nil
+"Upper ball joint 1"	1.25	0.5	1.0	nil	nil	nil
+"Upper ball joint 2"	1.25	-0.5	1.0	nil	nil	nil
+"Lower ball joint 1"	1.25	0.5	-1.0	nil	nil	nil
+"Lower ball joint 2"	1.25	-0.5	-1.0	nil	nil	nil
+"Control point 1"	1.75	0.25	0.0	nil	nil	nil
+"Control point 2"	1.5	0.0	1.0	nil	nil	nil
+"Control point 3"	1.5	0.0	-1.0	nil	nil	nil
+"Control point 4"	0.0	0.0	0.8	nil	nil	nil
+"Control point 5"	0.0	0.0	-0.8	nil	nil	nil
+"Control point 6"	1.0	-0.5	1.0	nil	nil	nil
+"Control point 7"	1.0	0.5	1.0	nil	nil	nil
+"Control point 8"	1.0	-0.5	-1.0	nil	nil	nil
+"Control point 9"	1.0	0.5	-1.0	nil	nil	nil
+"Control point 10"	0.0	0.3	0.0	nil	nil	nil
