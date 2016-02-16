@@ -7,21 +7,51 @@
   :inherit-from (object)
   :properties (
                mesh-object ^link-mesh
+			   
+			   ;;; Sets the element size to half of the smallest dimension of a link's joints
+			   element-size (let (
+								  (min-elem nil)
+								  )
+								   (loop for constraint in ^^constraints-incident-on-link-list
+											if (not (string-equal "open" (the constraint-type (:from constraint)))) do
+											(let (
+												  (mw (if (= (the max-width (:from constraint)) 0) nil (the max-width (:from constraint))))   ;;max might be 0 due to open constraints
+												  (mh (if (= (the max-height (:from constraint)) 0) nil (the max-height (:from constraint))))
+												 )
+												(if (not min-elem)
+													(setf min-elem (min-or-nil mw mh))
+													(if (< min-elem (min-or-nil mw mh))
+														(setf min-elem (min-or-nil mw mh))))))
+									(/ min-elem 2))
+										
                geometry-model-object (default nil)
                (node-set :class 'analysis-node-set-class
                    query-objects-list (list (the nodes-query (:from ^^link-mesh)))
                    )
                )
   :subobjects (
-               (link-mesh :class 'paver-mesh-class
-                   ;;; geometry-model-object is the link-solid-geometry in link-model-class
-				   object-to-mesh ^^geometry-model-object
-                   mesh-database-object ^^mesh-database
-				   
-                   element-shape :tet
-                   solid-mesh? t
-                   )
-               
+               (mesh-db :class 'mesh-database-class
+					)
+			   (link-mesh :class 'paver-mesh-database-class
+					edge-element-size ^^element-size
+					surface-element-size ^^element-size
+					element-shape :tri
+					mesh-database-object ^^mesh-db
+					object-to-mesh ^^geometry-model-object
+					)
+			   (tet-mesh :class 'tet-mesh-class
+					mesh-database-object ^^mesh-db
+					object-to-mesh (the superior superior link-mesh surface-elements-query)
+					)
+			   
+			   ;(link-mesh :class 'paver-mesh-class
+               ;    ;;; geometry-model-object is the link-solid-geometry in link-model-class
+				;   object-to-mesh ^^geometry-model-object
+               ;    mesh-database-object ^^mesh-database
+				;   
+               ;    element-shape :tet
+               ;    solid-mesh? t
+               ;    )
                (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
                    tagged-object-list (append
                                        (the union-list (:from ^^geometry-model-object))
@@ -30,7 +60,6 @@
                                       
                    mesh-object ^^link-mesh
                    )
-
                (link-mesh-solid-elements :class 'mesh-elements-3d-query-class
                    tagged-object-list (append
                                        (the union-list (:from ^^geometry-model-object))
@@ -38,13 +67,10 @@
                                        )
                    mesh-object ^^link-mesh
                    )
-
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    ;tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
                    mesh-object ^^link-mesh
                    )
-                                   
-                              
                (fixed-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list
                                        (the fixed-edge (:from ^^geometry-model-object))
@@ -52,11 +78,23 @@
 ;                    mesh-object ^^link-mesh
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
-                   interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
+                   ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
                )
   )
+
+;;; Returns the smallest number. If both are nil then nil, if one is nil, then the other.  
+(defun min-or-nil (p q)
+	(if (or (not p) (not q))
+		(if (and (not p) (not q))
+			10e10 		;;Random big number if both are nil, just for comparison reasons
+			(if p p q)
+		)
+		(min p q)
+	)
+)
+  
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
@@ -72,7 +110,6 @@
                
                element-set-2d-objects-list (list ^link-analysis-surface-elements)
                element-set-3d-objects-list (list ^link-analysis-solid-elements)
-
 
                mesh-object (the link-mesh (:from ^mesh-model-object))
                node-set-objects-list (list (the node-set (:from ^mesh-model-object)))
@@ -120,7 +157,6 @@
                    model-name (the folder (:from ^^mechanism-selection))
                    nastran-file-name (concatenate (write-to-string  (object-name ^^superior)) ".bdf")
                    nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
-;;;                    analysis-directory (logical-path "C:\\Users\\Rasmus\\Documents\\NTNU\\Masteroppgave\\forelesning_150326\\mesh\\simple-beam\\")
                    )
                )
   )
