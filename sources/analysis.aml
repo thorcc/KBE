@@ -7,23 +7,30 @@
   :inherit-from (object)
   :properties (
                mesh-object ^link-mesh
-			   
+			   open-constraints-list (loop for constraint in ^^constraints-incident-on-link-list
+											if (string-equal "open" (the constraint-type (:from constraint)))
+												collect constraint
+											)
+			   non-open-constraints-list  (loop for constraint in ^^constraints-incident-on-link-list do
+											if (not (string-equal "open" (the constraint-type (:from constraint))))
+												collect constraint
+											)
 			   ;;; Sets the element size to half of the smallest dimension of a link's joints
-			   element-size (let (
-								  (min-elem nil)
-								  )
-								   (loop for constraint in ^^constraints-incident-on-link-list
-											if (not (string-equal "open" (the constraint-type (:from constraint)))) do
-											(let (
-												  (mw (if (= (the max-width (:from constraint)) 0) nil (the max-width (:from constraint))))   ;;max might be 0 due to open constraints
-												  (mh (if (= (the max-height (:from constraint)) 0) nil (the max-height (:from constraint))))
-												 )
-												(if (not min-elem)
-													(setf min-elem (min-or-nil mw mh))
-													(if (< min-elem (min-or-nil mw mh))
-														(setf min-elem (min-or-nil mw mh))))))
-									(/ min-elem 2))
-										
+			    ;element-size (let (
+				;				  (min-elem nil)
+				;				  )
+				;				   (loop for constraint in ^^constraints-incident-on-link-list
+				;							if (not (string-equal "open" (the constraint-type (:from constraint)))) do
+				;							(let (
+				;								  (mw (if (= (the max-width (:from constraint)) 0) nil (the max-width (:from constraint))))   ;;max might be 0 due to open constraints
+				;								  (mh (if (= (the max-height (:from constraint)) 0) nil (the max-height (:from constraint))))
+				;								 )
+				;								(if (not min-elem)
+				;									(setf min-elem (min-or-nil mw mh))
+				;									(if (< min-elem (min-or-nil mw mh))
+				;										(setf min-elem (min-or-nil mw mh))))))
+				;					(/ min-elem 2))
+				;						
                geometry-model-object (default nil)
                (node-set :class 'analysis-node-set-class
                    query-objects-list (list (the nodes-query (:from ^^link-mesh)))
@@ -32,32 +39,23 @@
   :subobjects (
                (mesh-db :class 'mesh-database-class
 					)
-			   (link-mesh :class 'paver-mesh-database-class
-					edge-element-size ^^element-size
-					surface-element-size ^^element-size
-					element-shape :tri
-					mesh-database-object ^^mesh-db
+			   (link-mesh :class 'paver-mesh-class
 					object-to-mesh ^^geometry-model-object
+					mesh-database-object ^^mesh-db
+					element-shape :tri
 					)
 			   (tet-mesh :class 'tet-mesh-class
 					mesh-database-object ^^mesh-db
 					object-to-mesh (the superior superior link-mesh surface-elements-query)
 					)
-			   
-			   ;(link-mesh :class 'paver-mesh-class
-               ;    ;;; geometry-model-object is the link-solid-geometry in link-model-class
-				;   object-to-mesh ^^geometry-model-object
-               ;    mesh-database-object ^^mesh-database
-				;   
-               ;    element-shape :tet
-               ;    solid-mesh? t
-               ;    )
-               (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
+               ;; Link mesh query
+			   (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
                    tagged-object-list (append
-                                       (the union-list (:from ^^geometry-model-object))
+									   (the union-list (:from ^^geometry-model-object))
                                        (the visible-members-ref-list (:from  ^^geometry-model-object))
-                                       )
-                                      
+                                       (the object-list (:from ^^geometry-model-object))
+									   )
+                   color 'cyan
                    mesh-object ^^link-mesh
                    )
                (link-mesh-solid-elements :class 'mesh-elements-3d-query-class
@@ -67,8 +65,8 @@
                                        )
                    mesh-object ^^link-mesh
                    )
-               (mating-surface-nodes :class 'mesh-nodes-query-class
-                   ;tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
+			   (mating-surface-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
                    mesh-object ^^link-mesh
                    )
                (fixed-nodes :class 'mesh-nodes-query-class
@@ -83,8 +81,8 @@
                    )
                )
   )
-
-;;; Returns the smallest number. If both are nil then nil, if one is nil, then the other.  
+	
+;;; Returns the smallest number. If both are nil then return 10e10, if one is nil, then the other.  
 (defun min-or-nil (p q)
 	(if (or (not p) (not q))
 		(if (and (not p) (not q))
@@ -120,20 +118,20 @@
                (link-material-properties :class 'analysis-property-set-2d-type-1-class
                    material-name "Steel"
                    thickness 0.3
-                )
+				   )
                
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
                    query-objects-list (list
                                        (the link-mesh-surface-elements (:from ^^mesh-model-object))
                                        )
                    property-set-object ^^link-material-properties
-                )
+				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
                    query-objects-list (list
                                        (the link-mesh-solid-elements (:from ^^mesh-model-object))
                                        )
                    property-set-object ^^link-material-properties
-                )
+                   )
                (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
                    target-object (the fixed-nodes (:from ^^mesh-model-object))
                    tx 0.0
@@ -151,10 +149,10 @@
                (load-case-1 :class 'analysis-load-case-class
 ;;;                    load-objects-list (list ^nodal-load)
 ;;;                    constraint-objects-list (list ^^fixed-nodes-constraint)
-                )
+				   )
                (nastran-interface :class 'nastran-analysis-class
                    analysis-model-object ^superior
-                   model-name (the folder (:from ^^mechanism-selection))
+                   model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string  (object-name ^^superior)) ".bdf")
                    nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
                    )

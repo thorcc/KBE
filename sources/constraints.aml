@@ -7,7 +7,8 @@
 (define-class general-joint-solid-model
   :inherit-from (frame-data-model)
   :properties (
-               max-element-size 0.004
+               max-element-size 0.04
+			   min-element-size 0.01
                scale-factor (default 1.2)
                
                point-ref (default nil)
@@ -37,7 +38,6 @@
 (define-class master-joint-model
   :inherit-from (general-joint-solid-model)
   :properties (
-
                (max-width :class 'editable-data-property-class
 					label "Max width"
 					formula (* ^scale-factor (max (first (the local-max-dimension (:from ^female-element-solid-model))) 
@@ -370,7 +370,7 @@
                (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^pin
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                
@@ -384,7 +384,7 @@
                    )
                (eye :class '(tagging-object cylinder-object)
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    reference-object ^sub-frame
                    height ^^max-height
@@ -421,7 +421,7 @@
                (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^pin-hole
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                
@@ -433,7 +433,7 @@
                               
                (fork :class '(tagging-object cylinder-object)
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    reference-object ^sub-frame
                    height ^^max-height
@@ -456,7 +456,7 @@
 
 
 
-;;; Class holding spheical male and female elements on instantiation
+;;; Class holding spherical male and female elements on instantiation
 (define-class spheric-constraint-class
   :inherit-from (master-joint-model)
   :properties (
@@ -474,7 +474,7 @@
   :inherit-from (union-object joint-element-model)
   :properties (
                tag-dimensions '(1 2 3)
-               tag-attributes (list ^^max-element-size .1
+               tag-attributes (list ^^max-element-size ^^min-element-size
                                     0 0.1 0 20.0 1.0e-5)
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-stud ^imprinted-ball ^plate)
@@ -484,7 +484,7 @@
                (imprinted-stud :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^stud
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                (stud :class 'cylinder-object
@@ -498,7 +498,7 @@
                (imprinted-ball :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^ball
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                (ball :class 'sphere-object
@@ -507,7 +507,7 @@
                    )
                (plate :class '(tagging-object cylinder-object)
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    reference-object ^^sub-frame
                    diameter ^^max-width
@@ -544,7 +544,7 @@
                (imprinted-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^hole
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                (hole :class 'sphere-object
@@ -554,7 +554,7 @@
                (imprinted-socket :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^socket
                    tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size .1
+                   tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
                              
@@ -606,7 +606,7 @@
 				  (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
 					   source-object ^^pin-hole
 					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size .1
+					   tag-attributes (list ^^max-element-size ^^min-element-size
 											0 0.1 0 20.0 1.0e-5)
 					   )
 				   
@@ -618,7 +618,7 @@
 								  
 				  (eye :class '(tagging-object cylinder-object)
 					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size .1
+					   tag-attributes (list ^^max-element-size ^^min-element-size
 											0 0.1 0 20.0 1.0e-5)
 					   reference-object ^sub-frame
 					   height ^^max-height
@@ -662,7 +662,7 @@
 			   (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
 				   source-object ^^pin
 					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size .1
+					   tag-attributes (list ^^max-element-size ^^min-element-size
 											0 0.1 0 20.0 1.0e-5)
 					)
 			   
