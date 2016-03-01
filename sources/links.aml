@@ -84,7 +84,7 @@
 (define-class surface-data-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
-               tag-dimensions '(1 2)
+               tag-dimensions '(1 2 3)
                tag-attributes (list ^^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
 									
@@ -601,8 +601,8 @@
                ;;; Used for geometry-with-split-periodic-faces-class
                source-object ^difference-element
 			   
-               max-element-size 0.005
-               tag-dimensions '(1 2)
+               max-element-size 0.05
+               tag-dimensions '(1 2 3)
                tag-attributes (list ^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
 
@@ -631,14 +631,13 @@
 
                constraint-connection-combination (connection-combinations (length ^constraints-incident-on-link-list))
                
-               surfaces-ref-list (children ^surfaces :class 'surface-data-model :test '(and !geom !display?))		
+               surfaces-ref-list (children ^surfaces :class 'surface-data-model :test '(and !geom !display?))
 			   ;; only include sweeps which are not "turned off"
                members-ref-list (children ^sweeps :class 'member-solid-model)
                visible-members-ref-list (children ^sweeps :class 'member-solid-model :test '!display?)
-			   ;mating-surface-list (loop for c in ^constraints-incident-on-link-list
-				;						append (the mating-surface-nodes (:from c))
-				;						)
-               ;mating-surface-list (the mating-surface-nodes (:from (the male-element-solid-model (:from (nth 0 ^constraints-incident-on-link-list)))))
+			   mating-surface-list (append (loop for c in ^constraints-incident-on-link-list
+										collect (the mating-surface-nodes (:from c))
+										))
 ;;;                solid-constraints-ref-list (children ^solid-constraints :class 'solid-constraint-model)
                
 			   
@@ -653,11 +652,13 @@
                             (list ^imprint-union-element)
                             ^difference-list
                             )
-               simplify? nil
+			   ;;; simplify? t removes common boundaries in the geometry
+			   ;;; simplify? nil keeps them
+			   simplify? nil
                
                (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
-                   tag-dimensions '(1 2)
-                   tag-attributes (list ^max-element-size .1
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
                    source-object ^^union-element
                    )
@@ -669,8 +670,8 @@
                                       )
                    )
                (difference-element :class '(tagging-object difference-object)
-                   tag-dimensions '(1 2)
-                   tag-attributes (list ^max-element-size .1
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
                    object-list (append
                                 (list ^union-element)
@@ -682,15 +683,13 @@
                    )
                                 
                (union-element :class '(tagging-object union-object)
-                   tag-dimensions '(1 2)
-                   tag-attributes (list ^max-element-size .1
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
                    object-list (append  ^surfaces-ref-list
 ;;;                                         (list ^sewn-links)
                                         ^visible-members-ref-list
                                         ^^union-list)
-                   ;;; simplify? t removes common boundaries in the geometry
-				   ;;; simplify? nil keeps them
 				   simplify? t
                    )
 				render 'shaded   
