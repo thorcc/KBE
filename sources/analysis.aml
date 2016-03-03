@@ -82,11 +82,13 @@
                    ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
-			   (indep :class 'independent-node-collection)
-			   (dep :class 'dependent-node-collection)
 			   (rbe2-list :class 'RBE2-collection)
                )
   )
+
+(define-method get-all-joint-center-nodes link-mesh-class ()
+nil
+	)
 
 (define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
   (when (the elements-query (:from !tet-mesh :error nil :relation nil))
@@ -112,6 +114,7 @@
 				 series-prefix 		'rbe2
 				 quantity 			(length ^^non-open-constraints-list)
 				 init-form '(
+                             ;constraint-type (the constraint-type (:from (nth ^index ^^non-open-constraints-list)))
 							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
 							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
