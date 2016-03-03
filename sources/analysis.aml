@@ -18,6 +18,8 @@
 			   joint-center-node-list	(loop for c in !non-open-constraints-list
 											collect (the joint-center-node (:from c))
 											)
+			   
+			   
 			   ;;; Sets the element size to half of the smallest dimension of a link's joints
 			    ;element-size (let (
 				;				  (min-elem nil)
@@ -87,7 +89,7 @@
   )
 
 (define-method get-all-joint-center-nodes link-mesh-class ()
-nil
+	nil
 	)
 
 (define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
@@ -118,8 +120,8 @@ nil
 							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
 							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil
-                             id 								(+ 1 ^index)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
 							 )
 				 )
 	)
@@ -145,43 +147,45 @@ nil
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
-               mesh-model-object nil
-               mesh-database-object ^^mesh-database
+               mesh-model-object 				nil ;;This property is set on instantiation as a link-mesh-class
+               mesh-database-object 			^^mesh-database
                
-               z-load (default -100.0)
-;;;                analysis-type :linear-static
-               load-case-objects-list (list ^load-case-1)
-               material-catalog-object ^material-catalog
-               materials-list (list 'steel)
-               property-set-objects-list (list ^link-material-properties)
+               z-load 							(default -100.0)
+               analysis-type 					:linear-static
+               load-case-objects-list 			(list ^load-case-1)
+               material-catalog-object 			^material-catalog
+               materials-list 					(list 'steel)
+               property-set-objects-list 		(list ^link-2D-material-properties ^link-3D-material-properties)
                
-               element-set-2d-objects-list (list ^link-analysis-surface-elements)
-               element-set-3d-objects-list (list ^link-analysis-solid-elements)
+               element-set-2d-objects-list 		(list ^link-analysis-surface-elements)
+               element-set-3d-objects-list 		(list ^link-analysis-solid-elements)
 
-               mesh-object (the link-mesh (:from ^mesh-model-object))
-               node-set-objects-list (list (the node-set (:from ^mesh-model-object)) )
+               mesh-object 						(the link-mesh (:from ^mesh-model-object))
+               node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)) )
 			   
-			   rigid-body-element-objects-list (get-rigid-body-element-objects-list ^mesh-model-object)
+			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
                    )
-               (link-material-properties :class 'analysis-property-set-2d-type-1-class
-                   material-name "Steel"
+               (link-2D-material-properties :class 'analysis-property-set-2d-type-1-class
+                   material-catalog-object ^^material-catalog
+				   material-name "Steel"
                    thickness 0.3
 				   )
-               
+               (link-3D-material-properties :class 'analysis-property-set-3d-type-1-class
+					material-catalog-object ^^material-catalog
+				    material-name "Steel"
+					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
                    query-objects-list (list
                                        (the link-mesh-surface-elements (:from ^^mesh-model-object))
                                        )
-                   property-set-object ^^link-material-properties
+                   property-set-object ^^link-2D-material-properties
 				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
-                   query-objects-list (list
-                                       (the link-mesh-solid-elements (:from ^^mesh-model-object))
-                                       )
-                   property-set-object ^^link-material-properties
+                   query-objects-list (get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
+                   property-set-object ^^link-3D-material-properties
                    )
                
 			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
@@ -211,6 +215,7 @@ nil
                )
   )
 
+ 
 ;;; -----------------------------
 ;;; END ANALYSIS DEFINITIONS
 ;;; -----------------------------  
