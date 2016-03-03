@@ -549,7 +549,7 @@
 											ui-work-area-action-button-class)
 											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tet-mesh)
 											ui-work-area-action-button-class)
-											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
+											'("Draw mechanism with 2D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
 											ui-work-area-action-button-class)
 											""
 											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
@@ -639,7 +639,6 @@
 		(:draw-sewn-with-tet-mesh
 			(loop for link in !link-ref-list
 				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					;(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
 					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
 				)
 			)
@@ -647,8 +646,7 @@
 		(:draw-sewn-with-tri-mesh
 			(loop for link in !link-ref-list
 				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					;(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
-					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+					(draw (the link-mesh-model link-mesh elements-query (:from link)))
 				)
 			)
 		)
