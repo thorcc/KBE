@@ -123,18 +123,18 @@
 (define-class point-collection
   :inherit-from (series-object collection-class)
   :properties (
-               collection-type 'coordinates
-               points-list (read-from-file !superior)
-               quantity (length ^points-list)
-               class-expression 'point-data-model
-               series-prefix 'p
+               collection-type 	'coordinates
+               points-list 		(read-from-file !superior)
+               quantity 		(length ^points-list)
+               class-expression	'point-data-model
+               series-prefix 	'p
                init-form '(
-						   name (nth 0 (nth ^index ^points-list))
-                           coordinates (list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
-						   dv-values (nth 4 (nth ^index ^points-list))
-						   line-group (nth 5 (nth ^index ^points-list))
-						   is-fixed? (nth 6 (nth ^index ^points-list))
-						   id ^index
+						   label 		(nth 0 (nth ^index ^points-list))
+                           coordinates	(list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
+						   dv-values 	(nth 4 (nth ^index ^points-list))
+						   line-group 	(nth 5 (nth ^index ^points-list))
+						   is-fixed? 	(nth 6 (nth ^index ^points-list))
+						   id 			^index
                            )
                )
   )
@@ -154,7 +154,8 @@
 (define-class shape-data-model
   :inherit-from (object)
   :properties (
-               link-ref (default 'default)
+               label nil
+			   link-ref (default 'default)
                sweep-index (default 'default)
                cross-section-type (read-from-string (remove "-section" (write-to-string (default 'circular-section))))
                solid-dimensions '(0.04 0.04)
@@ -174,7 +175,7 @@
                class-expression 'shape-data-model
                series-prefix 'shape
                init-form '(
-						   header 				(nth 0 (nth ^index ^shapes-list))
+						   label 				(nth 0 (nth ^index ^shapes-list))
                            link-ref 			(nth 1 (nth ^index ^shapes-list))
                            sweep-index 			(nth 2 (nth ^index ^shapes-list))
                            cross-section-type 	(nth 3 (nth ^index ^shapes-list))
@@ -431,6 +432,7 @@
 				 series-prefix 'dv
 				 class-expression 'design-variable-class
 				 init-form '(
+							 type (nth 0 (nth ^index ^dv-list))
 							 dv-name (nth 0 (nth ^index ^dv-list))
 							 direction (nth 1 (nth ^index ^dv-list))
 							 ;; TODO: Handle the possibility of more than one group of points on a line
@@ -545,7 +547,9 @@
 											""
 											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
 											ui-work-area-action-button-class)
-											'("Draw mechanism with mesh" (button1-parameters :draw-sewn-with-mesh)
+											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tet-mesh)
+											ui-work-area-action-button-class)
+											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
 											ui-work-area-action-button-class)
 											""
 											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
@@ -561,6 +565,16 @@
                    )
 
 			   ;write-to-file (write-save-fedem-solver !superior)
+			   
+			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
+			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
+			   			   
+			   
+			   objective-function (when (probe-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
+									(+ (the coord-ref (:from (nth 1 ^point-ref-list))) (the coord-ref (:from (nth 3 ^point-ref-list))))
+									)
+			   
+			   p (the version-path (:from ^version-selection))
                )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -578,6 +592,7 @@
                )
   )
 
+  
 ;(define-method add-point-to-line-group mechanism-collection ()
 ;	(let (
 ;		  (line-groups-list '() )
@@ -621,11 +636,19 @@
 				)
 			)
 		)
-		(:draw-sewn-with-mesh
+		(:draw-sewn-with-tet-mesh
 			(loop for link in !link-ref-list
 				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
 					;(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
-					(draw (the link-mesh-model (:from link)))
+					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+				)
+			)
+		)
+		(:draw-sewn-with-tri-mesh
+			(loop for link in !link-ref-list
+				do (with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					;(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
 				)
 			)
 		)
@@ -638,7 +661,7 @@
 			)
 		)
 	)
-)  
+)
   
 ;;; Writes the mechanism to a simulation file (.fsi)
 (define-method write-save-fedem-solver  mechanism-collection ()
