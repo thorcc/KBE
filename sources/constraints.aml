@@ -186,6 +186,8 @@
                gender_int (case ^gender ('male 0) ('female 1) )
                link-incidence (nth ^gender_int ^^link-incidence)
                link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence)
+			   link-mesh-model-object (when (the link-mesh-model (:from ^link-ref-incident-on-constraint))
+										(the link-mesh-model (:from ^link-ref-incident-on-constraint)))
                
                local-joint-index (position !superior (the constraints-incident-on-link-list (:from ^link-ref-incident-on-constraint)) )
                members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-solid-geometry (:from ^link-ref-incident-on-constraint)) ))
@@ -406,13 +408,14 @@
                    )
                )
   :subobjects (
-
-               (mating-surface-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (list ^^imprinted-pin)
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
-                   color 'green
-				   display? nil
-                   )
+               (mating-surface-nodes :class 'mesh-query-nodes-from-interface-class
+					mesh-database-object 			(the mesh-db (:from ^^link-mesh-model-object))
+					interface-object 				(the point-ref (:from ^^main-frame))
+					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
+					quantity 						nil ;;Collect all nodes within the tolerance
+					subset-mesh-query-object-list	(list (the elements-query (:from (the link-mesh (:from ^^link-mesh-model-object)))))
+					color 							'green
+					)
                )
   )
   
@@ -426,8 +429,6 @@
                                 (list ^imprinted-pin-hole)
                                 )
                object-list (list ^fork ^imprinted-pin-hole)
-
-               mating-nodes-distance (/ ^^max-width 2)
 			   
 			   (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^pin-hole
