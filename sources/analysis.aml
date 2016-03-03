@@ -15,6 +15,9 @@
 											if (not (string-equal "open" (the constraint-type (:from constraint))))
 												collect constraint
 											)
+			   joint-center-node-list	(loop for c in !non-open-constraints-list
+											collect (the joint-center-node (:from c))
+											)
 			   ;;; Sets the element size to half of the smallest dimension of a link's joints
 			    ;element-size (let (
 				;				  (min-elem nil)
@@ -33,7 +36,7 @@
 				;						
                geometry-model-object (default nil)
                (node-set :class 'analysis-node-set-class
-                   query-objects-list (list (the nodes-query (:from ^^link-mesh)))
+                   query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^joint-center-node-list)
                    )
                )
   :subobjects (
@@ -63,7 +66,7 @@
                                        (the union-list (:from ^^geometry-model-object))
                                        (the visible-members-ref-list (:from  ^^geometry-model-object))
                                        )
-                   mesh-object ^^link-mesh
+                   mesh-object ^^tet-mesh
                    )
 			   (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
@@ -79,8 +82,46 @@
                    ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
+			   (indep :class 'independent-node-collection)
+			   (dep :class 'dependent-node-collection)
+			   (rbe2-list :class 'RBE2-collection)
                )
   )
+
+(define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
+  (when (the elements-query (:from !tet-mesh :error nil :relation nil))
+    (list (the elements-query (:from !tet-mesh))))
+  )
+  
+(define-method get-rbe2-constraints-list link-mesh-class ()
+	(when !non-open-constraints-list
+		!non-open-constraints-list)
+	)
+
+(define-method get-link-mesh-db link-mesh-class ()
+	!mesh-db
+	)
+	
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 constraints-list 	(get-rbe2-constraints-list ^^link-mesh-model)
+				 link-mesh-db 		(get-link-mesh-db ^^link-mesh-model)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^^non-open-constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
+							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil
+                             id 								(+ 1 ^index)
+							 )
+				 )
+	)
+
+
 	
 ;;; Returns the smallest number. If both are nil then return 10e10, if one is nil, then the other.  
 (defun min-or-nil (p q)
@@ -92,7 +133,12 @@
 		(min p q)
 	)
 )
-  
+
+(define-method get-rigid-body-element-objects-list link-mesh-class ()
+	(when !rbe2-list 
+		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
+	)
+
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
@@ -110,7 +156,9 @@
                element-set-3d-objects-list (list ^link-analysis-solid-elements)
 
                mesh-object (the link-mesh (:from ^mesh-model-object))
-               node-set-objects-list (list (the node-set (:from ^mesh-model-object)))
+               node-set-objects-list (list (the node-set (:from ^mesh-model-object)) )
+			   
+			   rigid-body-element-objects-list (get-rigid-body-element-objects-list ^mesh-model-object)
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
@@ -132,7 +180,8 @@
                                        )
                    property-set-object ^^link-material-properties
                    )
-               (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
+               
+			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
                    target-object (the fixed-nodes (:from ^^mesh-model-object))
                    tx 0.0
                    ty 0.0
