@@ -54,11 +54,12 @@
                class-expression '(read-from-string (concatenate (nth 1 (nth !index !constraint-list)) "-constraint-class"))
                series-prefix 'c
                init-form '(
-                           point-ref (nth (nth 0 (nth !index ^constraint-list)) ^point-ref-list)
-                           constraint-type (nth 1 (nth !index ^constraint-list))
-                           link-incidence (nth 2 (nth !index ^constraint-list))
-                           direction (normalize (nth 3 (nth !index ^constraint-list)))
-                           constraint-variable (nth 4 (nth !index ^constraint-list))
+                           point-ref 			(nth (nth 0 (nth !index ^constraint-list)) ^point-ref-list)
+                           constraint-type 		(nth 1 (nth !index ^constraint-list))
+                           link-incidence 		(nth 2 (nth !index ^constraint-list))
+                           direction 			(normalize (nth 3 (nth !index ^constraint-list)))
+                           constraint-variable	(nth 4 (nth !index ^constraint-list))
+						   id 					(+ ^index 1)
                            )
                )
   )
@@ -660,7 +661,7 @@
 		)
 	)
 )
-  
+
 ;;; Writes the mechanism to a simulation file (.fsi)
 (define-method write-save-fedem-solver  mechanism-collection ()
   (let (
@@ -727,7 +728,7 @@
                                                                    (append (subseq frame 8 11) (list (nth 14 frame)))
                                                                                   ) )
           (format stream "~%/~2%")
-          (print (the solid-constraints-ref-list (:from link)) )
+         ; (print (the solid-constraints-ref-list (:from link)) )
          ; (loop for triad in (the solid-constraints-ref-list (:from link))
          ;   for i = (the index (:from triad) )
 ;;;      ;       for un_frame = (vector-to-list (matrix-multiply (get-position-matrix (the main-frame (:from triad))) (matrix-inverse frame) ))

@@ -38,7 +38,9 @@
 (define-class master-joint-model
   :inherit-from (general-joint-solid-model)
   :properties (
-               (max-width :class 'editable-data-property-class
+               id (default nil)
+			   
+			   (max-width :class 'editable-data-property-class
 					label "Max width"
 					formula (* ^scale-factor (max (first (the local-max-dimension (:from ^female-element-solid-model))) 
 						(first (the local-max-dimension (:from ^male-element-solid-model)) ) ) )
