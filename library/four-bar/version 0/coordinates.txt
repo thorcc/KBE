@@ -1,5 +1,0 @@
-"Crank bearing"		0.0	0.0	0.0
-"Crank top"		0.0	0.15	0.0	"(crank-height)"
-"Rocker bearing"	0.3	0.0	0.0	"(crank-rocker-distance)"
-"Rocker top"		0.3	0.375	0.0	"(rocker-height crank-rocker-distance)"
-"Coupler end"		0.6	0.6	0.0	
