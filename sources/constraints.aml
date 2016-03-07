@@ -33,6 +33,9 @@
                )
   )
 
+(define-method get-constraint-type general-joint-solid-model ()
+	!constraint-type
+	)
   
 ;;; Class for holding male and female instantiations as subobjects
 (define-class master-joint-model
@@ -126,6 +129,7 @@
                    )
                )
   )
+ 
  ;;; Left-click button methods for master-joint-model 
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
@@ -241,6 +245,14 @@
                )
   )
 
+(define-method get-joint-element-id joint-element-model ()
+	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint
+)
+
+(define-method get-master-triad-id-from-master-joint-model master-joint-model ()
+	(1- (* 2 !id))
+)
+  
 (define-method get-constraint-incidence master-joint-model (link-index)
   (let (
         (pos (position link-index !link-incidence) )
