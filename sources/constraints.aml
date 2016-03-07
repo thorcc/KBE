@@ -433,13 +433,6 @@
 					)
                )
   )
- 
-(define-method get-mesh-model-subobject link-mesh-class (subobject-type)
-	(case subobject-type
-		 (mesh-db !mesh-db)
-		 (2d-elements (the link-mesh elements-query))
-		)
-	)
 	
 (define-class revolute-female-element
   :inherit-from (difference-object joint-element-model)
