@@ -706,7 +706,6 @@
 							(format stream "TRIAD~%{~%")
 							(format stream "BASE_ID = ~d;~%" baseID)
 							(format stream "ID = ~d;~%" (get-joint-element-id constraint))
-							;;(format stream "ID = ~d;~%" triadID)
 							(format stream "COORDINATE_SYSTEM = ~%")
 							(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
 							(format stream "-1.00000000 0.00000000 0.00000000 0.00000000~%")

@@ -1,0 +1,379 @@
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 11:07:18 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf ...OK
+  -> Calculating mass properties for Part [2]
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf ...OK
+  -> Calculating mass properties for Part [3]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [4] 
+     [8] 
+     This must be corrected before the Dynamics Solver can be run.
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf ...OK
+  -> Calculating mass properties for Part [4]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [5] 
+     [7] 
+     This must be corrected before the Dynamics Solver can be run.
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
+  -> Calculating check-sum for Part [3]
+  -> Calculating check-sum for Part [4]
+  -> Calculating check-sum for Part [1]
+  -> Calculating check-sum for Part [2]
+
+###> Model closed by Fedem R7.0.4 at Mon Mar 07 11:12:43 2016
+
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 11:12:43 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf ...OK
+  -> Calculating mass properties for Part [2]
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf ...OK
+  -> Calculating mass properties for Part [3]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [4] 
+     [8] 
+     This must be corrected before the Dynamics Solver can be run.
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf ...OK
+  -> Calculating mass properties for Part [4]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [5] 
+     [7] 
+     This must be corrected before the Dynamics Solver can be run.
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
+  -> Calculating check-sum for Part [1]
+  -> Calculating check-sum for Part [2]
+  -> Calculating check-sum for Part [3]
+  -> Calculating check-sum for Part [4]
+
+###> Model closed by Fedem R7.0.4 at Mon Mar 07 12:24:03 2016
+
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 12:24:08 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf ...OK
+  -> Calculating mass properties for Part [2]
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf ...OK
+  -> Calculating mass properties for Part [3]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [4] 
+     [8] 
+     This must be corrected before the Dynamics Solver can be run.
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf ...OK
+  -> Calculating mass properties for Part [4]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [5] 
+     [7] 
+     This must be corrected before the Dynamics Solver can be run.
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
+
+###> Model closed by Fedem R7.0.4 at Mon Mar 07 12:28:52 2016
+
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 12:28:55 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf
+  ** Warning: Unknown bulk-entry ignored: , 0., 0 (Line: 1979).
+
+  ** Warning: Unknown bulk-entry ignored: , 0., 0 (Line: 1981).
+
+   * Note: 2 instances of the unsupported bulk-entry "" have been ignored.
+
+  ** Warning: There are uncompleted bulk entries
+              GRID 270 ...  nField = 4, Continuation Field = ".0"
+              GRID 271 ...  nField = 4, Continuation Field = "0"
+
+  ** Parsing FE data file "C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf" succeeded.
+     However, 3 warning(s) and 1 note(s) were reported.
+     Please review the message(s) and check the FE data file.
+ ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf
+  ** Warning: Unknown bulk-entry ignored: , 0., 0 (Line: 1577).
+
+ *** Error: Embedded blanks are not allowed.
+            Line: 1578
+            Field: "0            0"
+                     ^^^^^^^^^^^^
+ *** Parsing Nastran bulk data aborted due to the above error.
+     Entry causing the trouble: "GRID"
+     Data fields read: "245" "" "0."
+
+   * Note: 1 instances of the unsupported bulk-entry "" have been ignored.
+
+  ** Warning: There are uncompleted bulk entries
+              GRID 244 ...  nField = 4, Continuation Field = ".0" (not processed)
+
+ *** Parsing FE data file "C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf" failed.
+     The FE model is probably not consistent and has not been resolved completely.
+     Delete this part, fix the FE data file and then try to import it once again.
+
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf
+ *** Error: Embedded blanks are not allowed.
+            Line: 1970
+            Field: "0            0"
+                     ^^^^^^^^^^^^
+ *** Parsing Nastran bulk data aborted due to the above error.
+     Entry causing the trouble: "GRID"
+     Data fields read: "283" "" "0."
+
+ *** Parsing FE data file "C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf" failed.
+     The FE model is probably not consistent and has not been resolved completely.
+     Delete this part, fix the FE data file and then try to import it once again.
+
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf
+  ** Warning: Unknown bulk-entry ignored: , 0., 0 (Line: 1595).
+
+   * Note: 1 instances of the unsupported bulk-entry "" have been ignored.
+
+  ** Warning: There are uncompleted bulk entries
+              GRID 251 ...  nField = 4, Continuation Field = "0"
+
+  ** Parsing FE data file "C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf" succeeded.
+     However, 2 warning(s) and 1 note(s) were reported.
+     Please review the message(s) and check the FE data file.
+ ...OK
+  -> Calculating mass properties for Part [4]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [5] 
+     [7] 
+     This must be corrected before the Dynamics Solver can be run.
+===> FE model loading failed.
+
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
+
+###> Model closed by Fedem R7.0.4 at Mon Mar 07 12:29:58 2016
+
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 12:30:02 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf
+  ** Warning: Unknown bulk-entry ignored: , 0., 0 (Line: 1577).
+
+ *** Error: Embedded blanks are not allowed.
+            Line: 1578
+            Field: "0            0"
+                     ^^^^^^^^^^^^
+ *** Parsing Nastran bulk data aborted due to the above error.
+     Entry causing the trouble: "GRID"
+     Data fields read: "245" "" "0."
+
+   * Note: 1 instances of the unsupported bulk-entry "" have been ignored.
+
+  ** Warning: There are uncompleted bulk entries
+              GRID 244 ...  nField = 4, Continuation Field = ".0" (not processed)
+
+ *** Parsing FE data file "C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf" failed.
+     The FE model is probably not consistent and has not been resolved completely.
+     Delete this part, fix the FE data file and then try to import it once again.
+
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf ...OK
+  -> Calculating mass properties for Part [3]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [4] 
+     [8] 
+     This must be corrected before the Dynamics Solver can be run.
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf ...OK
+  -> Calculating mass properties for Part [4]
+===> FE model loading failed.
+
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
+
+###> Model closed by Fedem R7.0.4 at Mon Mar 07 12:30:34 2016
+
+
+###> Model opened by Fedem R7.0.4 at Mon Mar 07 12:30:49 2016
+
+===> Reading C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model.fmm
+  -> Model file created by Fedem version : R7.0.4  [7.0.4]
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+ *** Read failure 0
+
+
+Object type:                   Count:
+-------------------------------------
+MECHANISM                        1
+ANALYSIS                         1
+TRIAD                            8
+LINK                             4
+GLOBAL_VIEW_SETTINGS             1
+REV_JOINT                        4
+REF_PLANE                        1
+-------------------------------------
+===> Reading FE parts
+  -> No saved FE data file for Part [1]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0000.bdf ...OK
+  -> Calculating mass properties for Part [1]
+  -> No saved FE data file for Part [2]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0001.bdf ...OK
+  -> Calculating mass properties for Part [2]
+  -> No saved FE data file for Part [3]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0002.bdf ...OK
+  -> Calculating mass properties for Part [3]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [4] 
+     [8] 
+     This must be corrected before the Dynamics Solver can be run.
+  -> No saved FE data file for Part [4]
+  -> Importing FE data file C:\Users\ander_000\Documents\KBE\Masteroppgave\Nastran_out\four-bar - circular\link-0003.bdf ...OK
+  -> Calculating mass properties for Part [4]
+  -> Warning : The following triads are not positioned on a valid FE node:
+     [5] 
+     [7] 
+     This must be corrected before the Dynamics Solver can be run.
+===> Scanning C:\Users\ander_000\Documents\KBE\rasmus\library\four-bar\circular\model_RDB for results.
+  -> No simulation results present.
+
+===> Done reading
+================================================================================
+
