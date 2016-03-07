@@ -89,6 +89,13 @@
                )
   )
 
+(define-method get-mesh-model-subobject link-mesh-class (subobject-type)
+	(case subobject-type
+		(mesh-db !mesh-db)
+		 (2d-elements (the link-mesh elements-query))
+		)
+	)
+  
 (define-method get-tet-mesh-entities-list link-mesh-class ()
 	(when !tet-mesh
 		(the tet-mesh nodes-query mesh-entities-list))

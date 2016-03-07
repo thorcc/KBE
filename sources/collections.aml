@@ -797,7 +797,7 @@
 (defun write-stream-with-constraint-type (stream constraint baseID conID)
 	(let (
 		  (masterID (get-master-triad-id-from-master-joint-model constraint))
-		  (slaveID (1+ masterID)
+		  (slaveID (1+ masterID))
 		  )
 		(if (equal "revolute" (get-constraint-type constraint))
 			(progn 
