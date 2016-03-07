@@ -8,11 +8,11 @@
   :properties (
                mesh-object ^link-mesh
 			   open-constraints-list (loop for constraint in ^^constraints-incident-on-link-list
-											if (string-equal "open" (the constraint-type (:from constraint)))
+											if (string-equal "open" (get-constraint-type constraint))
 												collect constraint
 											)
 			   non-open-constraints-list  (loop for constraint in ^^constraints-incident-on-link-list do
-											if (not (string-equal "open" (the constraint-type (:from constraint))))
+											if (not (string-equal "open" (get-constraint-type constraint)))
 												collect constraint
 											)
 			   joint-center-node-list	(loop for c in !non-open-constraints-list
@@ -48,6 +48,7 @@
 					object-to-mesh ^^geometry-model-object
 					mesh-database-object ^^mesh-db
 					element-shape :tri
+					;element-size-method 2
 					)
 			   (tet-mesh :class 'tet-mesh-class
 					mesh-database-object ^^mesh-db
@@ -88,6 +89,11 @@
                )
   )
 
+(define-method get-tet-mesh-entities-list link-mesh-class ()
+	(when !tet-mesh
+		(the tet-mesh nodes-query mesh-entities-list))
+	)
+  
 (define-method get-all-joint-center-nodes link-mesh-class ()
 	nil
 	)
