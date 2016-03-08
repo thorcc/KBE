@@ -151,7 +151,11 @@
                )
   )
  
- (define-method is-open-constraint master-joint-model ()
+(define-method get-main-frame joint-element-model (params)
+	(nth params (the main-frame origin)) 
+)
+ 
+(define-method is-open-constraint master-joint-model ()
 	(equal "open" !constraint-type)
  )
  
