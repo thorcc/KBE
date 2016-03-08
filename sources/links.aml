@@ -88,7 +88,9 @@
                tag-attributes (list ^^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
 									
-               (display? :class 'flag-property-class
+               
+			   
+			   (display? :class 'flag-property-class
                    formula  (loop for i in ^edge-combination
                               when (or (not (the display? (:from (nth i ^members-ref-list)))) (not (the connection geom (:from (nth i ^members-ref-list)))) )
                               do (return nil)
@@ -96,7 +98,9 @@
                               )
                    )
                edge-combination nil
-               source-object ^surface
+			   
+			   ;;; The source-object HAS to be nil when it can't be displayed. If not, there will be a null geom error
+               source-object (if ^display? ^surface nil)
 
                ;;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
@@ -122,25 +126,11 @@
                    )
                )
   )
-;;; Not in use from ------->
-(define-method error-recovery-method surface-data-model ()
-	(message (format nil "The object ~a is recovering from its last error"
-		(object-name self)))
-	nil
- )
- 
-(defun error-recovery-function (object system-error-message)
-	(message system-error-message)
-	(error-recovery-method object)
- ) 
-;;; Not in use to <--------
 
 ;;; Instantiates every surface-data-model on a link 
 (define-class surfaces-on-link-collection
   :inherit-from (series-object)
   :properties (
-;;;                closed-loops-combinations (3-edge-loop-combinations (length ^sweeps-ref-list))
-;;;                closed-loops-combinations (3-edge-loop-combinations (length ^constraints-incident-on-link-list))
                closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
                visible-members-index (loop for mem in ^visible-members-ref-list
                                        collect (the index (:from mem))
@@ -165,9 +155,6 @@
 (define-class connection-model
   :inherit-from (nurb-curve-object)
   :properties (
-               ;; traverse to superior reference for
-;;;                frame_D (the sub-frame (:from 
-;;;                frame_A 
                pij (convert-coords ^frame_D '(0 0 0) :from :local :to :global)
                wij (convert-vector ^frame_D '(0 0 1) :from :local :to :global)
 
@@ -247,23 +234,19 @@
   :subobjects (
 ;;;               cross section at start of spline
                (spline-frame_start :class 'frame-data-model
-;;;                    reference-object ^frame_D
                    point-ref ^point-ref_D
                    z-vector-ref ^z-vector-ref_D
                    
                    (x-vector-ref :class 'vector-data-model
-;;;                                  direction ^^perpendicular-dir
                                  direction (subtract-vectors (nth 1 ^points)  (nth 0 ^points))
                                  )
                    )
 ;;;               cross section at end of spline
                (spline-frame_end :class 'frame-data-model
-;;;                    reference-object ^frame_A
                    point-ref ^point-ref_A
                    z-vector-ref ^z-vector-ref_A
                    
                    (x-vector-ref :class 'vector-data-model
-;;;                                   direction ^^perpendicular-dir
                                  direction (subtract-vectors (nth (1- (length ^points)) ^points) (nth (- (length ^points) 2) ^points))
                                  )
                    )
@@ -273,7 +256,6 @@
                               coordinates (nth 0 ^^^inter_points)
                               )
                    (z-vector-ref :class 'vector-data-model
-;;;                                  direction (the direction (:from ^^z-vector-ref_D) )
                                  direction ^^wij
                                  )
                    (x-vector-ref :class 'vector-data-model
@@ -286,7 +268,6 @@
                                coordinates (nth 1 ^^^inter_points)
                                )
                    (z-vector-ref :class 'vector-data-model
-;;;                                   direction (the direction (:from ^^z-vector-ref_A) )
                                  direction ^^wjk
                                  )
                    (x-vector-ref :class 'vector-data-model
