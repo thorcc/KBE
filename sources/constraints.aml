@@ -151,10 +151,6 @@
                )
   )
  
-(define-method get-main-frame joint-element-model (params)
-	(nth params (the main-frame origin)) 
-)
- 
 (define-method is-open-constraint master-joint-model ()
 	(equal "open" !constraint-type)
  )
@@ -273,7 +269,10 @@
                    )
                )
   )
-
+  
+(define-method get-main-frame joint-element-model (params)
+	(nth params (the main-frame origin)) 
+)
 ;; Used in (write-fmm-model-file) to generate unique IDs for each joint element  
 (define-method get-joint-element-id joint-element-model ()
 	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint

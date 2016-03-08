@@ -566,15 +566,6 @@
                )
   )
 
-(define-method has-line-cross-section link-geometry-class ()
-	(loop for shape in !shapes-on-link do
-		(if (equal 'line (the cross-section-type (:from shape))) 
-			(return t)
-		)
-		finally (return nil)
-	)
-)
-  
 ;;; Class generating a link's total geometry, including joints
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
@@ -691,6 +682,15 @@
                    )
                )
   )
+  
+(define-method has-line-cross-section link-geometry-class ()
+	(loop for shape in !shapes-on-link do
+		(if (equal 'line (the cross-section-type (:from shape))) 
+			(return t)
+		)
+		finally (return nil)
+	)
+)
 ;;; Right-click button methods for member-solid-model  
 (define-method work-area-button1-action link-geometry-class (params)
   (case params
