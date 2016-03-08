@@ -45,13 +45,30 @@
 			   
 			   (max-width :class 'editable-data-property-class
 					label "Max width"
-					formula (* ^scale-factor (max (first (the local-max-dimension (:from ^female-element-solid-model))) 
-						(first (the local-max-dimension (:from ^male-element-solid-model)) ) ) )
+					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
+					formula (let (
+								   (fem-max (first (the local-max-dimension (:from ^female-element-solid-model))))
+								   (male-max (first (the local-max-dimension (:from ^male-element-solid-model)) ))
+								  )
+								  (if (and fem-max male-max)
+									  (* ^scale-factor (max fem-max male-max ))
+									   nil
+									)
+							)
+					available? ^formula
 				)
                (max-height :class 'editable-data-property-class
 					label "Max height"
-					formula (* ^scale-factor (max (second (the local-max-dimension (:from ^female-element-solid-model))) 
-						(second (the local-max-dimension (:from ^male-element-solid-model)) ) ) )
+					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
+					formula (let (
+								   (fem-max (second (the local-max-dimension (:from ^female-element-solid-model))))
+								   (male-max (second (the local-max-dimension (:from ^male-element-solid-model)) ))
+								  )
+								  (if (and fem-max male-max)
+									  (* ^scale-factor (max fem-max male-max ))
+									   nil
+									)
+							)
                 )
 			   
                link-ref-incident-on-constraint (list
@@ -95,7 +112,10 @@
 					)
 			   ;;Not in use to <<<<
 			   
-			   property-objects-list (list
+			   ;;Only display properties for non-open constraints
+			   property-objects-list (if (is-open-constraint (the superior)) 
+				(list "This is an open constraint. No properties can be edited.") 
+				(list
 					;(the superior toggle-mesh self)
 					'("Draw joint" (button1-parameters :draw-joint)
                                         ui-work-area-action-button-class)
@@ -112,6 +132,7 @@
 					(the superior max-width self)
 					(the superior max-height self)
 					)
+				)
 			   )
   :subobjects (
                (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
@@ -130,9 +151,10 @@
                )
   )
  
- (define-method get-main-frame joint-element-model (params)
-	(nth params (the main-frame origin))
+ (define-method is-open-constraint master-joint-model ()
+	(equal "open" !constraint-type)
  )
+ 
  ;;; Left-click button methods for master-joint-model 
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
@@ -248,10 +270,12 @@
                )
   )
 
+;; Used in (write-fmm-model-file) to generate unique IDs for each joint element  
 (define-method get-joint-element-id joint-element-model ()
 	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint
 )
 
+;; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
 (define-method get-master-triad-id-from-master-joint-model master-joint-model ()
 	(1- (* 2 !id))
 )
@@ -281,9 +305,9 @@
   :inherit-from (joint-element-model)
   :properties (
                (sub-point-ref :class 'sub-point-model
-                   orientation (list
-                                (translate (list 0 0 (/ (- ^^max-height) 1) ))
-                                )
+               ;    orientation (list
+               ;                 (translate (list 0 0 (/ (- ^^max-height) 1) ))
+               ;                 )
                    )
                )
   )
@@ -297,7 +321,7 @@
                    )
                )
   )
-
+  
 (define-class rigid-constraint-class
   :inherit-from (master-joint-model)
   :properties (
@@ -483,8 +507,6 @@
                    )
                )
   )
-
-
 
 ;;; Class holding spherical male and female elements on instantiation
 (define-class spheric-constraint-class
