@@ -552,7 +552,7 @@
 											""
 											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
 											ui-work-area-action-button-class)
-											'("Export to .bdf" (button1-parameters :bdf-export)
+											'("Export to FEDEM" (button1-parameters :bdf-export)
 											ui-work-area-action-button-class)
 											(list (the superior dv self)
 												'(automatic-apply? t))
