@@ -130,6 +130,9 @@
                )
   )
  
+ (define-method get-main-frame joint-element-model (params)
+	(nth params (the main-frame origin))
+ )
  ;;; Left-click button methods for master-joint-model 
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
