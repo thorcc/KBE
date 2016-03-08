@@ -654,6 +654,7 @@
 		(:bdf-export
 			(loop for link in !link-ref-list 
 				do (the analysis nastran-interface run-nastran@ (:from link))
+				finally (write-fmm-model-file (the))
 			)
 		)
 	)
@@ -706,6 +707,7 @@
 							(format stream "TRIAD~%{~%")
 							(format stream "BASE_ID = ~d;~%" baseID)
 							(format stream "ID = ~d;~%" (get-joint-element-id constraint))
+							;;(format stream "ID = ~d;~%" triadID)
 							(format stream "COORDINATE_SYSTEM = ~%")
 							(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
 							(format stream "-1.00000000 0.00000000 0.00000000 0.00000000~%")
@@ -823,6 +825,7 @@
 			)
 			(if (equal "spheric" (get-constraint-type constraint))
 				(progn 
+					(format stream "~a~%{~%" "BALL_JOINT")
 					(format stream "BASE_ID = ~d;~%" baseID)
 					(format stream "COORDINATE_SYSTEM = ~%")
 					(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
