@@ -7,15 +7,10 @@
   :inherit-from (object)
   :properties (
                mesh-object ^link-mesh
-			   open-constraints-list 	(loop for constraint in ^^constraints-incident-on-link-list
-											if (string-equal "open" (get-constraint-type constraint))
-												collect constraint
-											)
-			   non-open-constraints-list  (loop for constraint in ^^constraints-incident-on-link-list do
-											if (not (string-equal "open" (get-constraint-type constraint)))
-												collect constraint
-											)
-			   joint-center-node-list	(loop for c in !non-open-constraints-list
+
+			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list (the superior superior))
+			   
+			   joint-center-node-list	(loop for c in ^non-open-constraints-list
 											collect (the joint-center-node (:from c))
 											)
 			   
@@ -36,8 +31,9 @@
 				;										(setf min-elem (min-or-nil mw mh))))))
 				;					(/ min-elem 2))
 				;						
-               geometry-model-object (default nil)
-               (node-set :class 'analysis-node-set-class
+               geometry-model-object (default nil) ;;This property is set on instantiation, under link-model-class.
+               
+			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^joint-center-node-list)
                    )
                )
@@ -123,7 +119,7 @@
 				 
 				 class-expression 	'analysis-rigid-body-element-type-1-class
 				 series-prefix 		'rbe2
-				 quantity 			(length ^^non-open-constraints-list)
+				 quantity 			(length ^constraints-list)
 				 init-form '(
 							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
 							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))

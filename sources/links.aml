@@ -731,8 +731,8 @@
                (link-solid-geometry :class 'link-geometry-class
                    )
                (link-mesh-model :class 'link-mesh-class
-                   geometry-model-object ^link-solid-geometry
-                   mesh-database ^^mesh-database
+                   geometry-model-object	^link-solid-geometry
+                   mesh-database 			^^mesh-database
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object ^^link-mesh-model
@@ -740,5 +740,14 @@
                )
   )
 
+(define-method get-non-open-constraints-incident-on-link-list link-model-class ()
+	(when !constraints-incident-on-link-list
+		(loop for constraint in !constraints-incident-on-link-list do
+			if (not (string-equal "open" (get-constraint-type constraint)))
+				collect constraint
+		)
+	)
+)
+  
               
      
