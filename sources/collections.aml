@@ -614,6 +614,10 @@
 ;	)
 ;)
  
+(define-method get-drawable-links mechanism-collection ()
+	(when !drawable-link-ref-list
+		!drawable-link-ref-list)
+)
  
 (defun add-point-to-line-group (point)
 	(if (the line-group (:from point))
@@ -657,7 +661,7 @@
 			(undraw self)
 		)
 		(:bdf-export
-			(loop for link in !link-ref-list do
+			(loop for link in !drawable-link-ref-list do
 				(the analysis nastran-interface run-nastran@ (:from link))
 				finally (write-fmm-model-file (the))
 			)
@@ -669,7 +673,6 @@
 	(let (
 		  (baseID 3)
 		  (linkID 0)
-		  (triadID 0)
 		  (conID 0)
 		  )
 		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) (concatenate "model" ".fmm") )
@@ -677,8 +680,8 @@
 							  :if-exists :overwrite
 							  )
 			(progn 
-				(write-static-top-part stream)
-				(loop for link in !link-ref-list do
+				(write-static-top-part-to-fmm stream)
+				(loop for link in !drawable-link-ref-list do
 					(setf baseID (1+ baseID))
 					(setf linkID (1+ linkID))
 					(format stream "LINK~%")
@@ -703,32 +706,48 @@
 					(format stream "}~3%")
 					
 					(let (
-						  (counter 1)
-						  (number-of-nodes (length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
+						  (number-of-nodes 	(length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
+						  (counter 			0)
 						  )
 						(loop for constraint in (the link-mesh-model non-open-constraints-list (:from link)) do
-							(setf triadID (1+ triadID))
 							(setf baseID (1+ baseID))
-							(format stream "TRIAD~%{~%")
-							(format stream "BASE_ID = ~d;~%" baseID)
-							(format stream "ID = ~d;~%" (get-joint-element-id constraint))
-							(format stream "COORDINATE_SYSTEM = ~%")
-							(format stream "1.0 0.0 0.0 ~d~%" (get-main-frame constraint 0))
-							(format stream "0.0 1.0 0.0 ~d~%" (get-main-frame constraint 1))
-							(format stream "0.0 0.0 1.0 ~d;~%" (get-main-frame constraint 2))
-							(format stream "LOCAL_DIRECTIONS = GLOBAL;~%")
-							(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
-							(format stream "OWNER_LINK = ~d;~%" linkID)
-							(format stream "FE_NODE_NO = ~d;~%" (+ number-of-nodes counter))
 							(setf counter (1+ counter))
-							(format stream "NDOFS = 6;~%}~3%")
+							(write-triad-to-fmm stream constraint baseID linkID (+ number-of-nodes counter))
 						)
 					)
 				)
 				(loop for constraint in !constraints-ref-list do
 					(setf baseID (1+ baseID))
 					(setf conID (1+ conID))
-					(write-stream-with-constraint-type stream constraint baseID conID)
+					(let (
+						  (triadID 				(get-male-triad-id-from-master-joint-model constraint))
+						  (is-male-drawable? 	(the male-element-solid-model is-incident-link-drawable? (:from constraint)))
+						  (is-female-drawable?	(the female-element-solid-model is-incident-link-drawable? (:from constraint)))
+						  )
+						 ;;Case 1: male element has a drawable link, female does not. 
+						 ;;Master triad is the ground, slave triad is the male element
+						 (if (and is-male-drawable? (not is-female-drawable?))
+							(progn 
+								(write-joint-type-to-fmm stream constraint baseID conID (1+ triadID) triadID)
+								(setf baseID (1+ baseID))
+								(write-triad-to-fmm stream (the female-element-solid-model (:from constraint)) baseID -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+							)
+							
+							;;Case 2: female element has a drawable link, male does not
+							;;Master triad is the ground, slave triad is the female element
+							(if (and is-female-drawable? (not is-male-drawable?))
+								(progn
+									(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+									(setf baseID (1+ baseID))
+									(write-triad-to-fmm stream (the male-element-solid-model (:from constraint)) baseID -1 -1)
+								)
+								
+								;;Case 3: both elements have drawable links
+								;;Master triad is the male element, slave triad is the female element
+								(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+							)
+						)
+					)
 				)
 				(format stream "END {FEDEMMODELFILE}")
 			)
@@ -736,7 +755,7 @@
 	)
 )
 
-(defun write-static-top-part (stream)
+(defun write-static-top-part-to-fmm (stream)
 	(progn 
 		(format stream "FEDEMMODELFILE {R7.0.4 ASCII}~2%")
 		
@@ -799,21 +818,58 @@
 	)
 )
 
-(defun write-stream-with-constraint-type (stream constraint baseID conID)
-	(let (
-		  (masterID (get-master-triad-id-from-master-joint-model constraint))
-		  (slaveID (1+ masterID))
-		  )
-		(if (equal "revolute" (get-constraint-type constraint))
+
+(defun write-triad-to-fmm (stream constraint baseID linkID node-number)
+	(progn
+		(format stream "TRIAD~%{~%")
+		(format stream "BASE_ID = ~d;~%" baseID)
+		(format stream "ID = ~d;~%" (get-joint-element-id constraint))
+		(format stream "COORDINATE_SYSTEM = ~%")
+		(format stream "1.0 0.0 0.0 ~d~%" (get-main-frame constraint 0))
+		(format stream "0.0 1.0 0.0 ~d~%" (get-main-frame constraint 1))
+		(format stream "0.0 0.0 1.0 ~d;~%" (get-main-frame constraint 2))
+		(format stream "LOCAL_DIRECTIONS = GLOBAL;~%")
+		(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+		(format stream "OWNER_LINK = ~d;~%" linkID)
+		(format stream "FE_NODE_NO = ~d;~%" node-number)
+		(format stream "NDOFS = 6;~%}~3%")
+	)
+)
+
+(defun write-joint-type-to-fmm (stream constraint baseID conID masterID slaveID)
+	(if (equal "revolute" (get-constraint-type constraint))
+		(progn 
+			(format stream "~a~%{~%" "REV_JOINT")
+			(format stream "BASE_ID = ~d;~%" baseID)
+			(format stream "COORDINATE_SYSTEM = ~%")
+			(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
+			(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
+			(format stream "0.00000000 0.00000000 1.00000000 0.00000000;~%")
+			(format stream "HAS_Z_TRANS_DOF = false;~%")
+			(format stream "ID = ~a;~%" conID)
+			(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+			(format stream "MASTER_TRIAD = ~d;~%" masterID)
+			(format stream "MOVE_MASTER_TRIAD_ALONG = true;~%")
+			(format stream "MOVE_SLAVE_TRIAD_ALONG = true;~%")
+			(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+			(format stream "ROT_SEQUENCE = ZYX;~%")
+			(format stream "ROT_SPRING_CPL = NONE;~%")
+			(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+			(format stream "TRAN_SPRING_CPL = NONE;~%")
+			(format stream "VAR_QUADRANTS = 0 0 0;~%")
+			(format stream "Z_ROT_STATUS = FREE;~%")
+			(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
+		)
+		(if (equal "spheric" (get-constraint-type constraint))
 			(progn 
-				(format stream "~a~%{~%" "REV_JOINT")
+				(format stream "~a~%{~%" "BALL_JOINT")
 				(format stream "BASE_ID = ~d;~%" baseID)
 				(format stream "COORDINATE_SYSTEM = ~%")
 				(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
 				(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
 				(format stream "0.00000000 0.00000000 1.00000000 0.00000000;~%")
-				(format stream "HAS_Z_TRANS_DOF = false;~%")
-				(format stream "ID = ~a;~%" conID)
+				(format stream "FRICTION_DOF = 3;~%")
+				(format stream "ID = ~d;~%" conID)
 				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
 				(format stream "MASTER_TRIAD = ~d;~%" masterID)
 				(format stream "MOVE_MASTER_TRIAD_ALONG = true;~%")
@@ -824,33 +880,9 @@
 				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
 				(format stream "TRAN_SPRING_CPL = NONE;~%")
 				(format stream "VAR_QUADRANTS = 0 0 0;~%")
-				(format stream "Z_ROT_STATUS = FREE;~%")
-				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
-			)
-			(if (equal "spheric" (get-constraint-type constraint))
-				(progn 
-					(format stream "~a~%{~%" "BALL_JOINT")
-					(format stream "BASE_ID = ~d;~%" baseID)
-					(format stream "COORDINATE_SYSTEM = ~%")
-					(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
-					(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
-					(format stream "0.00000000 0.00000000 1.00000000 0.00000000;~%")
-					(format stream "FRICTION_DOF = 3;~%")
-					(format stream "ID = ~d;~%" conID)
-					(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
-					(format stream "MASTER_TRIAD = ~d;~%" masterID)
-					(format stream "MOVE_MASTER_TRIAD_ALONG = true;~%")
-					(format stream "MOVE_SLAVE_TRIAD_ALONG = true;~%")
-					(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
-					(format stream "ROT_SEQUENCE = ZYX;~%")
-					(format stream "ROT_SPRING_CPL = NONE;~%")
-					(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
-					(format stream "TRAN_SPRING_CPL = NONE;~%")
-					(format stream "VAR_QUADRANTS = 0 0 0;~%")
-					(format stream "X_ROT_STATUS = FREE;~%")
-					(format stream "Y_ROT_STATUS = FREE;~%")
-					(format stream "Z_ROT_STATUS = FREE;~%}~3%")
-				)
+				(format stream "X_ROT_STATUS = FREE;~%")
+				(format stream "Y_ROT_STATUS = FREE;~%")
+				(format stream "Z_ROT_STATUS = FREE;~%}~3%")
 			)
 		)
 	)
