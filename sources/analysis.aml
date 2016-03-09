@@ -7,7 +7,7 @@
   :inherit-from (object)
   :properties (
                mesh-object ^link-mesh
-			   open-constraints-list (loop for constraint in ^^constraints-incident-on-link-list
+			   open-constraints-list 	(loop for constraint in ^^constraints-incident-on-link-list
 											if (string-equal "open" (get-constraint-type constraint))
 												collect constraint
 											)
@@ -92,17 +92,13 @@
 (define-method get-mesh-model-subobject link-mesh-class (subobject-type)
 	(case subobject-type
 		(mesh-db !mesh-db)
-		 (2d-elements (the link-mesh elements-query))
+		(2d-elements (the link-mesh elements-query))
 		)
 	)
   
 (define-method get-tet-mesh-entities-list link-mesh-class ()
 	(when !tet-mesh
 		(the tet-mesh nodes-query mesh-entities-list))
-	)
-  
-(define-method get-all-joint-center-nodes link-mesh-class ()
-	nil
 	)
 
 (define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
@@ -129,7 +125,6 @@
 				 series-prefix 		'rbe2
 				 quantity 			(length ^^non-open-constraints-list)
 				 init-form '(
-                             ;constraint-type (the constraint-type (:from (nth ^index ^^non-open-constraints-list)))
 							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
 							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
@@ -167,7 +162,7 @@
                analysis-type 					:linear-static
                load-case-objects-list 			(list ^load-case-1)
                material-catalog-object 			^material-catalog
-               materials-list 					(list 'steel)
+               materials-list 					(list (the material-name (:from ^material-selection)))
                property-set-objects-list 		(list ^link-2D-material-properties ^link-3D-material-properties)
                
                element-set-2d-objects-list 		(list ^link-analysis-surface-elements)
@@ -177,18 +172,28 @@
                node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)) )
 			   
 			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
+			   
+			   (material-selection :class 'option-property-class
+					options-list (children ^^material-catalog)
+					labels-list (loop for material in (children ^^material-catalog)
+									collect (the material-name (:from material))
+									)
+					mode 'menu
+					formula (nth 0 !options-list)
+					label "Select Material"
+					)
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
                    )
                (link-2D-material-properties :class 'analysis-property-set-2d-type-1-class
                    material-catalog-object ^^material-catalog
-				   material-name "Steel"
+				   material-name (write-to-string (the material-name (:from ^material-selection)))
                    thickness 0.3
 				   )
                (link-3D-material-properties :class 'analysis-property-set-3d-type-1-class
 					material-catalog-object ^^material-catalog
-				    material-name "Steel"
+				    material-name (write-to-string (the material-name (:from ^material-selection)))
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
                    query-objects-list (list
@@ -223,12 +228,20 @@
                    analysis-model-object ^superior
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string  (object-name ^^superior)) ".bdf")
-                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
+                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) ;; could write 'nastran-version :nx-nastran' but this shows the available versions
                    )
                )
   )
-
- 
+  
+(define-method property-classification-list analysis-link-model-class ()
+  (list
+   (list "Input Properties"
+         '(
+			material-selection
+           ) 
+         )
+   )
+  )
 ;;; -----------------------------
 ;;; END ANALYSIS DEFINITIONS
 ;;; -----------------------------  
