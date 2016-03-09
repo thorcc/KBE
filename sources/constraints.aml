@@ -243,6 +243,9 @@
 
                (sub-point-ref :class 'sub-point-model
                    )
+			   
+			   ;;Property used for writing to FEDEM
+			   is-incident-link-drawable? 	(the is-link-drawable? (:from ^link-ref-incident-on-constraint))
                )
   :subobjects (
                (main-frame :class 'frame-data-model
@@ -280,7 +283,7 @@
 )
 
 ;; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
-(define-method get-master-triad-id-from-master-joint-model master-joint-model ()
+(define-method get-male-triad-id-from-master-joint-model master-joint-model ()
 	(1- (* 2 !id))
 )
   
