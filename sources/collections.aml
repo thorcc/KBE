@@ -486,7 +486,6 @@
 							)
 						)
 						
-				
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
 			   
@@ -494,6 +493,13 @@
 										if (the is-link-drawable? (:from link)) 
 											collect link)
 											
+			   non-open-constraints-list (when ^constraints-ref-list
+											  (loop for constraint in ^constraints-ref-list do
+												  if (not (string-equal "open" (get-constraint-type constraint)))
+													  collect constraint
+											  )
+										  )
+			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
 			   ;a (add-point-to-line-group (nth 1 ^point-ref-list))
 
@@ -687,7 +693,7 @@
 					(format stream "LINK~%")
 					(format stream "{~%")
 					(format stream "BASE_ID = ~d;~%" baseID)
-					(format stream "COLOR = 1 0.33 1;~%")
+					(format stream "COLOR = ~,2f ~,2f ~,2f;~%" (random 1.0) (random 1.0) (random 1.0))
 					(format stream "COORDINATE_SYSTEM = ~%")
 					(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
 					(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
@@ -709,14 +715,14 @@
 						  (number-of-nodes 	(length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
 						  (counter 			0)
 						  )
-						(loop for constraint in (the link-mesh-model non-open-constraints-list (:from link)) do
+						(loop for constraint in (get-non-open-constraints-incident-on-link-list link) do
 							(setf baseID (1+ baseID))
 							(setf counter (1+ counter))
 							(write-triad-to-fmm stream constraint baseID linkID (+ number-of-nodes counter))
 						)
 					)
 				)
-				(loop for constraint in !constraints-ref-list do
+				(loop for constraint in !non-open-constraints-list do
 					(setf baseID (1+ baseID))
 					(setf conID (1+ conID))
 					(let (
