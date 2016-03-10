@@ -851,6 +851,57 @@
 				
 				;;Calculating rotation matrix with respect to rotation angle and rotation axis
 				(format stream "COORDINATE_SYSTEM = ~%")
+				(format stream "~d ~d ~d 0.0~%" (+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 0 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+						
+					(- (* (nth 0 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+					(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+					
+					(+ (* (nth 0 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+				
+				(format stream "~d ~d ~d 0.0~%"
+					(+ (* (nth 1 (get-unit-vector constraint)) (nth 0 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+					
+					(+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 1 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+				
+					(- (* (nth 1 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+				
+				(format stream "~d ~d ~d 0.0;~%"
+					(- (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+					(+ (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+					(+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 2 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint)))))))
+							
+				(format stream "HAS_Z_TRANS_DOF = false;~%")
+				(format stream "ID = ~a;~%" conID)
+				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+				(format stream "MASTER_TRIAD = ~d;~%" masterID)
+				(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+				(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+				(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+				(format stream "ROT_SEQUENCE = ZYX;~%")
+				(format stream "ROT_SPRING_CPL = NONE;~%")
+				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+				(format stream "TRAN_SPRING_CPL = NONE;~%")
+				(format stream "VAR_QUADRANTS = 0 0 0;~%")
+				(format stream "Z_ROT_STATUS = FREE;~%")
+				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
+		)
+		(if (equal "spheric" (get-constraint-type constraint))
+			(progn 
+					(format stream "~a~%{~%" "BALL_JOINT")
+					(format stream "BASE_ID = ~d;~%" baseID)
+					
+					;;Calculating rotation matrix with respect to rotation angle and rotation axis
+					(format stream "COORDINATE_SYSTEM = ~%")
 					(format stream "~d ~d ~d 0.0~%" (+ (cosd((get-rot-angle constraint))) 
 							(* (expt (nth 0 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
 							
@@ -879,63 +930,6 @@
 							
 						(+ (cosd((get-rot-angle constraint))) 
 							(* (expt (nth 2 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint)))))))
-							
-				(format stream "HAS_Z_TRANS_DOF = false;~%")
-				(format stream "ID = ~a;~%" conID)
-				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
-				(format stream "MASTER_TRIAD = ~d;~%" masterID)
-				(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
-				(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
-				(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
-				(format stream "ROT_SEQUENCE = ZYX;~%")
-				(format stream "ROT_SPRING_CPL = NONE;~%")
-				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
-				(format stream "TRAN_SPRING_CPL = NONE;~%")
-				(format stream "VAR_QUADRANTS = 0 0 0;~%")
-				(format stream "Z_ROT_STATUS = FREE;~%")
-				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
-		)
-		(if (equal "spheric" (get-constraint-type constraint))
-			(progn 
-					(format stream "~a~%{~%" "BALL_JOINT")
-					(format stream "BASE_ID = ~d;~%" baseID)
-					
-					;;Calculating rotation matrix with respect to rotation angle and rotation axis
-					(format stream "COORDINATE_SYSTEM = ~%")
-						(format stream "~d ~d ~d ~d~%" (+ (cosd((get-rot-angle constraint))) 
-								(* (expt (nth 0 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
-								
-							(- (* (nth 0 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-							(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-							
-							(+ (* (nth 0 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-								(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-						
-							(get-main-frame constraint 0))
-						
-						(format stream "~d ~d ~d ~d~%"
-							(+ (* (nth 1 (get-unit-vector constraint)) (nth 0 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-								(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-							
-							(+ (cosd((get-rot-angle constraint))) 
-								(* (expt (nth 1 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
-						
-							(- (* (nth 1 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-								(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-						
-							(get-main-frame constraint 1))
-						
-						(format stream "~d ~d ~d ~d;~%"
-							(- (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-								(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-								
-							(+ (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
-								(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
-								
-							(+ (cosd((get-rot-angle constraint))) 
-								(* (expt (nth 2 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
-							
-							(get-main-frame constraint 2))")
 							
 					(format stream "FRICTION_DOF = 3;~%")
 					(format stream "ID = ~d;~%" conID)
