@@ -151,6 +151,14 @@
                )
   )
  
+(define-method get-joint-direction-vector master-joint-model () 
+	(the male-element-solid-model direction) 
+)
+
+(define-method is-open-constraint master-joint-model ()
+	(equal "open" !constraint-type)
+ )
+ 
  ;;; Left-click button methods for master-joint-model 
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
