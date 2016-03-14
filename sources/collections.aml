@@ -823,6 +823,126 @@
 (defun write-joint-type-to-fmm (stream constraint baseID conID masterID slaveID)
 	
 	(if (equal "revolute" (get-constraint-type constraint))
+		(let (
+				(unit-vector (get-unit-vector constraint))
+				(rot-angle (get-rot-angle constraint))
+				(cos-rot-angle (cosd rot-angle))
+				(sin-rot-angle (sind rot-angle))
+			)
+			(progn 
+				(format stream "~a~%{~%" "REV_JOINT")
+				(format stream "BASE_ID = ~d;~%" baseID)
+				
+				;;Calculating rotation matrix with respect to rotation angle and rotation axis
+				(format stream "COORDINATE_SYSTEM = ~%")
+				(format stream "~d ~d ~d 0.0~%" 
+					(+ cos-rot-angle (* (expt (nth 0 unit-vector) 2) (- 1 cos-rot-angle)))
+						
+					(- (* (nth 0 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 2 unit-vector) sin-rot-angle))
+					
+					(+ (* (nth 0 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 1 unit-vector) sin-rot-angle)))
+				
+				(format stream "~d ~d ~d 0.0~%"
+					(+ (* (nth 1 unit-vector) (nth 0 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 2 unit-vector) sin-rot-angle))
+					
+					(+ cos-rot-angle 
+						(* (expt (nth 1 unit-vector) 2) (- 1 cos-rot-angle)))
+				
+					(- (* (nth 1 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 0 unit-vector) sin-rot-angle)))
+				
+				(format stream "~d ~d ~d 0.0;~%"
+					(- (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 1 unit-vector) sin-rot-angle))
+						
+					(+ (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 0 unit-vector) sin-rot-angle))
+						
+					(+ cos-rot-angle (* (expt (nth 2 unit-vector) 2) (- 1 cos-rot-angle))))
+							
+				(format stream "HAS_Z_TRANS_DOF = false;~%")
+				(format stream "ID = ~a;~%" conID)
+				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+				(format stream "MASTER_TRIAD = ~d;~%" masterID)
+				(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+				(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+				(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+				(format stream "ROT_SEQUENCE = ZYX;~%")
+				(format stream "ROT_SPRING_CPL = NONE;~%")
+				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+				(format stream "TRAN_SPRING_CPL = NONE;~%")
+				(format stream "VAR_QUADRANTS = 0 0 0;~%")
+				(format stream "Z_ROT_STATUS = FREE;~%")
+				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
+			)
+		)
+		(if (equal "spheric" (get-constraint-type constraint))
+			(let (
+				  (unit-vector	(get-unit-vector constraint))
+				  (rot-angle (get-rot-angle constraint))
+				  (cos-rot-angle (cosd rot-angle))
+				  (sin-rot-angle (sind rot-angle))
+				)
+				(progn
+					(format stream "~a~%{~%" "BALL_JOINT")
+					(format stream "BASE_ID = ~d;~%" baseID)
+					
+					;;Calculating rotation matrix with respect to rotation angle and rotation axis
+					(format stream "COORDINATE_SYSTEM = ~%")
+					(format stream "~d ~d ~d 0.0~%" 
+						(+ cos-rot-angle (* (expt (nth 0 unit-vector) 2) (- 1 cos-rot-angle)))
+							
+						(- (* (nth 0 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 2 unit-vector) sin-rot-angle))
+						
+						(+ (* (nth 0 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 1 unit-vector) sin-rot-angle)))
+					
+					(format stream "~d ~d ~d 0.0~%"
+						(+ (* (nth 1 unit-vector) (nth 0 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 2 unit-vector) sin-rot-angle))
+						
+						(+ cos-rot-angle 
+							(* (expt (nth 1 unit-vector) 2) (- 1 cos-rot-angle)))
+					
+						(- (* (nth 1 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 0 unit-vector) sin-rot-angle)))
+					
+					(format stream "~d ~d ~d 0.0;~%"
+						(- (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 1 unit-vector) sin-rot-angle))
+							
+						(+ (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 0 unit-vector) sin-rot-angle))
+							
+						(+ cos-rot-angle (* (expt (nth 2 unit-vector) 2) (- 1 cos-rot-angle))))
+
+					(format stream "FRICTION_DOF = 3;~%")
+					(format stream "ID = ~d;~%" conID)
+					(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+					(format stream "MASTER_TRIAD = ~d;~%" masterID)
+					(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+					(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+					(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+					(format stream "ROT_SEQUENCE = ZYX;~%")
+					(format stream "ROT_SPRING_CPL = NONE;~%")
+					(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+					(format stream "TRAN_SPRING_CPL = NONE;~%")
+					(format stream "VAR_QUADRANTS = 0 0 0;~%")
+					(format stream "X_ROT_STATUS = FREE;~%")
+					(format stream "Y_ROT_STATUS = FREE;~%")
+					(format stream "Z_ROT_STATUS = FREE;~%}~3%")
+				)
+			)
+		)
+	)
+)
+
+	
+	(if (equal "revolute" (get-constraint-type constraint))
 		(progn 
 				(format stream "~a~%{~%" "REV_JOINT")
 				(format stream "BASE_ID = ~d;~%" baseID)
