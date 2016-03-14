@@ -571,7 +571,8 @@
                ;;Property storing folders from library
                (folders :class 'folder-collection
                    )
-
+				
+			   loads-list '()
 			   ;write-to-file (write-save-fedem-solver !superior)
 			   
 			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
@@ -601,6 +602,9 @@
                )
   )
 
+(define-method add-load mechanism-collection (load)
+	(change-value !loads-list (append !loads-list (list load)))
+)
   
 ;(define-method add-point-to-line-group mechanism-collection ()
 ;	(let (
@@ -760,7 +764,7 @@
 					)
 				)
 				(setf baseID (1+ baseID))
-				(write-analysis-properties-to-fmm !mechanism-type stream baseID)
+				(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
 				(format stream "END {FEDEMMODELFILE}")
 			)
 		)
@@ -937,7 +941,115 @@
 	)
 )
 
-(defun write-analysis-properties-to-fmm (mechanism-type stream baseID)
+	
+	(if (equal "revolute" (get-constraint-type constraint))
+		(progn 
+				(format stream "~a~%{~%" "REV_JOINT")
+				(format stream "BASE_ID = ~d;~%" baseID)
+				
+				;;Calculating rotation matrix with respect to rotation angle and rotation axis
+				(format stream "COORDINATE_SYSTEM = ~%")
+				(format stream "~d ~d ~d 0.0~%" (+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 0 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+						
+					(- (* (nth 0 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+					(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+					
+					(+ (* (nth 0 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+				
+				(format stream "~d ~d ~d 0.0~%"
+					(+ (* (nth 1 (get-unit-vector constraint)) (nth 0 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+					
+					(+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 1 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+				
+					(- (* (nth 1 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+				
+				(format stream "~d ~d ~d 0.0;~%"
+					(- (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+					(+ (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+					(+ (cosd((get-rot-angle constraint))) 
+						(* (expt (nth 2 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint)))))))
+							
+				(format stream "HAS_Z_TRANS_DOF = false;~%")
+				(format stream "ID = ~a;~%" conID)
+				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+				(format stream "MASTER_TRIAD = ~d;~%" masterID)
+				(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+				(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+				(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+				(format stream "ROT_SEQUENCE = ZYX;~%")
+				(format stream "ROT_SPRING_CPL = NONE;~%")
+				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+				(format stream "TRAN_SPRING_CPL = NONE;~%")
+				(format stream "VAR_QUADRANTS = 0 0 0;~%")
+				(format stream "Z_ROT_STATUS = FREE;~%")
+				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
+		)
+		(if (equal "spheric" (get-constraint-type constraint))
+			(progn 
+					(format stream "~a~%{~%" "BALL_JOINT")
+					(format stream "BASE_ID = ~d;~%" baseID)
+					
+					;;Calculating rotation matrix with respect to rotation angle and rotation axis
+					(format stream "COORDINATE_SYSTEM = ~%")
+					(format stream "~d ~d ~d 0.0~%" (+ (cosd((get-rot-angle constraint))) 
+							(* (expt (nth 0 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+							
+						(- (* (nth 0 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+						(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+						(+ (* (nth 0 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+							(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+					
+					(format stream "~d ~d ~d 0.0~%"
+						(+ (* (nth 1 (get-unit-vector constraint)) (nth 0 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+							(* (nth 2 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+						
+						(+ (cosd((get-rot-angle constraint))) 
+							(* (expt (nth 1 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint))))))
+					
+						(- (* (nth 1 (get-unit-vector constraint)) (nth 2 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+							(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint))))))
+					
+					(format stream "~d ~d ~d 0.0;~%"
+						(- (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+							(* (nth 1 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+							
+						(+ (* (nth 2 (get-unit-vector constraint)) (nth 1 (get-unit-vector constraint)) (- 1 (cosd((get-rot-angle constraint)))))
+							(* (nth 0 (get-unit-vector constraint)) (sind((get-rot-angle constraint)))))
+							
+						(+ (cosd((get-rot-angle constraint))) 
+							(* (expt (nth 2 (get-unit-vector constraint)) 2) (- 1 (cosd((get-rot-angle constraint)))))))
+							
+					(format stream "FRICTION_DOF = 3;~%")
+					(format stream "ID = ~d;~%" conID)
+					(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+					(format stream "MASTER_TRIAD = ~d;~%" masterID)
+					(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+					(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+					(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+					(format stream "ROT_SEQUENCE = ZYX;~%")
+					(format stream "ROT_SPRING_CPL = NONE;~%")
+					(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+					(format stream "TRAN_SPRING_CPL = NONE;~%")
+					(format stream "VAR_QUADRANTS = 0 0 0;~%")
+					(format stream "X_ROT_STATUS = FREE;~%")
+					(format stream "Y_ROT_STATUS = FREE;~%")
+					(format stream "Z_ROT_STATUS = FREE;~%}~3%")
+			)
+		)
+	)
+)
+
+(defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
 	(format stream "ANALYSIS~%{~%")
 	(format stream "ID = 1;~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
@@ -996,13 +1108,13 @@
 				 )
 			)
 			
-			;;Loads. Sould make a generic function out of this too
+			;;Loads
 			(setf baseID (1+ baseID))
 			(format stream "LOAD~%{~%")
 			(format stream "BASE_ID = ~d;~%" baseID)
 			(format stream "ID = 1;~%")
 			(format stream "ENGINE = 1 FcENGINE;~%")
-			(format stream "OWNER_TRIAD = ~d;~%" 'leggeTilOwnerHer)
+			(format stream "OWNER_TRIAD = ~d;~%" (the loadID (:from (nth 0 loads-list))))
 			(format stream "LOAD_TYPE = 1;~%")
 			(format stream "INIT_LOAD = 0;~%")
 			(format stream "SCALE_LOAD = 1;~%")
@@ -1133,7 +1245,7 @@
 (defun write-sensors-to-fmm (stream baseID ID descr measured)
 	(format stream "SENSOR~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
-	(format stream "ID = d;~%" ID)
+	(format stream "ID = ~d;~%" ID)
 	(format stream "DESCR = ~a;~%" descr)
 	(format stream "MEASURED = ~a;~%}~2%" measured)
 )
