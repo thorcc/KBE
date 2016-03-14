@@ -191,10 +191,9 @@
 (define-class sub-frame-model
   :inherit-from (frame-data-model)
   :properties (
-               (point-ref :class 'point-data-model
+               ;;When a sub-point-ref is specified in a joint element, its sub-frame will be placed accordingly
+			   (point-ref :class 'point-data-model
                    coordinates (convert-coords ^sub-point-ref (the coordinates (:from ^sub-point-ref)))
-;;;                    coordinates (add-vectors (the coordinates (:from ^point-ref))
-;;;                                             (multiply-vector-by-scalar (normalize ^direction) 0))
                    )
                )
   )
@@ -220,6 +219,7 @@
                gender (read-from-string (remove "-element-solid-model" (write-to-string (object-name !superior)))) 
                gender_int (case ^gender ('male 0) ('female 1) )
                link-incidence (nth ^gender_int ^^link-incidence)
+			   
                link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence)
 			   link-mesh-model-object (when (the link-mesh-model (:from ^link-ref-incident-on-constraint))
 										(the link-mesh-model (:from ^link-ref-incident-on-constraint)))
@@ -229,9 +229,10 @@
                                                     when (position !superior (the connection-between-constraints (:from member)))
                                                     collect member
                                                     )
-               local-max-dimension (loop for member in (the members-ref-list (:from (the link-solid-geometry (:from ^link-ref-incident-on-constraint))))
+               
+			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-solid-geometry (:from ^link-ref-incident-on-constraint))))
                                      for pos = (position !superior (the connection-between-constraints (:from member)))
-                                     when (and pos (the display? (:from member)) )
+                                     when (and pos (the display? (:from member)))
                                      maximize (if (= pos 0)
                                                   (max-width (the cross-section_D (:from member)) )
                                                 (max-width (the cross-section_A (:from member)) ) ) into max-w
@@ -248,24 +249,24 @@
 			   is-incident-link-drawable? 	(the is-link-drawable? (:from ^link-ref-incident-on-constraint))
                )
   :subobjects (
-               (main-frame :class 'frame-data-model
-                   ;;; inherited frame properties used in main-frame and sub-frame
-                  (x-vector-ref :class 'vector-data-model
-                                direction (let (
-                                      (first-sweep (nth 0 ^members-connected-to-joint-element))
-                                      (x-dir  (subtract-vectors
-                                               (the coordinates (:from (the point-ref (:from (nth 0 (the connection-between-constraints (:from first-sweep) ) )))))
-                                               (the coordinates (:from (the point-ref (:from (nth 1 (the connection-between-constraints (:from first-sweep) ) )))))
-                                               ))
-                                      (x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
-                                      )
-                                      (if (equal 0 (vector-length x-dir-normal))
-                                          x-dir-normal
-                                        (arbitrary-normal-to-vector ^^direction)
-                                        )
-                                  )
-                                )
-                   )
+                (main-frame :class 'frame-data-model
+					;;; inherited frame properties used in main-frame and sub-frame
+					(x-vector-ref :class 'vector-data-model
+						direction (let (
+										(first-sweep (nth 0 ^members-connected-to-joint-element))
+										(x-dir  (subtract-vectors
+												(the coordinates (:from (the point-ref (:from (nth 0 (the connection-between-constraints (:from first-sweep) ) )))))
+												(the coordinates (:from (the point-ref (:from (nth 1 (the connection-between-constraints (:from first-sweep) ) ))))))
+											)
+										(x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
+									   )
+									   (if (equal 0 (vector-length x-dir-normal))
+											x-dir-normal
+											(arbitrary-normal-to-vector ^^direction)
+										)
+									)
+                    )
+                )
 				;;; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
                (sub-frame :class 'sub-frame-model
                    )
@@ -276,9 +277,20 @@
                    )
                )
   )
-  
-(define-method get-main-frame joint-element-model (params)
-	(nth params (the main-frame origin)) 
+
+(define-method get-max-height joint-element-model ()
+	(when !max-height !max-height)
+)
+ 
+(define-method is-open-constraint joint-element-model ()
+	(equal "open" !constraint-type)
+ ) 
+ 
+(define-method get-main-frame-coords joint-element-model (&optional params)
+	(if params
+		(nth params (the main-frame origin))
+		(the main-frame origin)
+	)
 )
 ;; Used in (write-fmm-model-file) to generate unique IDs for each joint element  
 (define-method get-joint-element-id joint-element-model ()
@@ -314,23 +326,38 @@
 (define-class open-male-element
   :inherit-from (joint-element-model)
   :properties (
-               (sub-point-ref :class 'sub-point-model
-               ;    orientation (list
-               ;                 (translate (list 0 0 (/ (- ^^max-height) 1) ))
-               ;                 )
-                   )
                )
   )
 (define-class open-female-element
   :inherit-from (joint-element-model)
   :properties (
-               (sub-point-ref :class 'sub-point-model
-;;;                    orientation (list
-;;;                                 (translate (list 0 0 (/ ^^max-height 2) ))
-;;;                                 )
+			   ;; An open female joint could initially be placed at the wrong place, 
+			   ;; depending on the topology of the mechanism. Its sub-frame should
+			   ;; then be placed accordingly. The local z coordinate is translated,
+			   ;; as that's the direction from the main-frame to the sub-frame.
+               z-translation (get-translational-z-value (the superior))
+			   (sub-point-ref :class 'sub-point-model
+                   orientation (list
+								(translate (list 0 0 ^z-translation))
+                                )
                    )
                )
   )
+  
+;;Method finding the other joint on member, and then retrieving its max height.
+(define-method get-translational-z-value open-female-element ()
+	(let (
+		  (displayed-member
+			(loop for member in !members-connected-to-joint-element
+				when (the display? (:from member)) do
+				(return member)))
+		  )
+		 (loop for joint in (get-joints-on-member displayed-member)
+			when (not (eq (the) joint)) do
+			(return (-(get-max-height joint)))
+		  )
+	)
+)
   
 (define-class rigid-constraint-class
   :inherit-from (master-joint-model)

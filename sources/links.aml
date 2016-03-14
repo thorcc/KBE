@@ -387,7 +387,7 @@
                   formula (when (the cross-section-type (:from ^shape-ref)) t)
                   )
               
-              connection-between-constraints nil
+              connection-between-constraints nil ;;List of the two constraints on the member
               frame_D (the sub-frame (:from (nth 0 ^connection-between-constraints) ))
               frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
               point-ref_D (the point-ref (:from ^frame_D ))
@@ -395,13 +395,6 @@
               
               z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
               z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
-
-              
-              ;;unused property, should differentiate between commen-sweeps on start and end constraint
-              common-sweeps (loop for constraint in ^connection-between-constraints
-                              collect (remove !superior (the link-ref-on-constraint (:from constraint)))
-                              )
-    
               
               ;;cross section dimension, width 0.04 / height 0.04
               shape-ref nil
@@ -498,6 +491,11 @@
                )
   )
 
+(define-method get-joints-on-member member-solid-model ()
+	(when !connection-between-constraints
+		!connection-between-constraints)
+)
+  
  ;;; Left-click button methods for member-solid-model
 (define-method work-area-button1-action member-solid-model (params)
   (case params
