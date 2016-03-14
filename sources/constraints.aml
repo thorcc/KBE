@@ -22,8 +22,8 @@
                
                constraint-type (default nil)
                
-               from-link (nth (position (nth 0 ^link-incidence) ^^link-list) ^^link-ref-list)
-               to-link (nth (position (nth 1 ^link-incidence) ^^link-list) ^^link-ref-list)
+               ;from-link (nth (position (nth 0 ^link-incidence) ^^link-list) ^^link-ref-list)
+               ;to-link (nth (position (nth 1 ^link-incidence) ^^link-list) ^^link-ref-list)
                
                link-incidence (default nil)
 
@@ -37,6 +37,16 @@
 	!constraint-type
 	)
   
+(define-class load-model
+	:inherit-from (object)
+	:properties (
+				 load-type 		(default nil)
+				 magnitude 		(default nil)
+				 load-direction	(default nil)
+				 loadID			(default nil)
+				 )
+)
+ 
 ;;; Class for holding male and female instantiations as subobjects
 (define-class master-joint-model
   :inherit-from (general-joint-solid-model)
@@ -76,7 +86,19 @@
                                                 (the link-ref-incident-on-constraint (:from ^female-element-solid-model))
                                                 )
                
+			   (load-type :class 'option-property-class
+					mode 'menu
+					options-list (list 'force 'torque)
+					formula (nth 0 !options-list)
+					)
 			   
+			   (magnitude :class 'editable-data-property-class
+					formula (default 1)
+					)
+			   
+			   (load-direction :class 'editable-data-property-class
+					formula (default ^direction)
+					)
 			   
 			   ;;not in use from >>>>
 			   (constraint-type-selection :class 'option-property-class
@@ -131,6 +153,16 @@
 					;'("Change joint type" (button1-parameters :change-joint ui-work-area-action-button-class))
 					(the superior max-width self)
 					(the superior max-height self)
+					""
+					"Load case"
+					(list (the superior load-type self)
+						'(automatic-apply? t))
+					(list (the superior magnitude self)
+						'(automatic-apply? t))
+					(list (the superior load-direction self)
+						'(automatic-apply? t))
+					'("Apply load" (button1-parameters :apply-load)
+                                        ui-work-area-action-button-class)
 					)
 				)
 			   )
@@ -174,10 +206,19 @@
 		(:undraw
 			(undraw self)
 		)
-		;(:change-joint
-		;	(progn 
-		;		(change-value ^constraint-type 
-		;)
+		(:apply-load
+			(let (
+					(load-model (create-object 'load-model))
+				  )
+				 (progn 
+					(change-value (the load-type (:from load-model)) !load-type)
+					(change-value (the magnitude (:from load-model)) !magnitude)
+					(change-value (the load-direction (:from load-model)) !load-direction)
+					(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
+					(add-load (the superior superior) load-model)
+				 )
+			)
+		)
 	)
 )
  
