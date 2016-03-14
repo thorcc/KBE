@@ -819,14 +819,13 @@
 (defun write-joint-type-to-fmm (stream constraint baseID conID masterID slaveID)
 	
 	(if (equal "revolute" (get-constraint-type constraint))
-		(progn 
-		
-			(let (
-				  (unit-vector	(get-unit-vector constraint))
-				  (rot-angle (get-rot-angle constraint))
-				  (cos-rot-angle (cosd(rot-angle)))
-				  (sin-rot-angle (sind(rot-angle)))
-				)
+		(let (
+				(unit-vector (get-unit-vector constraint))
+				(rot-angle (get-rot-angle constraint))
+				(cos-rot-angle (cosd rot-angle))
+				(sin-rot-angle (sind rot-angle))
+			)
+			(progn 
 				(format stream "~a~%{~%" "REV_JOINT")
 				(format stream "BASE_ID = ~d;~%" baseID)
 				
@@ -877,14 +876,13 @@
 			)
 		)
 		(if (equal "spheric" (get-constraint-type constraint))
-			(progn 
-			
-				(let (
-					  (unit-vector	(get-unit-vector constraint))
-					  (rot-angle (get-rot-angle constraint))
-					  (cos-rot-angle (cosd(rot-angle)))
-					  (sin-rot-angle (sind(rot-angle)))
-					)
+			(let (
+				  (unit-vector	(get-unit-vector constraint))
+				  (rot-angle (get-rot-angle constraint))
+				  (cos-rot-angle (cosd rot-angle))
+				  (sin-rot-angle (sind rot-angle))
+				)
+				(progn
 					(format stream "~a~%{~%" "BALL_JOINT")
 					(format stream "BASE_ID = ~d;~%" baseID)
 					
