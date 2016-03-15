@@ -87,20 +87,24 @@
                                                 )
                
 			   (load-type :class 'option-property-class
-					mode 'menu
-					options-list (list 'force 'torque)
-					formula (nth 0 !options-list)
-					label "Load type"
+					mode 			'radio
+					options-list	(list 'force 'torque)
+					formula 		'torque
+					label 			"Load type"
 					)
-			   
-			   (magnitude :class 'editable-data-property-class
-					formula (default 1)
-					label "Magnitude"
+			   (magnitude :class 'var-unit-data-property-class
+					current-load (case ^^load-type
+									('force 'N)
+									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm));; Adding the unit should probably only be done once
+								  )
+					value-in 	1
+					unit-in 	^current-load
+					unit 		^current-load
+					label 		"Magntitude"
 					)
-			   
 			   (load-direction :class 'editable-data-property-class
-					formula (default ^direction)
-					label "Load direction"
+					formula 	(default ^direction)
+					label 		"Load direction vector"
 					)
 			   
 			   ;;not in use from >>>>
