@@ -580,7 +580,7 @@
 											
                source-object 			^difference-element ;; Used for geometry-with-split-periodic-faces-class
 			   
-               max-element-size 		0.05
+               max-element-size 		0.02
                tag-dimensions 			'(1 2 3)
                tag-attributes 			(list ^max-element-size .01 0 0.1 0 20.0 1.0e-5)
                default-shape 			(let(

@@ -90,14 +90,17 @@
 					mode 'menu
 					options-list (list 'force 'torque)
 					formula (nth 0 !options-list)
+					label "Load type"
 					)
 			   
 			   (magnitude :class 'editable-data-property-class
 					formula (default 1)
+					label "Magnitude"
 					)
 			   
 			   (load-direction :class 'editable-data-property-class
 					formula (default ^direction)
+					label "Load direction"
 					)
 			   
 			   ;;not in use from >>>>
@@ -208,14 +211,19 @@
 		)
 		(:apply-load
 			(let (
-					(load-model (create-object 'load-model))
+					(load-model (if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
+						!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
+						(create-object 'load-model)
+						nil))
 				  )
-				 (progn 
-					(change-value (the load-type (:from load-model)) !load-type)
-					(change-value (the magnitude (:from load-model)) !magnitude)
-					(change-value (the load-direction (:from load-model)) !load-direction)
-					(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
-					(add-load (the superior superior) load-model)
+				 (if load-model
+					(progn
+						(change-value (the load-type (:from load-model)) !load-type)
+						(change-value (the magnitude (:from load-model)) !magnitude)
+						(change-value (the load-direction (:from load-model)) !load-direction)
+						(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
+						(add-load (the superior superior) load-model)
+					)
 				 )
 			)
 		)
