@@ -461,8 +461,7 @@
 									)
                              )
 				 )
-	 )
-
+	 )	 
  
 (defun read-design-variables-from-file (stream)
 	(when stream
@@ -474,6 +473,53 @@
 			)
 		)
    )
+ 
+
+(define-class damper-model-class 
+	:inherit-from (object)
+	:properties (
+				 label nil
+				 from-constraint nil
+				 to-constraint nil
+				 )
+)
+ 
+(define-class spring-model-class
+	:inherit-from (object)
+	:properties (
+				 label nil
+				 from-constraint nil
+				 to-constraint nil
+				 )
+)
+  
+(define-class spring-damper-collection
+	:inherit-from (series-object collection-class)
+	:properties (
+				 collection-type 	'spring-damper
+				 series-prefix 		'spring-damper
+				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
+				 quantity			(length ^sd-list)
+				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
+				 init-form '(
+							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
+							 from-constraint	(nth 0 (nth 1 (nth ^index ^sd-list)))
+							 to-constraint		(nth 1 (nth 1 (nth ^index ^sd-list)))
+							 )
+				 )
+)
+
+(defun read-spring-damper-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
+			until (equal line :eof)
+			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+			for data = (list (nth 0 ls) (read-from-string (nth 1 ls))
+				(read-from-string (nth 2 ls)))
+			collect data
+			)
+		)
+)
   
 ;;; Creates the different collections (constraint, point, link, shape and meshdb) as subobjects
 (define-class mechanism-collection
@@ -597,7 +643,9 @@
                    )
                (design-variables :class 'design-variables-collection
 					)
-               (mesh-database :class 'meshdb-class
+               (spring-dampers :class 'spring-damper-collection
+					)
+			   (mesh-database :class 'meshdb-class
                    )
                )
   )
@@ -677,11 +725,26 @@
 			(undraw self)
 		)
 		(:bdf-export
-			(loop for link in !drawable-link-ref-list do
-				(the analysis nastran-interface run-nastran@ (:from link))
-				finally (write-fmm-model-file (the))
+			(if !loads-list 
+				(progn 
+					(write-nastran-bdf-files (the))
+					(write-fmm-model-file (the))
+				)
+				(if (equal "Yes" (pop-up-message (format nil "No loads have been added. Continue writing to FEDEM?")
+					:width 200 :done-label "Yes" :cancel-label "No")) ;; The pop-up-message returns the selected label
+					(progn 
+						(write-nastran-bdf-files (the))
+						(write-fmm-model-file (the))
+					)
+				)
 			)
 		)
+	)
+)
+
+(define-method write-nastran-bdf-files mechanism-collection ()
+	(loop for link in !drawable-link-ref-list do
+		(the analysis nastran-interface run-nastran@ (:from link))
 	)
 )
 
@@ -1147,7 +1210,7 @@
 	(format stream "FROM_OBJECT = -1 FcLINK;~%")
 	(format stream "FROM_POINT = 0 0 0;~%")
 	(format stream "TO_OBJECT = -1 FcLINK;~%")
-	(format stream "TO_POINT = ~d ~d ~d;~%}~3%" (nth 0 direction) (nth 1 direction) (nth 2 direction))
+	(format stream "TO_POINT = ~d ~d ~d;~%}~2%" (nth 0 direction) (nth 1 direction) (nth 2 direction))
 )
 
 (defun write-control-lines-to-fmm (stream baseID controlID ownerStart ownerEnd ful controlNo)
