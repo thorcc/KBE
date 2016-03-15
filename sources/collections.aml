@@ -473,6 +473,53 @@
 			)
 		)
    )
+ 
+
+(define-class damper-model-class 
+	:inherit-from (object)
+	:properties (
+				 label nil
+				 from-constraint nil
+				 to-constraint nil
+				 )
+)
+ 
+(define-class spring-model-class
+	:inherit-from (object)
+	:properties (
+				 label nil
+				 from-constraint nil
+				 to-constraint nil
+				 )
+)
+  
+(define-class spring-damper-collection
+	:inherit-from (series-object collection-class)
+	:properties (
+				 collection-type 	'spring-damper
+				 series-prefix 		'spring-damper
+				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
+				 quantity			(length ^sd-list)
+				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
+				 init-form '(
+							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
+							 from-constraint	(nth 0 (nth 1 (nth ^index ^sd-list)))
+							 to-constraint		(nth 1 (nth 1 (nth ^index ^sd-list)))
+							 )
+				 )
+)
+
+(defun read-spring-damper-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
+			until (equal line :eof)
+			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+			for data = (list (nth 0 ls) (read-from-string (nth 1 ls))
+				(read-from-string (nth 2 ls)))
+			collect data
+			)
+		)
+)
   
 ;;; Creates the different collections (constraint, point, link, shape and meshdb) as subobjects
 (define-class mechanism-collection
@@ -595,6 +642,8 @@
                (shapes :class 'shape-collection
                    )
                (design-variables :class 'design-variables-collection
+					)
+               (spring-dampers :class 'spring-damper-collection
 					)
 			   (mesh-database :class 'meshdb-class
                    )
