@@ -572,7 +572,7 @@
                (folders :class 'folder-collection
                    )
 				
-			   loads-list '()
+			   loads-list '() ;; When a user creates a load, it will be added here
 			   ;write-to-file (write-save-fedem-solver !superior)
 			   
 			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
@@ -602,6 +602,7 @@
                )
   )
 
+;; Adds a load-model object to the loads-list in mechanism-collection  
 (define-method add-load mechanism-collection (load)
 	(change-value !loads-list (append !loads-list (list load)))
 )
@@ -1001,19 +1002,11 @@
 			)
 			
 			;;Loads
-			(setf baseID (1+ baseID))
-			(format stream "LOAD~%{~%")
-			(format stream "BASE_ID = ~d;~%" baseID)
-			(format stream "ID = 1;~%")
-			(format stream "ENGINE = 1 FcENGINE;~%")
-			(format stream "OWNER_TRIAD = ~d;~%" (the loadID (:from (nth 0 loads-list))))
-			(format stream "LOAD_TYPE = 1;~%")
-			(format stream "INIT_LOAD = 0;~%")
-			(format stream "SCALE_LOAD = 1;~%")
-			(format stream "FROM_OBJECT = -1 FcLINK;~%")
-			(format stream "FROM_POINT = 0 0 0;~%")
-			(format stream "TO_OBJECT = -1 FcLINK;~%")
-			(format stream "TO_POINT = 0 0 0.1;~%}~3%")
+			(loop for i from 0 to (1- (length loads-list)) do
+				(setf baseID (1+ baseID))
+				(write-loads-to-fmm stream baseID (1+ i) (the loadID (:from (nth i loads-list)))
+					(the load-type (:from (nth i loads-list))) (the load-direction (:from (nth i loads-list))))
+			)
 			
 			;;Function definitions
 			(setf baseID (1+ baseID))
@@ -1023,7 +1016,7 @@
 			(format stream "SCALE = 1;~%}~2%")
 			
 			(setf baseID (1+ baseID))
-			(format stream "FUNC_LIM-RAMP~%{~%")
+			(format stream "FUNC_LIM_RAMP~%{~%")
 			(format stream "BASE_ID = ~d;~%" baseID)
 			(format stream "ID = 1;~%")
 			(format stream "AMPLITUDE_DISPLACEMENT = 0;~%")
@@ -1070,7 +1063,7 @@
 				 )
 			)
 			
-			;;Curves. Need to set triad ids!!!!
+			;;Curves. Need to set triad ids??
 			(let (
 				  (descr (list "\"Set 0\"" "\"Set 0\"" "\"Set 0\"" "\"Tip placement\""))
 				  (x-result (list "<\"SCALAR\",\"Physical time\">" "<\"SCALAR\",\"Physical time\">" 
@@ -1124,7 +1117,7 @@
 )
 
 (defun write-engines-to-fmm (stream baseID ID descr sensor math-func entity dof)
-	(format stream "ENGINE  {~%")
+	(format stream "ENGINE~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
 	(format stream "DESCR = ~a;~%" descr)
@@ -1142,6 +1135,21 @@
 	(format stream "MEASURED = ~a;~%}~2%" measured)
 )
 
+(defun write-loads-to-fmm (stream baseID ID owner-triad load-type direction)
+	(format stream "LOAD~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = 1;~%")
+	(format stream "ENGINE = 1 FcENGINE;~%")
+	(format stream "OWNER_TRIAD = ~d;~%" owner-triad)
+	(format stream "LOAD_TYPE = ~d;~%" (if (equal "force" load-type) 0 1))
+	(format stream "INIT_LOAD = 0;~%") ;;;;;;;;;!!!!!!!!!!!!
+	(format stream "SCALE_LOAD = 1;~%") ;;;;;;;!!!!!!!!!!!!!!!
+	(format stream "FROM_OBJECT = -1 FcLINK;~%")
+	(format stream "FROM_POINT = 0 0 0;~%")
+	(format stream "TO_OBJECT = -1 FcLINK;~%")
+	(format stream "TO_POINT = ~d ~d ~d;~%}~3%" (nth 0 direction) (nth 1 direction) (nth 2 direction))
+)
+
 (defun write-control-lines-to-fmm (stream baseID controlID ownerStart ownerEnd ful controlNo)
 	(format stream "CONTROL_LINE~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
@@ -1157,7 +1165,7 @@
 
 
 (defun write-control-io-to-fmm (stream name baseID ID engine position &optional (rate nil))
-	(format stream "~a;~%{~%" name)
+	(format stream "~a~%{~%" name)
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
 	(format stream "ENGINE = ~a;~%" engine)
