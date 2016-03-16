@@ -58,15 +58,18 @@
 			   (max-width :class 'editable-data-property-class
 					label "Max width"
 					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
-					formula (let (
+				formula (let (
 								   (fem-max (first (the local-max-dimension (:from ^female-element-solid-model))))
 								   (male-max (first (the local-max-dimension (:from ^male-element-solid-model)) ))
 								  )
 								  (if (and fem-max male-max)
-									  (* ^scale-factor (max fem-max male-max ))
-									   nil
+									  (* ^scale-factor (max fem-max male-max))
+									  (if fem-max
+										(* ^scale-factor fem-max)
+										(* ^scale-factor male-max)
+									  )
 									)
-							)
+								)
 					available? ^formula
 				)
                (max-height :class 'editable-data-property-class
@@ -77,8 +80,11 @@
 								   (male-max (second (the local-max-dimension (:from ^male-element-solid-model)) ))
 								  )
 								  (if (and fem-max male-max)
-									  (* ^scale-factor (max fem-max male-max ))
-									   nil
+									  (* ^scale-factor (max fem-max male-max))
+									  (if fem-max
+										(* ^scale-factor fem-max)
+										(* ^scale-factor male-max)
+									  )
 									)
 							)
                 )
