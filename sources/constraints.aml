@@ -38,12 +38,14 @@
 	)
   
 (define-class load-model
-	:inherit-from (object)
+	:inherit-from (union-object)
 	:properties (
 				 load-type 		(default nil)
 				 magnitude 		(default nil)
 				 load-direction	(default nil)
 				 loadID			(default nil)
+				 
+				 
 				 )
 )
  
@@ -190,8 +192,19 @@
                )
   )
  
+(define-method get-female-element master-joint-model ()
+	(the female-element-solid-model)
+)
+ 
 (define-method get-joint-direction-vector master-joint-model () 
 	(the male-element-solid-model direction) 
+)
+
+(define-method get-main-frame-coords master-joint-model (&optional params)
+	(if params
+		(nth params !origin)
+		!origin
+	)
 )
 
 (define-method is-open-constraint master-joint-model ()
