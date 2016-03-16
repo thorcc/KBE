@@ -476,35 +476,72 @@
  
 
 (define-class damper-model-class 
-	:inherit-from (object)
+	:inherit-from (line-object)
 	:properties (
-				 label nil
-				 from-constraint nil
-				 to-constraint nil
+				 ;; 'nil' properties are set on instantiation
+				 label 				nil
+				 from-number 		nil
+				 to-number 			nil
+				 ground-coords		nil
+				 
+				 type				'damper
+				 from-constraint	(get-constraint (the superior superior superior) ^from-number)
+				 to-constraint		(if (= -1 ^to-number) 
+										nil
+										(get-constraint (the superior superior superior) ^to-number)
+									)
+				 
+				 point1				(get-main-frame-coords ^from-constraint)
+				 point2				(if ^to-constraint
+										(get-main-frame-coords ^to-constraint)
+										^ground-coords
+									)
+				 
+				 line-width 		6
+				 color				'magenta
 				 )
 )
  
 (define-class spring-model-class
-	:inherit-from (object)
+	:inherit-from (line-object)
 	:properties (
-				 label nil
-				 from-constraint nil
-				 to-constraint nil
-				 )
+				 ;; 'nil' properties are set on instantiation
+				 label 				nil
+				 from-number		nil
+				 to-number 			nil
+				 ground-coords		nil
+				 
+				 type 				'spring
+				 from-constraint	(get-constraint (the superior superior superior) ^from-number)
+				 to-constraint		(if (= -1 ^to-number) 
+										nil
+										(get-constraint (the superior superior superior) ^to-number)
+									)
+				 
+				 point1				(get-main-frame-coords ^from-constraint)
+				 point2				(if ^to-constraint
+										(get-main-frame-coords ^to-constraint)
+										^ground-coords
+									)
+				 
+				 line-width			6
+				 color				'purple
+				)
 )
   
 (define-class spring-damper-collection
 	:inherit-from (series-object collection-class)
 	:properties (
 				 collection-type 	'spring-damper
-				 series-prefix 		'spring-damper
+				 ;series-prefix 		'spring-damper
 				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
 				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
 				 init-form '(
 							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-constraint	(nth 0 (nth 1 (nth ^index ^sd-list)))
-							 to-constraint		(nth 1 (nth 1 (nth ^index ^sd-list)))
+							 from-number		(nth 0 (nth 1 (nth ^index ^sd-list)))
+							 to-number			(nth 1 (nth 1 (nth ^index ^sd-list)))
+							 ground-coords		(nth 2 (nth ^index ^sd-list))
 							 )
 				 )
 )
@@ -514,8 +551,7 @@
 		(loop for line = (read-line stream  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (nth 0 ls) (read-from-string (nth 1 ls))
-				(read-from-string (nth 2 ls)))
+			for data = (list (nth 0 ls) (read-from-string (nth 1 ls)) (read-from-string (nth 2 ls)))
 			collect data
 			)
 		)
@@ -533,6 +569,8 @@
 						
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
+			   springs-ref-list (children ^spring-dampers :class 'spring-model-class)
+			   dampers-ref-list (children ^spring-dampers :class 'damper-model-class)
 			   
 			   drawable-link-ref-list (loop for link in ^link-ref-list
 										if (the is-link-drawable? (:from link)) 
@@ -631,6 +669,27 @@
 			   
 			   p (the version-path (:from ^version-selection))
 			   mechanism-type (the folder (:from ^mechanism-selection))
+			   mechanism-size (let (
+									 (max-x 0)
+									 (max-y 0)
+									 (max-z 0)
+									)
+								   (loop for point in ^point-ref-list do
+									 (progn
+										 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
+											(setf max-x (abs (nth 0 (the coordinates (:from point)))))
+										 )
+										 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
+											(setf max-y (abs (nth 1 (the coordinates (:from point)))))
+										 )
+										 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
+											(setf max-z (abs (nth 2 (the coordinates (:from point)))))
+										 )
+									 )
+									 ;; Return the greatest distance within the mechanism
+									 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
+								   )
+								)
                )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -672,6 +731,10 @@
 ;		 
 ;	)
 ;)
+ 
+(define-method get-constraint mechanism-collection (constraint-number)
+	(nth constraint-number !constraints-ref-list)
+)
  
 (define-method get-drawable-links mechanism-collection ()
 	(when !drawable-link-ref-list
@@ -750,9 +813,10 @@
 
 (define-method write-fmm-model-file mechanism-collection ()
 	(let (
-		  (baseID 2)
-		  (linkID 0)
-		  (conID 0)
+		  (baseID 			2)
+		  (linkID			0)
+		  (conID 			0)
+		  (triads-written	0)
 		  )
 		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) (concatenate "model" ".fmm") )
 							  :direction :output
@@ -788,10 +852,14 @@
 						  (number-of-nodes 	(length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
 						  (counter 			0)
 						  )
-						(loop for constraint in (get-non-open-constraints-incident-on-link-list link) do
+						;; For each non-open joint element on a link, we need to write a triad connected to the 
+						;; joint element's RBE2 FE node.
+						(loop for joint-element in (get-non-open-constraints-incident-on-link-list link) do
 							(setf baseID (1+ baseID))
 							(setf counter (1+ counter))
-							(write-triad-to-fmm stream constraint baseID linkID (+ number-of-nodes counter))
+							(write-triad-to-fmm stream baseID (get-joint-element-id joint-element) 
+								(get-main-frame-coords joint-element) linkID (+ number-of-nodes counter))
+							(setf triads-written (1+ triads-written))
 						)
 					)
 				)
@@ -809,7 +877,9 @@
 							(progn 
 								(write-joint-type-to-fmm stream constraint baseID conID (1+ triadID) triadID)
 								(setf baseID (1+ baseID))
-								(write-triad-to-fmm stream (the female-element-solid-model (:from constraint)) baseID -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+								(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
+									(get-main-frame-coords (the female-element-solid-model (:from constraint))) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+								(setf triads-written (1+ triads-written))
 							)
 							;;Case 2: female element has a drawable link, male does not
 							;;Master triad is the ground, slave triad is the female element
@@ -817,7 +887,9 @@
 								(progn
 									(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
 									(setf baseID (1+ baseID))
-									(write-triad-to-fmm stream (the male-element-solid-model (:from constraint)) baseID -1 -1)
+									(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
+										(get-main-frame-coords (the male-element-solid-model (:from constraint))) -1 -1)
+									(setf triads-written (1+ triads-written))
 								)
 								;;Case 3: both elements have drawable links
 								;;Master triad is the male element, slave triad is the female element
@@ -825,6 +897,26 @@
 								(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
 							)
 						)
+					)
+				)
+				(loop for spring in !springs-ref-list do 
+					(setf baseID (1+ baseID))
+					(let (
+						   ;; If the joint element is open, we have to create an RBE connected to the link, and create a free joint in fedem
+						   (triad1-ID (get-joint-element-id (get-female-element (the from-constraint (:from spring)))))
+						   (triad2-ID (if (the to-constraint (:from spring))
+										(get-joint-element-id (get-female-element (the to-constraint (:from spring))))
+										(progn 
+											;;A ground triad has to made if one part of the spring is not connected to a constraint:
+											(write-triad-to-fmm stream baseID (1+ triads-written) (the ground-coords (:from spring)) -1 -1) 
+											(setf triads-written (1+ triads-written))
+											triads-written ;; This is the triad2-iD
+										)
+									  ))
+						   ;(coords (get-main-frame-coords (get-female-element (the from-constraint (:from spring)))))
+						  )
+						 (write-spring-properties-to-fmm stream baseID (1+ (the index (:from spring))) 
+							triad1-ID triad2-ID)
 					)
 				)
 				(setf baseID (1+ baseID))
@@ -867,21 +959,20 @@
 	)
 )
 
-(defun write-triad-to-fmm (stream constraint baseID linkID node-number)
-	(progn
-		(format stream "TRIAD~%{~%")
-		(format stream "BASE_ID = ~d;~%" baseID)
-		(format stream "ID = ~d;~%" (get-joint-element-id constraint))
-		(format stream "COORDINATE_SYSTEM = ~%")
-		(format stream "1.0 0.0 0.0 ~d~%" (get-main-frame-coords constraint 0))
-		(format stream "0.0 1.0 0.0 ~d~%" (get-main-frame-coords constraint 1))
-		(format stream "0.0 0.0 1.0 ~d;~%" (get-main-frame-coords constraint 2))
-		(format stream "LOCAL_DIRECTIONS = GLOBAL;~%")
-		(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
-		(format stream "OWNER_LINK = ~d;~%" linkID)
-		(format stream "FE_NODE_NO = ~d;~%" node-number)
-		(format stream "NDOFS = 6;~%}~3%")
-	)
+(defun write-triad-to-fmm (stream baseID ID coords linkID node-number)
+	(setf *number-of-triads* (1+ *number-of-triads*))
+	(format stream "TRIAD~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "COORDINATE_SYSTEM = ~%")
+	(format stream "1.0 0.0 0.0 ~d~%" (nth 0 coords))
+	(format stream "0.0 1.0 0.0 ~d~%" (nth 1 coords))
+	(format stream "0.0 0.0 1.0 ~d;~%" (nth 2 coords))
+	(format stream "LOCAL_DIRECTIONS = GLOBAL;~%")
+	(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+	(format stream "OWNER_LINK = ~d;~%" linkID)
+	(format stream "FE_NODE_NO = ~d;~%" node-number)
+	(format stream "NDOFS = 6;~%}~3%")
 )
 
 (defun write-joint-type-to-fmm (stream constraint baseID conID masterID slaveID)
@@ -1004,6 +1095,17 @@
 	)
 )
 
+
+
+(defun write-spring-properties-to-fmm (stream baseID ID triad1 triad2)
+	(format stream "AXIAL_SPRING~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "INIT_LENGTH = 0;~%")
+	(format stream "INIT_STIFFNESS = 750000;~%")
+	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%" triad1 triad2)
+	(format stream "USE_INIT_DEFLECTION = true;~%}~2%")
+)
 
 (defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
 	(format stream "ANALYSIS~%{~%")
