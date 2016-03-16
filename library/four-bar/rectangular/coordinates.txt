@@ -3,4 +3,3 @@
 "Rocker bearing"	0.3	0.0	0.0	"(crank-rocker-distance)"		nil	nil
 "Rocker top"		0.3	0.375	0.0	"(rocker-height crank-rocker-distance)"	"L1"	nil
 "Coupler end"		0.6	0.6	0.0	nil					"L1"	t
-"Nurb"			0.5	0.5	0.0	nil
