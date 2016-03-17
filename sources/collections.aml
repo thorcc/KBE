@@ -657,7 +657,6 @@
                    )
 				
 			   loads-list '() ;; When a user creates a load, it will be added here
-			   ;write-to-file (write-save-fedem-solver !superior)
 			   
 			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
 			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
@@ -669,27 +668,6 @@
 			   
 			   p (the version-path (:from ^version-selection))
 			   mechanism-type (the folder (:from ^mechanism-selection))
-			   mechanism-size (let (
-									 (max-x 0)
-									 (max-y 0)
-									 (max-z 0)
-									)
-								   (loop for point in ^point-ref-list do
-									 (progn
-										 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
-											(setf max-x (abs (nth 0 (the coordinates (:from point)))))
-										 )
-										 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
-											(setf max-y (abs (nth 1 (the coordinates (:from point)))))
-										 )
-										 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
-											(setf max-z (abs (nth 2 (the coordinates (:from point)))))
-										 )
-									 )
-									 ;; Return the greatest distance within the mechanism
-									 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
-								   )
-								)
                )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -713,7 +691,31 @@
 (define-method add-load mechanism-collection (load)
 	(change-value !loads-list (append !loads-list (list load)))
 )
-  
+
+;; Returns the greatest distance within the mechanism
+(define-method calculate-mechanism-size mechanism-collection ()
+	(let (
+		 (max-x 0)
+		 (max-y 0)
+		 (max-z 0)
+		)
+	   (loop for point in !point-ref-list do
+		 (progn
+			 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
+				(setf max-x (abs (nth 0 (the coordinates (:from point)))))
+			 )
+			 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
+				(setf max-y (abs (nth 1 (the coordinates (:from point)))))
+			 )
+			 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
+				(setf max-z (abs (nth 2 (the coordinates (:from point)))))
+			 )
+		 )
+		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
+	   )
+	)
+)
+
 ;(define-method add-point-to-line-group mechanism-collection ()
 ;	(let (
 ;		  (line-groups-list '() )
@@ -960,7 +962,6 @@
 )
 
 (defun write-triad-to-fmm (stream baseID ID coords linkID node-number)
-	(setf *number-of-triads* (1+ *number-of-triads*))
 	(format stream "TRIAD~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
