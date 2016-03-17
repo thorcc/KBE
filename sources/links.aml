@@ -80,31 +80,23 @@
   (* (expt 10 (* 0.2 (- grade 1))) (+ (* 0.45 (expt d (/ 1 3))) (* 0.001 d)))
   )
 
-;;; Model creating a thickened surface from three connected curves (surface-from-three-edge-curves-class)
+;;; Model creating a thickened surface from three connected curves
 (define-class surface-data-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
                tag-dimensions '(1 2 3)
                tag-attributes (list ^^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
-				
-			   members nil
+									
+               
 			   
-			   ;; Each curve is a nurb-curve-object. The values are set on instantiation	
-			   curve-1 nil
-			   curve-2 nil
-			   curve-3 nil
-			   
-			   ;; A surface can't be displayed if one of its composing member isn't displayed, or if one member doesn't have a valid geometry
 			   (display? :class 'flag-property-class
                    formula  (loop for i in ^edge-combination
-                              when (or (not (the display? (:from (nth i ^members)))) 
-									   (not (the connection geom (:from (nth i ^members)))))
+                              when (or (not (the display? (:from (nth i ^members-ref-list)))) (not (the connection geom (:from (nth i ^members-ref-list)))) )
                               do (return nil)
                               finally (> ^thickness 0)
                               )
-                   label "Display the surface?"
-				   )
+                   )
                edge-combination nil
 			   
 			   ;;; The source-object HAS to be nil when it can't be displayed. If not, there will be a null geom error
@@ -112,7 +104,7 @@
 
                ;;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
-                           minimize (max-height (the cross-section_D (:from (nth i ^members))))
+                           minimize (max-height (the cross-section_D (:from (nth i ^members-ref-list))))
                            ))
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)
@@ -120,37 +112,26 @@
                color 'red
 
                property-objects-list (list 
-                                      '("Draw surface" (button1-parameters :draw-shell)
-                                        ui-work-area-action-button-class)
+                                      (list (the superior display? self)
+                                            '(automatic-apply? t)
+                                            )
                                       )
-
+               )
+  :subobjects (
                (surface :class 'surface-from-three-edge-curves-class
-                   edge-1-object ^^curve-1
-                   edge-2-object ^^curve-2
-                   edge-3-object ^^curve-3
+			       ;;; the connection is a nurb-curve-object
+                   edge-1-object (the connection (:from (nth (nth 0 ^edge-combination) ^members-ref-list)) )
+                   edge-2-object (the connection (:from (nth (nth 1 ^edge-combination) ^members-ref-list)) )
+                   edge-3-object (the connection (:from (nth (nth 2 ^edge-combination) ^members-ref-list)) )
                    )
                )
   )
 
-(define-method work-area-button1-action surface-data-model (params)
-	(case params
-		(:draw-shell
-			(if !geom
-				(draw self)
-				(if (equal "Yes" (pop-up-message (format nil "No surface with thickness could be drawn. Draw unthickened surface?")
-						:width 200 :done-label "Yes" :cancel-label "No"))
-					(progn 
-						(change-value !display? t)
-						(draw !surface)
-					)))))
-)
-  
 ;;; Instantiates every surface-data-model on a link 
 (define-class surfaces-on-link-collection
   :inherit-from (series-object)
   :properties (
-               members-list nil ;;Value is set on instantiation
-			   closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
+               closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
                visible-members-index (loop for mem in ^visible-members-ref-list
                                        collect (the index (:from mem))
                                        )
@@ -159,11 +140,7 @@
                class-expression 'surface-data-model
                series-prefix 'surface
                init-form '(
-							members 			^members-list
-							edge-combination	(nth ^index ^valid-surface-loops)
-							curve-1 			(the connection (:from (nth (nth 0 ^edge-combination) ^members-list)))
-							curve-2 			(the connection (:from (nth (nth 1 ^edge-combination) ^members-list)))
-							curve-3 			(the connection (:from (nth (nth 2 ^edge-combination) ^members-list)))
+                           edge-combination (nth ^index ^valid-surface-loops)
                            )
                )
   )
@@ -587,10 +564,6 @@
                )
   )
 
-(define-method get-members members-on-link-collection ()
-	(children (the))
-)
- 
 ;;; Class generating a link's total geometry, including joints
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
@@ -697,7 +670,7 @@
 				render 'shaded
 				
 				;; This list collects the members that can be drawed.
-				;; If it is empty, this link will not be considered in the mesh or analysis
+				;; If it is empty, this links will not be considered in the mesh or analysis
 				drawable-members-ref-list 	(loop for member in ^members-ref-list 
 												if (the geom (:from member)) 
 													collect member
@@ -705,7 +678,6 @@
                )
   :subobjects (
                (surfaces :class 'surfaces-on-link-collection
-					members-list (get-members ^^sweeps)
                    )
                (sweeps :class 'members-on-link-collection
                    )
@@ -746,7 +718,8 @@
   :inherit-from (object)
   :properties (
                ;; properties set from parent init-form
-               constraints-incident-on-link-list 				nil
+               label											nil
+			   constraints-incident-on-link-list 				nil
                connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
