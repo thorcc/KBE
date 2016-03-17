@@ -43,7 +43,8 @@
 			   
 			   init-form '(
                            point-ref 			(nth (nth 0 (nth !index ^constraint-list)) ^point-ref-list)
-                           constraint-type 		(nth 1 (nth !index ^constraint-list))
+                           label 				(concatenate (nth 1 (nth !index ^constraint-list)) " " (write-to-string (nth 2 (nth !index ^constraint-list))))
+						   constraint-type 		(nth 1 (nth !index ^constraint-list))
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
@@ -259,13 +260,21 @@
                                   )
                                (if def def ^init-default-shape)
                                )
+							   
+               shape-list (remove-duplicates (loop for kid in (the shapes-ref-list)
+								collect (list (the label (:from kid)) (the link-ref (:from kid)))
+							))
 							
 			   quantity (length ^link-list)
                class-expression 'link-model-class
                series-prefix 'link
                init-form '(
                            link-index (nth ^index ^^link-list)
-                           constraints-incident-on-link-list (loop for kid in (the constraints-ref-list)
+                           label (loop for shape in ^shape-list
+									if (equal ^index (nth 1 shape))
+									 do (return (nth 0 shape))
+							   )
+						   constraints-incident-on-link-list (loop for kid in (the constraints-ref-list)
                                                                for con = (get-constraint-incidence kid ^link-index)
                                                                when con collect con
                                                                )
@@ -419,7 +428,6 @@
 		)
 	)
 )
-
 
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
@@ -577,7 +585,8 @@
 							)
 						)
 						
-               constraints-ref-list (children ^constraints :class 'master-joint-model)
+			   constraints-ref-list (children ^constraints :class 'master-joint-model)
+			   shapes-ref-list (children ^shapes :class 'shape-data-model)
                link-ref-list (children ^links :class 'link-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list
@@ -682,7 +691,7 @@
                    )
                (points :class 'point-collection
                    )
-               (links :class 'link-collection
+			   (links :class 'link-collection
                    )
 			   (shapes :class 'shape-collection
                    )
