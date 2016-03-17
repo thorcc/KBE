@@ -44,9 +44,66 @@
 				 magnitude 		(default nil)
 				 load-direction	(default nil)
 				 loadID			(default nil)
+				 load-point		(default nil)
+				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^load-direction) (/ ^mechanism-size 6))) ;;This defines the line length, controlled by the size of the mechanism
+				 total-vector 	(subtract-points ^end-point ^load-point) ;; Just to get the scalar with the vector
+				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
+				 translation	(default nil)
 				 
+				 ;;Visual geometry
+				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^load-direction))
+				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
+				 mirror-line 				(compute-plane-normal ^load-point ^end-point ^random-direction-normal)
+				 arrow-vector1 				(add-points 
+														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
+														(multiply-vector-by-scalar ^random-direction-normal (/ ^mechanism-size 70)) ;; How far the arrow points move from the line 
+														)
+				 arrow-vector2 				(add-points 
+														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
+														(multiply-vector-by-scalar ^negative-random (/ ^mechanism-size 70)) 
+														)
 				 
-				 )
+				 object-list (case ^load-type
+							  ('force (list ^line ^arrow1 ^arrow2 ))
+							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
+							  ) 
+				 
+				 (line :class 'line-object
+					point1 ^^load-point
+					point2 ^^end-point
+					)
+				 (arrow1 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector1 
+					)
+				 (arrow2 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector2
+					)
+				 (arrow3 :class 'line-object
+					point1 			^^load-point
+					point2 			^^arrow-vector1
+					orientation 	(list (translate
+											(multiply-vector-by-scalar ^total-vector 0.1)
+											))
+					)
+				 (arrow4 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector2
+					orientation (list (translate
+										(multiply-vector-by-scalar ^total-vector 0.1)
+										))
+					)
+				 color (case ^load-type
+						('force 'orange)
+						('torque 'red)
+						)
+				 orientation (list (translate 
+									(multiply-vector-by-scalar (normalize ^load-direction) (* -1 ^translation))
+									))
+				 
+				 line-width 1
+				)
 )
  
 ;;; Class for holding male and female instantiations as subobjects
@@ -149,6 +206,16 @@
 					)
 			   ;;Not in use to <<<<
 			   
+			   (load-case :class 'load-model
+					load-type 		^^load-type
+					load-point 		^^origin
+					magnitude 		^^magnitude
+					load-direction 	^^load-direction
+					loadID			(1+ (get-male-triad-id-from-master-joint-model (the superior superior)))
+					mechanism-size	(calculate-mechanism-size (the superior superior superior superior)) ;;Bad code. The reference is to the mechanism-collection
+					translation		^^max-height
+					)
+					
 			   ;;Only display properties for non-open constraints
 			   property-objects-list (if (is-open-constraint (the superior)) 
 				(list "This is an open constraint. No properties can be edited.") 
@@ -178,7 +245,7 @@
 						'(automatic-apply? t))
 					'("Apply load" (button1-parameters :apply-load)
                                         ui-work-area-action-button-class)
-					)
+					)	
 				)
 			   )
   :subobjects (
@@ -233,22 +300,30 @@
 			(undraw self)
 		)
 		(:apply-load
-			(let (
-					(load-model (if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
-						!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
-						(create-object 'load-model)
-						nil))
-				  )
-				 (if load-model
+			(if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
+					!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
 					(progn
-						(change-value (the load-type (:from load-model)) !load-type)
-						(change-value (the magnitude (:from load-model)) !magnitude)
-						(change-value (the load-direction (:from load-model)) !load-direction)
-						(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
-						(add-load (the superior superior) load-model)
+						(add-load (the superior superior) !load-case)
+						(draw !load-case)
 					)
-				 )
 			)
+			;(let (
+			;		(load-model (if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
+			;			!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
+			;			(create-object 'load-model)
+			;			nil))
+			;	  )
+			;	 (if load-model
+			;		(progn
+			;			(change-value (the load-type (:from load-model)) !load-type)
+			;			(change-value (the magnitude (:from load-model)) !magnitude)
+			;			(change-value (the load-direction (:from load-model)) !load-direction)
+			;			(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
+			;			(change-value (the mechanism-size (:from load-model)) (calculate-mechanism-size (the superior superior)))
+			;			(add-load (the superior superior) load-model)
+			;		)
+			;	 )
+			;)
 		)
 	)
 )
