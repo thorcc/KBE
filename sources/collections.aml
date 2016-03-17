@@ -34,20 +34,7 @@
 ;;; Executes the read-from-file method and creates the corresponding subobjects for the constraints
 (define-class constraint-collection
   :inherit-from (series-object collection-class)
-  :properties (
-               ;;Traverse to Superior reference
-;;;                point-ref-list nil
-			   
-			   property-objects-list (list
-									  '("Draw all joints" (button1-parameters :draw-joints )
-                                        ui-work-area-action-button-class)
-									  '("Draw all joints with mating nodes" (button1-parameters :draw-joints-mesh)
-                                        ui-work-area-action-button-class)
-										""
-										'("Undraw" (button1-parameters :undraw)
-                                        ui-work-area-action-button-class)
-									  )
-					
+  :properties (	
                collection-type 'constraints
                constraint-list (cdr (read-from-file !superior))
                quantity (length ^constraint-list)
@@ -62,8 +49,23 @@
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
 						   id 					(+ ^index 1)
                            )
-               )
+						   
+               property-objects-list (list
+									  '("Draw all joints" (button1-parameters :draw-joints )
+                                        ui-work-area-action-button-class)
+									  '("Draw all joints with mating nodes" (button1-parameters :draw-joints-mesh)
+                                        ui-work-area-action-button-class)
+										""
+										'("Undraw" (button1-parameters :undraw)
+                                        ui-work-area-action-button-class)
+									  )
+			   )
   )
+  
+(define-method get-constraints constraint-collection ()
+	(children (the) :class 'master-joint-model)
+)
+  
 ;;; Button actions for drawing joints, with error-handler
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
@@ -257,8 +259,8 @@
                                   )
                                (if def def ^init-default-shape)
                                )
-               
-               quantity (length ^link-list)
+							
+			   quantity (length ^link-list)
                class-expression 'link-model-class
                series-prefix 'link
                init-form '(
@@ -557,20 +559,26 @@
 		)
 )
   
+(define-method get-springs spring-damper-collection ()
+	(children (the) :class 'spring-model-class)
+)
+
+(define-method get-dampers spring-damper-collection ()
+	(children (the) :class 'damper-model-class)
+)
+ 
 ;;; Creates the different collections (constraint, point, link, shape and meshdb) as subobjects
 (define-class mechanism-collection
   :inherit-from (data-model-node-mixin)
   :properties (
                point-ref-list (children ^points :class 'point-data-model )
 			   build (remove nil(loop for point in ^point-ref-list
-							do collect (add-point-to-line-group point)
+							collect (add-point-to-line-group point)
 							)
 						)
 						
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                link-ref-list (children ^links :class 'link-model-class)
-			   springs-ref-list (children ^spring-dampers :class 'spring-model-class)
-			   dampers-ref-list (children ^spring-dampers :class 'damper-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list
 										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
@@ -676,7 +684,7 @@
                    )
                (links :class 'link-collection
                    )
-               (shapes :class 'shape-collection
+			   (shapes :class 'shape-collection
                    )
                (design-variables :class 'design-variables-collection
 					)
@@ -895,7 +903,7 @@
 						)
 					)
 				)
-				(loop for spring in !springs-ref-list do 
+				(loop for spring in (get-springs !spring-dampers) do 
 					(setf baseID (1+ baseID))
 					(let (
 						   ;; If the joint element is open, we have to create an RBE connected to the link, and create a free joint in fedem
