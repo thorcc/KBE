@@ -49,7 +49,7 @@
 									  )
 					
                collection-type 'constraints
-               constraint-list (read-from-file !superior)
+               constraint-list (cdr (read-from-file !superior))
                quantity (length ^constraint-list)
                class-expression '(read-from-string (concatenate (nth 1 (nth !index !constraint-list)) "-constraint-class"))
                series-prefix 'c
@@ -126,7 +126,7 @@
   :inherit-from (series-object collection-class)
   :properties (
                collection-type 	'coordinates
-               points-list 		(read-from-file !superior)
+               points-list 		(cdr (read-from-file !superior))
                quantity 		(length ^points-list)
                class-expression	'point-data-model
                series-prefix 	'p
@@ -147,7 +147,7 @@
       until (equal line :eof)
 	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
 	  for coord-line = (list
-	  (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (read-from-string (nth 4 ls)) (read-from-string (nth 5 ls)) (nth 6 ls) )
+		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls)) (nth 7 ls) )
       collect coord-line
       )
     )
@@ -172,7 +172,7 @@
   :properties (
 ;;;                points-list (FORMATTED-list-FROM-FILE (logical-path MECHANISM-LIBRARY "coordinates.txt") :element-format '(x y z))
                collection-type 'shapes
-               shapes-list (read-from-file !superior)
+               shapes-list (cdr (read-from-file !superior))
                quantity (length ^shapes-list)
                class-expression 'shape-data-model
                series-prefix 'shape
@@ -572,8 +572,8 @@
 			   springs-ref-list (children ^spring-dampers :class 'spring-model-class)
 			   dampers-ref-list (children ^spring-dampers :class 'damper-model-class)
 			   
-			   drawable-link-ref-list (loop for link in ^link-ref-list
-										if (the is-link-drawable? (:from link)) 
+			   final-link-ref-list (loop for link in ^link-ref-list
+										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
 											collect link)
 											
 			   non-open-constraints-list (when ^constraints-ref-list
@@ -738,12 +738,6 @@
 	(nth constraint-number !constraints-ref-list)
 )
  
-(define-method get-drawable-links mechanism-collection ()
-	(when !drawable-link-ref-list
-		!drawable-link-ref-list)
-)
- 
-
 (define-method get-mechanism-type mechanism-collection ()
 	(the mechanism-selection label)
 )
@@ -766,21 +760,21 @@
 	(case params
 
 		(:draw-sewn-wo-mesh
-			(loop for link in !link-ref-list do
+			(loop for link in !final-link-ref-list do
 				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
 				)
 			)
 		)
 		(:draw-sewn-with-tet-mesh
-			(loop for link in !link-ref-list do
+			(loop for link in !final-link-ref-list do
 				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
 				)
 			)
 		)
 		(:draw-sewn-with-tri-mesh
-			(loop for link in !link-ref-list do
+			(loop for link in !final-link-ref-list do
 				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-mesh-model link-mesh elements-query (:from link)))
 				)
@@ -808,7 +802,7 @@
 )
 
 (define-method write-nastran-bdf-files mechanism-collection ()
-	(loop for link in !drawable-link-ref-list do
+	(loop for link in !final-link-ref-list do
 		(the analysis nastran-interface run-nastran@ (:from link))
 	)
 )
@@ -826,7 +820,7 @@
 							  )
 			(progn 
 				(write-static-top-part-to-fmm stream)
-				(loop for link in !drawable-link-ref-list do
+				(loop for link in !final-link-ref-list do
 					(setf baseID (1+ baseID))
 					(setf linkID (1+ linkID))
 					(format stream "LINK~%")
