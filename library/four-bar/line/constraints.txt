@@ -1,5 +1,6 @@
-0	"revolute"	"(0 1)"	"(0 0 1)"	"()"
-1	"revolute"	"(2 1)"	"(0 0 1)"	"()"
-2	"revolute"	"(0 3)"	"(0 0 1)"	"()"
-3	"revolute"	"(2 3)"	"(0 0 1)"	"()"
-4	"open"		"(0 2)"	"(0 0 1)"	"()"
+Point	Type		Link-incidence	Joint-direction	Joint-variable
+0	"revolute"	"(0 1)"		"(0 0 1)"	"()"
+1	"revolute"	"(2 1)"		"(0 0 1)"	"()"
+2	"revolute"	"(0 3)"		"(0 0 1)"	"()"
+3	"revolute"	"(2 3)"		"(0 0 1)"	"()"
+4	"open"		"(0 2)"		"(0 0 1)"	"()"
