@@ -1,0 +1,53 @@
+(define-class damper-model-class 
+	:inherit-from (line-object)
+	:properties (
+				 ;; 'nil' properties are set on instantiation
+				 label 				nil
+				 from-number 		nil
+				 to-number 			nil
+				 ground-coords		nil
+				 
+				 type				'damper
+				 from-constraint	(get-constraint (the superior superior superior) ^from-number)
+				 to-constraint		(if (= -1 ^to-number) 
+										nil
+										(get-constraint (the superior superior superior) ^to-number)
+									)
+				 
+				 point1				(get-main-frame-coords ^from-constraint)
+				 point2				(if ^to-constraint
+										(get-main-frame-coords ^to-constraint)
+										^ground-coords
+									)
+				 
+				 line-width 		6
+				 color				'magenta
+				 )
+)
+ 
+(define-class spring-model-class
+	:inherit-from (line-object)
+	:properties (
+				 ;; 'nil' properties are set on instantiation
+				 label 				nil
+				 from-number		nil
+				 to-number 			nil
+				 ground-coords		nil
+				 
+				 type 				'spring
+				 from-constraint	(get-constraint (the superior superior superior) ^from-number) ;;Should instantiate this
+				 to-constraint		(if (= -1 ^to-number) 
+										nil
+										(get-constraint (the superior superior superior) ^to-number)
+									)
+				 
+				 point1				(get-main-frame-coords ^from-constraint)
+				 point2				(if ^to-constraint
+										(get-main-frame-coords ^to-constraint)
+										^ground-coords
+									)
+				 
+				 line-width			6
+				 color				'purple
+				)
+)

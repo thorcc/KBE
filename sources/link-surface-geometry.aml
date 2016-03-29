@@ -1,0 +1,106 @@
+;;; Model creating a thickened surface from three connected curves
+(define-class surface-data-model
+  :inherit-from (tagging-object surface-thickened-class)
+  :properties (
+               tag-dimensions '(1 2 3)
+               tag-attributes (list ^^max-element-size .1
+                                    0 0.1 0 20.0 1.0e-5)
+									
+               
+			   
+			   (display? :class 'flag-property-class
+                   formula  (loop for i in ^edge-combination
+                              when (or (not (the display? (:from (nth i ^members-ref-list)))) (not (the connection geom (:from (nth i ^members-ref-list)))) )
+                              do (return nil)
+                              finally (> ^thickness 0)
+                              )
+                   )
+               edge-combination nil
+			   
+			   ;;; The source-object HAS to be nil when it can't be displayed. If not, there will be a null geom error
+               source-object (if ^display? ^surface nil)
+
+               ;;; Surface thickness 20% of smallest cross-section height
+               thickness (* 0.2 (loop for i in ^edge-combination
+                           minimize (max-height (the cross-section_D (:from (nth i ^members-ref-list))))
+                           ))
+               front-thickness (/ ^thickness 2)
+               back-thickness (/ ^thickness 2)
+               render 'shaded
+               color 'red
+
+               property-objects-list (list 
+                                      (list (the superior display? self)
+                                            '(automatic-apply? t)
+                                            )
+                                      )
+               )
+  :subobjects (
+               (surface :class 'surface-from-three-edge-curves-class
+			       ;;; the connection is a nurb-curve-object
+                   edge-1-object (the connection (:from (nth (nth 0 ^edge-combination) ^members-ref-list)) )
+                   edge-2-object (the connection (:from (nth (nth 1 ^edge-combination) ^members-ref-list)) )
+                   edge-3-object (the connection (:from (nth (nth 2 ^edge-combination) ^members-ref-list)) )
+                   )
+               )
+  )
+
+;;; Instantiates every surface-data-model on a link 
+(define-class surfaces-on-link-collection
+  :inherit-from (series-object)
+  :properties (
+               closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
+               visible-members-index (loop for mem in ^visible-members-ref-list
+                                       collect (the index (:from mem))
+                                       )
+               valid-surface-loops (intersection ^closed-loops-combinations (list-3-subset-combinations ^visible-members-index))
+               quantity (length ^valid-surface-loops)
+               class-expression 'surface-data-model
+               series-prefix 'surface
+               init-form '(
+                           edge-combination (nth ^index ^valid-surface-loops)
+                           )
+               )
+  )
+
+(defun sweep-loop-combinations (n)
+  (let (
+        (c-loops (3-edge-loop-combinations n) )
+        (sweep-con (connection-combinations n) )
+        )
+    (loop for ci from 0 to (1- (length c-loops))
+      for list-com = (list-combinations (nth ci c-loops))
+      collect (loop for si from 0 to (1- (length list-com))
+                collect (position (nth si list-com) sweep-con)
+                )
+      )
+    )
+  )
+  
+;;; Binomial: C(n,3) = 3! / ( 3! (n - 3)! 
+;;; Output: List unique combinations of three, given n numbers
+(defun 3-edge-loop-combinations (n)
+   (loop for i from 0 to (- n 3)   
+     append (loop for j from (1+ i) to (- n 2)
+              append (loop for k from (1+ j) to (1- n)
+                       collect (list i j k)
+                       )
+              )
+     )
+   )
+ 
+(defun list-3-subset-combinations (p)
+  (let (
+        (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ) ) ) )
+        (n (length l))
+        )
+    (loop for i from 0 to (- n 3)   
+      append (loop for j from (1+ i) to (- n 2)
+               append (loop for k from (1+ j) to (1- n)
+                        collect (list (nth i l) (nth j l) (nth k l))                   
+                        )
+               )
+      )
+    )
+  )
+ 

@@ -1,0 +1,146 @@
+;;; Class responsible for meshing
+(define-class link-mesh-class
+  :inherit-from (object)
+  :properties (
+               link-model 	nil
+			   mesh-object ^link-mesh
+
+			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list ^link-model)
+			   
+			   joint-center-node-list	(loop for c in ^non-open-constraints-list
+											collect (the joint-center-node (:from c))
+											)
+			   
+			   
+			   ;;; Sets the element size to half of the smallest dimension of a link's joints
+			    ;element-size (let (
+				;				  (min-elem nil)
+				;				  )
+				;				   (loop for constraint in ^^constraints-incident-on-link-list
+				;							if (not (string-equal "open" (the constraint-type (:from constraint)))) do
+				;							(let (
+				;								  (mw (if (= (the max-width (:from constraint)) 0) nil (the max-width (:from constraint))))   ;;max might be 0 due to open constraints
+				;								  (mh (if (= (the max-height (:from constraint)) 0) nil (the max-height (:from constraint))))
+				;								 )
+				;								(if (not min-elem)
+				;									(setf min-elem (min-or-nil mw mh))
+				;									(if (< min-elem (min-or-nil mw mh))
+				;										(setf min-elem (min-or-nil mw mh))))))
+				;					(/ min-elem 2))
+				;						
+               geometry-model-object (default nil) ;;This property is set on instantiation, under link-model-class.
+               
+			   (node-set :class 'analysis-node-set-class
+                   query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^joint-center-node-list)
+                   )
+               )
+  :subobjects (
+               (mesh-db :class 'mesh-database-class
+					)
+			   (link-mesh :class 'paver-mesh-class
+					object-to-mesh ^^geometry-model-object
+					mesh-database-object ^^mesh-db
+					element-shape :tri
+					;element-size-method 2
+					)
+			   (tet-mesh :class 'tet-mesh-class
+					mesh-database-object ^^mesh-db
+					object-to-mesh (the superior superior link-mesh surface-elements-query)
+					)
+               ;; Link mesh query
+			   (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
+                   tagged-object-list (append
+									   (the union-list (:from ^^geometry-model-object))
+                                       (the visible-members-ref-list (:from  ^^geometry-model-object))
+                                       (the object-list (:from ^^geometry-model-object))
+									   )
+                   color 'cyan
+                   mesh-object ^^link-mesh
+                   )
+               (link-mesh-solid-elements :class 'mesh-elements-3d-query-class
+                   tagged-object-list (append
+                                       (the union-list (:from ^^geometry-model-object))
+                                       (the visible-members-ref-list (:from  ^^geometry-model-object))
+                                       )
+                   mesh-object ^^tet-mesh
+                   )
+			   (mating-surface-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
+                   mesh-object ^^link-mesh
+                   )
+               (fixed-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list (list
+                                       (the fixed-edge (:from ^^geometry-model-object))
+                                       )
+;                    mesh-object ^^link-mesh
+                   )
+               (loaded-nodes :class 'mesh-query-nodes-from-interface-class
+                   ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
+                   mesh-object ^^link-mesh
+                   )
+			   (rbe2-list :class 'RBE2-collection)
+               )
+  )
+
+(define-method get-mesh-model-subobject link-mesh-class (subobject-type)
+	(case subobject-type
+		(mesh-db !mesh-db)
+		(2d-elements (the link-mesh elements-query))
+		)
+	)
+  
+(define-method get-tet-mesh-entities-list link-mesh-class ()
+	(when !tet-mesh
+		(the tet-mesh nodes-query mesh-entities-list))
+	)
+
+(define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
+  (when (the elements-query (:from !tet-mesh :error nil :relation nil))
+    (list (the elements-query (:from !tet-mesh))))
+  )
+  
+(define-method get-rbe2-constraints-list link-mesh-class ()
+	(when !non-open-constraints-list
+		!non-open-constraints-list)
+	)
+
+(define-method get-link-mesh-db link-mesh-class ()
+	!mesh-db
+	)
+	
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 constraints-list 	(get-rbe2-constraints-list ^^link-mesh-model)
+				 link-mesh-db 		(get-link-mesh-db ^^link-mesh-model)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
+							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 )
+				 )
+	)
+
+
+	
+;;; Returns the smallest number. If both are nil then return 10e10, if one is nil, then the other.  
+(defun min-or-nil (p q)
+	(if (or (not p) (not q))
+		(if (and (not p) (not q))
+			10e10 		;;Random big number if both are nil, just for comparison reasons
+			(if p p q)
+		)
+		(min p q)
+	)
+)
+
+(define-method get-rigid-body-element-objects-list link-mesh-class ()
+	(when !rbe2-list 
+		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
+	)

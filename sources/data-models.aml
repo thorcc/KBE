@@ -1,10 +1,7 @@
-;;; -----------------------------
-;;; DATA MODEL DEFINITIONS
-;;; -----------------------------
 
 ;;; Use point-object to define position properties
 (define-class point-data-model
-  :inherit-from (point-object data-model-node-mixin create-event)
+  :inherit-from (point-object create-event)
   :properties (
                (coordinates :class 'editable-data-property-class
                     label "Coordinates"
@@ -34,7 +31,7 @@
 
 ;;; Direction vector
 (define-class vector-data-model
-  :inherit-from (vector-class data-model-node-mixin)
+  :inherit-from (vector-class)
   :properties (
                ;;; Superior reference traverse
                point-ref (default ^point-default)
@@ -95,6 +92,19 @@
                )
   )
   
-;;; -----------------------------
-;;; END DATA MODEL DEFINITIONS
-;;; -----------------------------
+(define-class sub-point-data-model
+  :inherit-from (point-data-model)
+  :properties (
+               reference-object ^main-frame
+               coordinates '(0 0 0)
+               )
+  )
+(define-class sub-frame-data-model
+  :inherit-from (frame-data-model)
+  :properties (
+               ;;When a sub-point-ref is specified in a joint element, its sub-frame will be placed accordingly
+			   (point-ref :class 'point-data-model
+                   coordinates (convert-coords ^sub-point-ref (the coordinates (:from ^sub-point-ref)))
+                   )
+               )
+  )

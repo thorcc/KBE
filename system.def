@@ -1,10 +1,10 @@
-;;;----------------------------------------------------
+;;;--------------------------------------------------------------------------
 ;;; System : :mechanism-system
 ;;; Purpose : AML Mechanism Model
 ;;;
 ;;;
-;;; Author : Rasmus Korvald Skaare
-;;;
+;;; Authors : Anders Kristiansen, Eivind Kristoffersen, Rasmus Korvald Skaare
+;;;--------------------------------------------------------------------------
 
 (in-package :AML)
 
@@ -13,13 +13,19 @@
 
 (define-system :mechanism-system
   :files '(
+           "collections.aml"
            "data-models.aml"
            "constraints.aml"
-           "cross-sections.aml"
-           "analysis.aml"
+		   "constraint-types.aml"
            "links.aml"
-           "collections.aml"
+		   "link-member-geometry.aml"
+           "cross-sections.aml"
+		   "link-surface-geometry.aml"
+		   "springs-dampers.aml"
 		   "loads.aml"
+		   "meshing.aml"
+           "analysis.aml"
+		   "geometry-export.aml"
            )
   )
 
