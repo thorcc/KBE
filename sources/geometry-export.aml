@@ -1,0 +1,668 @@
+(define-method write-nastran-bdf-files main-mechanism-class ()
+	(loop for link in !final-link-ref-list do
+		(the analysis nastran-interface run-nastran@ (:from link))
+	)
+)
+
+(define-method write-fmm-model-file main-mechanism-class ()
+	(let (
+		  (baseID 			2)
+		  (linkID			0)
+		  (conID 			0)
+		  (triads-written	0)
+		  )
+		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) (concatenate "model" ".fmm") )
+							  :direction :output
+							  :if-exists :overwrite
+							  )
+			(progn 
+				(write-static-top-part-to-fmm stream)
+				(loop for link in !final-link-ref-list do
+					(setf baseID (1+ baseID))
+					(setf linkID (1+ linkID))
+					(format stream "LINK~%")
+					(format stream "{~%")
+					(format stream "BASE_ID = ~d;~%" baseID)
+					(format stream "COLOR = ~,2f ~,2f ~,2f;~%" (random 1.0) (random 1.0) (random 1.0))
+					(format stream "COORDINATE_SYSTEM = ~%")
+					(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
+					(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
+					(format stream "0.00000000 0.00000000 1.00000000 0.00000000;~%")
+					(format stream "ID = ~d;~%" linkID)
+					(format stream "LINE_COLOR = 1 1 1;~%")
+					(format stream "MASS_PROP_DAMP = 0;~%")
+					(format stream "ORIGINAL_FE_FILE = ~a;~%" (concatenate "\""
+						(logical-path :nastran-data)
+						(the analysis nastran-interface model-name (:from link)) "\\"
+						(the analysis nastran-interface nastran-file-name (:from link)) "\"")
+					)
+					(format stream "POLYS_ON_POINTS_OFF = true;~%")
+					(format stream "STIF_PROP_DAMP = 0;~%")
+					(format stream "USE_MASS_CALCULATION = true;~%")
+					(format stream "}~3%")
+					
+					(let (
+						  (number-of-nodes 	(length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
+						  (counter 			0)
+						  )
+						;; For each non-open joint element on a link, we need to write a triad connected to the 
+						;; joint element's RBE2 FE node.
+						(loop for joint-element in (get-non-open-constraints-incident-on-link-list link) do
+							(setf baseID (1+ baseID))
+							(setf counter (1+ counter))
+							(write-triad-to-fmm stream baseID (get-joint-element-id joint-element) 
+								(get-main-frame-coords joint-element) linkID (+ number-of-nodes counter))
+							(setf triads-written (1+ triads-written))
+						)
+					)
+				)
+				(loop for constraint in !non-open-constraints-list do
+					(setf baseID (1+ baseID))
+					(setf conID (1+ conID))
+					(let (
+						  (triadID 				(get-male-triad-id-from-master-joint-model constraint))
+						  (is-male-drawable? 	(the male-element-solid-model is-incident-link-drawable? (:from constraint)))
+						  (is-female-drawable?	(the female-element-solid-model is-incident-link-drawable? (:from constraint)))
+						  )
+						 ;;Case 1: male element has a drawable link, female does not. 
+						 ;;Master triad is the ground, slave triad is the male element
+						 (if (and is-male-drawable? (not is-female-drawable?))
+							(progn 
+								(write-joint-type-to-fmm stream constraint baseID conID (1+ triadID) triadID)
+								(setf baseID (1+ baseID))
+								(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
+									(get-main-frame-coords (the female-element-solid-model (:from constraint))) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+								(setf triads-written (1+ triads-written))
+							)
+							;;Case 2: female element has a drawable link, male does not
+							;;Master triad is the ground, slave triad is the female element
+							(if (and is-female-drawable? (not is-male-drawable?))
+								(progn
+									(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+									(setf baseID (1+ baseID))
+									(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
+										(get-main-frame-coords (the male-element-solid-model (:from constraint))) -1 -1)
+									(setf triads-written (1+ triads-written))
+								)
+								;;Case 3: both elements have drawable links
+								;;Master triad is the male element, slave triad is the female element
+								;;No extra ground triad has to be created
+								(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+							)
+						)
+					)
+				)
+				(loop for spring in (get-springs !spring-dampers) do 
+					(setf baseID (1+ baseID))
+					(let (
+						   ;; If the joint element is open, we have to create an RBE connected to the link, and create a free joint in fedem
+						   (triad1-ID (get-joint-element-id (get-female-element (the from-constraint (:from spring)))))
+						   (triad2-ID (if (the to-constraint (:from spring))
+										(get-joint-element-id (get-female-element (the to-constraint (:from spring))))
+										(progn 
+											;;A ground triad has to made if one part of the spring is not connected to a constraint:
+											(write-triad-to-fmm stream baseID (1+ triads-written) (the ground-coords (:from spring)) -1 -1) 
+											(setf triads-written (1+ triads-written))
+											triads-written ;; This is the triad2-iD
+										)
+									  ))
+						   ;(coords (get-main-frame-coords (get-female-element (the from-constraint (:from spring)))))
+						  )
+						 (write-spring-properties-to-fmm stream baseID (1+ (the index (:from spring))) 
+							triad1-ID triad2-ID)
+					)
+				)
+				(setf baseID (1+ baseID))
+				(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
+				(format stream "END {FEDEMMODELFILE}")
+			)
+		)
+	)
+)
+
+(defun write-static-top-part-to-fmm (stream)
+	(progn 
+		(format stream "FEDEMMODELFILE {R7.0.4 ASCII}~2%")
+		
+		(format stream "GLOBAL_VIEW_SETTINGS~%{~%")
+		(format stream "ID = 1;~%")
+		(format stream "SYMBOL_SCALE = 0.1;~%")
+		(format stream "SYMBOL_LINE_WIDTH = 1;~%")
+		(format stream "BACKGROUND_COLOR = 0.098039 0.305882 0.458823;~%")
+		(format stream "CAMERA_FOCAL_DIST = 0.707107;~%")
+		(format stream "CAMERA_HEIGHT = 1.41421;~%")
+		(format stream "CAMERA_ORIENTATION =~%")
+		(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
+		(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
+		(format stream "0.00000000 0.00000000 1.00000000 0.70710678;~%}~2%")
+		
+		(format stream "MECHANISM~%{~%")
+		(format stream "ID = 1;~%")
+		(format stream "BASE_ID = 1;~%") ;;Manually setting "static" base ID
+		(format stream "GRAVITY = 0 0 -9.81;~%") ;;When gravity changes, let me know. Also update this value.
+		(format stream "POSITION_TOLERANCE = 0.0001;~%}~2%")
+		
+		(format stream "REF_PLANE~%{~%")
+		(format stream "ID = 1;~%")
+		(format stream "BASE_ID = 2;~%") ;;Manually setting "static" base ID
+		(format stream "HEIGHT = 0.1;~%")
+		(format stream "WIDTH = 0.1;~%")
+		(format stream "COLOR = 1 1 1;~%")
+		(format stream "TRANSPARENCY = 0.65;~%}~3%")
+	)
+)
+
+(defun write-triad-to-fmm (stream baseID ID coords linkID node-number)
+	(format stream "TRIAD~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "COORDINATE_SYSTEM = ~%")
+	(format stream "1.0 0.0 0.0 ~d~%" (nth 0 coords))
+	(format stream "0.0 1.0 0.0 ~d~%" (nth 1 coords))
+	(format stream "0.0 0.0 1.0 ~d;~%" (nth 2 coords))
+	(format stream "LOCAL_DIRECTIONS = GLOBAL;~%")
+	(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+	(format stream "OWNER_LINK = ~d;~%" linkID)
+	(format stream "FE_NODE_NO = ~d;~%" node-number)
+	(format stream "NDOFS = 6;~%}~3%")
+)
+
+(defun write-joint-type-to-fmm (stream constraint baseID conID masterID slaveID)
+	(if (equal "revolute" (get-constraint-type constraint))
+		(let (
+				(unit-vector (get-unit-vector constraint))
+				(rot-angle (get-rot-angle constraint))
+				(cos-rot-angle (cosd rot-angle))
+				(sin-rot-angle (sind rot-angle))
+			)
+			(progn 
+				(format stream "~a~%{~%" "REV_JOINT")
+				(format stream "BASE_ID = ~d;~%" baseID)
+				
+				;;Calculating rotation matrix with respect to rotation angle and rotation axis
+				(format stream "COORDINATE_SYSTEM = ~%")
+				(format stream "~d ~d ~d 0.0~%" 
+					(+ cos-rot-angle (* (expt (nth 0 unit-vector) 2) (- 1 cos-rot-angle)))
+						
+					(- (* (nth 0 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 2 unit-vector) sin-rot-angle))
+					
+					(+ (* (nth 0 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 1 unit-vector) sin-rot-angle)))
+				
+				(format stream "~d ~d ~d 0.0~%"
+					(+ (* (nth 1 unit-vector) (nth 0 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 2 unit-vector) sin-rot-angle))
+					
+					(+ cos-rot-angle 
+						(* (expt (nth 1 unit-vector) 2) (- 1 cos-rot-angle)))
+				
+					(- (* (nth 1 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 0 unit-vector) sin-rot-angle)))
+				
+				(format stream "~d ~d ~d 0.0;~%"
+					(- (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 1 unit-vector) sin-rot-angle))
+						
+					(+ (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+						(* (nth 0 unit-vector) sin-rot-angle))
+						
+					(+ cos-rot-angle (* (expt (nth 2 unit-vector) 2) (- 1 cos-rot-angle))))
+							
+				(format stream "HAS_Z_TRANS_DOF = false;~%")
+				(format stream "ID = ~a;~%" conID)
+				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+				(format stream "MASTER_TRIAD = ~d;~%" masterID)
+				(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+				(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+				(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+				(format stream "ROT_SEQUENCE = ZYX;~%")
+				(format stream "ROT_SPRING_CPL = NONE;~%")
+				(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+				(format stream "TRAN_SPRING_CPL = NONE;~%")
+				(format stream "VAR_QUADRANTS = 0 0 0;~%")
+				(format stream "Z_ROT_STATUS = FREE;~%")
+				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
+			)
+		)
+		(if (equal "spheric" (get-constraint-type constraint))
+			(let (
+				  (unit-vector	(get-unit-vector constraint))
+				  (rot-angle (get-rot-angle constraint))
+				  (cos-rot-angle (cosd rot-angle))
+				  (sin-rot-angle (sind rot-angle))
+				)
+				(progn
+					(format stream "~a~%{~%" "BALL_JOINT")
+					(format stream "BASE_ID = ~d;~%" baseID)
+					
+					;;Calculating rotation matrix with respect to rotation angle and rotation axis
+					(format stream "COORDINATE_SYSTEM = ~%")
+					(format stream "~d ~d ~d 0.0~%" 
+						(+ cos-rot-angle (* (expt (nth 0 unit-vector) 2) (- 1 cos-rot-angle)))
+							
+						(- (* (nth 0 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 2 unit-vector) sin-rot-angle))
+						
+						(+ (* (nth 0 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 1 unit-vector) sin-rot-angle)))
+					
+					(format stream "~d ~d ~d 0.0~%"
+						(+ (* (nth 1 unit-vector) (nth 0 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 2 unit-vector) sin-rot-angle))
+						
+						(+ cos-rot-angle 
+							(* (expt (nth 1 unit-vector) 2) (- 1 cos-rot-angle)))
+					
+						(- (* (nth 1 unit-vector) (nth 2 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 0 unit-vector) sin-rot-angle)))
+					
+					(format stream "~d ~d ~d 0.0;~%"
+						(- (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 1 unit-vector) sin-rot-angle))
+							
+						(+ (* (nth 2 unit-vector) (nth 1 unit-vector) (- 1 cos-rot-angle))
+							(* (nth 0 unit-vector) sin-rot-angle))
+							
+						(+ cos-rot-angle (* (expt (nth 2 unit-vector) 2) (- 1 cos-rot-angle))))
+
+					(format stream "FRICTION_DOF = 3;~%")
+					(format stream "ID = ~d;~%" conID)
+					(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")
+					(format stream "MASTER_TRIAD = ~d;~%" masterID)
+					(format stream "MOVE_MASTER_TRIAD_ALONG = false;~%")
+					(format stream "MOVE_SLAVE_TRIAD_ALONG = false;~%")
+					(format stream "ROT_FORMULATION = FOLLOWER_AXIS;~%")
+					(format stream "ROT_SEQUENCE = ZYX;~%")
+					(format stream "ROT_SPRING_CPL = NONE;~%")
+					(format stream "SLAVE_TRIAD = ~d;~%" slaveID)
+					(format stream "TRAN_SPRING_CPL = NONE;~%")
+					(format stream "VAR_QUADRANTS = 0 0 0;~%")
+					(format stream "X_ROT_STATUS = FREE;~%")
+					(format stream "Y_ROT_STATUS = FREE;~%")
+					(format stream "Z_ROT_STATUS = FREE;~%}~3%")
+				)
+			)
+		)
+	)
+)
+
+
+
+(defun write-spring-properties-to-fmm (stream baseID ID triad1 triad2)
+	(format stream "AXIAL_SPRING~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "INIT_LENGTH = 0;~%")
+	(format stream "INIT_STIFFNESS = 750000;~%")
+	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%" triad1 triad2)
+	(format stream "USE_INIT_DEFLECTION = true;~%}~2%")
+)
+
+(defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
+	(format stream "ANALYSIS~%{~%")
+	(format stream "ID = 1;~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "START_TIME = 0;~%")
+	(if (equal "four-bar" mechanism-type)
+		;;If true:
+		(progn 
+			(format stream "END_TIME = 2.5;~%")
+			(format stream "TIME_INCR = 0.01;~%")
+			(format stream "STATIC_EQL_TOLERANCE = 0.001;~%")
+			(format stream "VELOCITY_PROP_TOLERANCE = 0;~%")
+			(format stream "INITIAL_EQL_ITERATIONS = false;~%")
+			(format stream "USE_NEWMARK_DAMPING = true;~%")
+			(format stream "USE_MASS_CORRECTION = false;~%")
+			(format stream "MIN_TIME_INCREMNT = 0.001;~%")
+			(format stream "SOLVE_EIGENVALUES = false;~%")
+			(format stream "EIGENVALUE_SOLUTION_TIME_INTERVAL = 0.1;~%")
+			(format stream "IGNORE_TOLERANCE = false;~%")
+			(format stream "FORCE_NUM_IT = 5;~%")
+			(format stream "MINIMUM_NUM_IT = 1;~%")
+			(format stream "MAX_NUM_IT = 15;~%")
+			(format stream "MIN_MATRIX_UPDATE = 5;~%")
+			(format stream "STEP_REDUCTION_FACTOR = 1;~%")
+			(format stream "EQ_OPTIONS= 0;~%")
+			(format stream "RESTART_OPTIONS = 0;~%")
+			(format stream "RESULT_OPTIONS = 0;~%")
+			(format stream "EIGENVALUE_OPTIONS = 0;~%")
+			(format stream "STRESS_START_TIME = 0;~%")
+			(format stream "STRESS_STOP_TIME = 1;~%")
+			(format stream "STRESS_TIME_INCR = 0.1;~%")
+			(format stream "STRESS_DEFORMATIONS_ONLY = false;~%}~3%")
+			
+			;;Engines
+			(let (
+				  (descr (list "\"Torque\"" "\"Reference\"" "\"Joint Velocity\""))
+				  (sensor (list "3 FcSIMPLE_SENSOR" "1 FcSIMPLE_SENSOR" "2 FcSIMPLE_SENSOR"))
+				  (math-func (list "1 FcfSCALE" "1 FcfLIM_RAMP" "1 FcfSCALE"))
+				  (entity (list -1 -1 6))
+				  (dof (list -1 -1 5))
+				  )
+				 (loop for i from 0 to 2 do
+					(setf baseID (1+ baseID))
+					(write-engines-to-fmm stream baseID (1+ i) (nth i descr) (nth i sensor) 
+						(nth i math-func) (nth i entity) (nth i dof))
+				 )
+			)
+			
+			;;Sensors
+			(let (
+				  (descr (list "\"Time sensor\"" "\"\"" "\"Control output sensor\""))
+				  (measured (list "1 FcTIME" "1 FcREV_JOINT" "1 FccOUTPUT"))
+				  )
+				 (loop for i from 0 to 2 do
+					(setf baseID (1+ baseID))
+					(write-sensors-to-fmm stream baseID (1+ i) (nth i descr) (nth i measured))
+				 )
+			)
+			
+			;;Loads
+			(loop for i from 0 to (1- (length loads-list)) do
+				(setf baseID (1+ baseID))
+				(write-loads-to-fmm stream baseID (1+ i) (the loadID (:from (nth i loads-list)))
+					(the load-type (:from (nth i loads-list))) (the load-direction (:from (nth i loads-list))))
+			)
+			
+			;;Function definitions
+			(setf baseID (1+ baseID))
+			(format stream "FUNC_SCALE~%{~%")
+			(format stream "BASE_ID = ~d;~%" baseID)
+			(format stream "ID = 1;~%")
+			(format stream "SCALE = 1;~%}~2%")
+			
+			(setf baseID (1+ baseID))
+			(format stream "FUNC_LIM_RAMP~%{~%")
+			(format stream "BASE_ID = ~d;~%" baseID)
+			(format stream "ID = 1;~%")
+			(format stream "AMPLITUDE_DISPLACEMENT = 0;~%")
+			(format stream "SLOPE_OF_RAMP = 12.5664;~%")
+			(format stream "DELAY_OF_RAMP = 0;~%")
+			(format stream "END_OF_RAMP = 0.5;~%}~3%")
+			
+			;;Control lines
+			(let (
+				  (ownerStart	(list "1 FccINPUT" "2 FccINPUT" "1 FccCOMPARATOR" "1 FccAMPLIFIER"))
+				  (ownerEnd 	(list "1 FccCOMPARATOR 1" "1 FccCOMPARATOR 2" "1 FccAMPLIFIER 1" "1 FccOUTPUT 1"))
+				  (ful 			(list 2 1 2 2))
+				  (controlNo 	(list 1 2 4 3))
+				  )
+				 (loop for i from 0 to 3 do
+					(setf baseID (1+ baseID))
+					(write-control-lines-to-fmm stream baseID (1+ i) 
+						(nth i ownerStart) (nth i ownerEnd) (nth i ful) (nth i controlNo))
+				 )
+			)
+			
+			;;Control i/o
+			(let (
+				  (name (list "CONTROL_INPUT" "CONTROL_INPUT" "CONTROL_OUTPUT" "CONTROL_AMPLIFIER" "CONTROL_COMPARATOR"))
+				  (IDs (list 1 2 1 1 1))
+				  (engine (list "2 FcENGINE" "3 FcENGINE" "0 0" "0 0" "0 0"))
+				  (position (list "-3.5 1 0" "-3.5 0 0" "2.5 0.5 0" "0.5 0.5 0" "-1.5 0.5 0"))
+				  )
+				 (loop for i from 0 to 4 do
+					(setf baseID (1+ baseID))
+					(write-control-io-to-fmm stream (nth i name) baseID (nth i IDs)
+						(nth i engine) (nth i position) (if (= i 3) 1))
+				 )
+			)
+			
+			;;Graphs
+			(let (
+				  (descr (list "Motor torque" "x-acceleration " "Motor velocity" "Tip placement"))
+				  (title (list "Motor torque [Nm]" "x-acceleration [m/sec2]" "Motor velocity [rad/sec]" "Tip Placement"))
+				  )
+				 (loop for i from 0 to 3 do
+					(setf baseID (1+ baseID))
+					(write-graph-definitions-to-fmm stream baseID (nth i descr) (1+ i) (nth i title))
+				 )
+			)
+			
+			;;Curves. Need to set triad ids??
+			(let (
+				  (descr (list "\"Set 0\"" "\"Set 0\"" "\"Set 0\"" "\"Tip placement\""))
+				  (x-result (list "<\"SCALAR\",\"Physical time\">" "<\"SCALAR\",\"Physical time\">" 
+					  "<\"SCALAR\",\"Physical time\">" "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
+				  (x-oper (list "\"None\"" "\"None\"" "\"None\"" "\"Position X\""))
+				  (y-result (list "<\"Torque\",40,1,\"SCALAR\",\"Moment value\">" "<\"Triad\",10,9,\"VEC3\",\"Acceleration\">"
+					  "<\"Revolute joint\",21,1,\"SCALAR\",\"Rz joint variables\",\"Angular velocity\">" 
+					  "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
+				  (y-object (list "1 FcLOAD" "9 FcTRIAD" "1 FcREV_JOINT" "1 FcTRIAD"))
+				  (y-oper (list "\"None\"" "\"X\"" "\"None\"" "\"Position Y\""))
+				  (legend "\"Triad [1], Position Y vs Triad [1], Position X\"")
+				  (x-object "1 FcTRIAD")
+				  )
+				 (loop for i from 0 to 3 do
+					(setf baseID (1+ baseID))
+					(write-curve-sets-to-fmm stream baseID (nth i descr) (1+ i) (1+ i) (nth i x-result) (nth i x-oper) 
+						(nth i y-result) (nth i y-object) (nth i y-oper) (if (= i 3) legend) (if (= i 3) x-object))
+				 )
+			)
+		)
+		;;If false:
+		(progn
+			(format stream "END_TIME = 1;~%")
+			(format stream "TIME_INCR = 0.01;~%")
+			(format stream "MAXIMUM_NUM_IT = 50;~%")
+			(format stream "MINIMUM_NUM_IT = 1;~%")
+			(format stream "MIN_MATRIX_UPDATES = 5;~%")
+			(format stream "MIN_TIME_INCREMENT = 1e-006;~%")
+			(format stream "MAX_SEQUENTIAL_NO_MATRIX_UPDATES = 5;~%")
+			(format stream "NUM_EIGENMODES = 10;~%")
+			(format stream "STATIC_EQL_TOLERANCE = 1e-006;~%")
+			(format stream "STEP_REDUCTION_FACTOR = 1;~%")
+			(format stream "TOL_DISPLACEMENT_NORM = 1e-006 ALL_OF;~%")
+			(format stream "TOL_DISPLACEMENT_ROT = 3e-004 IGNORE;~%")
+			(format stream "TOL_DISPLACEMENT_TRA = 1e-004 IGNORE;~%")
+			(format stream "TOL_ENERGY_MAX = 0.0001 IGNORE;~%")
+			(format stream "TOL_ENERGY_SUM = 1e-006 ALL_OF;~%")
+			(format stream "TOL_RESIDUAL_NORM = 1 IGNORE;~%")
+			(format stream "TOL_RESIDUAL_ROT = 1 IGNORE;~%")
+			(format stream "TOL_RESIDUAL_TRA = 1 IGNORE;~%")
+			(format stream "TOL_VELOCITY_NORM = 1e-006 ALL_OF;~%")
+			(format stream "TOL_MATRIX_UPDATE_FACTOR = 100;~%")
+			(format stream "USE_FIXED_MATRIX_UPDATES = false;~%")
+			(format stream "USE_DYN_STRESS_STIFFENING = true;~%")
+			(format stream "USE_EIG_STRESS_STIFFENING = true;~%")
+			(format stream "USE_EQU_STRESS_STIFFENING = false;~%")
+			(format stream "USE_MASS_CORRECTION = true;~%")
+			(format stream "AUTO_RBM_ANIMATION = true;~%}~2%")
+		) ;;If false end
+	)
+)
+
+(defun write-engines-to-fmm (stream baseID ID descr sensor math-func entity dof)
+	(format stream "ENGINE~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "DESCR = ~a;~%" descr)
+	(format stream "SENSOR = ~a;~%" sensor)
+	(format stream "MATH_FUNC = ~a;~%" math-func)
+	(format stream "ENTITY = ~d;~%" entity)
+	(format stream "DOF = ~d;~%}~2%" dof)
+)
+
+(defun write-sensors-to-fmm (stream baseID ID descr measured)
+	(format stream "SENSOR~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "DESCR = ~a;~%" descr)
+	(format stream "MEASURED = ~a;~%}~2%" measured)
+)
+
+(defun write-loads-to-fmm (stream baseID ID owner-triad load-type direction)
+	(format stream "LOAD~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = 1;~%")
+	(format stream "ENGINE = 1 FcENGINE;~%")
+	(format stream "OWNER_TRIAD = ~d;~%" owner-triad)
+	(format stream "LOAD_TYPE = ~d;~%" (if (equal "force" load-type) 0 1))
+	(format stream "INIT_LOAD = 0;~%") ;;;;;;;;;!!!!!!!!!!!!
+	(format stream "SCALE_LOAD = 1;~%") ;;;;;;;!!!!!!!!!!!!!!!
+	(format stream "FROM_OBJECT = -1 FcLINK;~%")
+	(format stream "FROM_POINT = 0 0 0;~%")
+	(format stream "TO_OBJECT = -1 FcLINK;~%")
+	(format stream "TO_POINT = ~d ~d ~d;~%}~2%" (nth 0 direction) (nth 1 direction) (nth 2 direction))
+)
+
+(defun write-control-lines-to-fmm (stream baseID controlID ownerStart ownerEnd ful controlNo)
+	(format stream "CONTROL_LINE~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" controlID)
+	(format stream "OWNER_START = ~a;~%" ownerStart)
+	(format stream "OWNER_END = ~a;~%" ownerEnd)
+	(format stream "FIRST_LINE_VERTICAL = 0;~%")
+	(format stream "FIRST_UNDEF_LINE = ~d;~%" ful)
+	(format stream "SEGMENT_LENGTHS =  0.25;~%")
+	(format stream "CONTROL_VAR_NO = ~d;~%}~2%" controlNo)	
+)
+	
+
+
+(defun write-control-io-to-fmm (stream name baseID ID engine position &optional (rate nil))
+	(format stream "~a~%{~%" name)
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "ENGINE = ~a;~%" engine)
+	(format stream "POSITION  = ~a;~%" position)
+	(format stream "LEFT_ORIENTATED = 0;~%")
+	(if rate 
+		(format stream "RATE = ~a;~%" rate)
+	)
+	(format stream "}~3%")
+)
+	
+
+(defun write-graph-definitions-to-fmm (stream baseID descr ID title)
+	(format stream "GRAPH~%{~%")
+	(format stream "AUTO_SCALE = true;~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "DESCR = \"~a\";~%" descr)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "TITLE = \"~a\";~%}~2%" title)
+)
+
+(defun write-curve-sets-to-fmm (stream baseID descr ID owner x-result x-oper y-result y-object y-oper &optional legend x-object)
+	(format stream "CURVE_SET~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "DESCR = ~a;~%" descr)
+	(format stream "EXPORT_AUTOMATICALLY = true;~%")
+	(format stream "ID = ~d;~%" ID)
+	(format stream "INPUT_MODE = TEMPORAL_RESULT;~%")
+	(if legend 
+		(format stream "LEGEND = ~a;~%" legend)
+	)
+	(format stream "OWNER_GRAPH = ~d;~%" owner)
+	(format stream "X_AXIS_RESULT = ~a;~%" x-result)
+	(if x-object 
+		(format stream "X_AXIS_RESULT_OBJECT = ~a;~%" x-object)
+	)
+	(format stream "X_AXIS_RESULT_OPER = ~a;~%" x-oper)
+	(format stream "Y_AXIS_RESULT = ~a;~%" y-result)
+	(format stream "Y_AXIS_RESULT_OBJECT = ~a;~%" y-object)
+	(format stream "Y_AXIS_RESULT_OPER = ~a;~%}~2%" y-oper)
+)
+	
+
+(defun get-rot-axis (constraint)
+	(cross-product '(0 0 1) (get-joint-direction-vector constraint))
+)	
+	
+(defun get-rot-angle (constraint)
+	(angle-between-2-vectors '(0 0 1) (get-joint-direction-vector constraint))
+)
+
+(defun get-unit-vector (constraint)
+	(loop for element in (get-rot-axis constraint)
+		collect (/ element (vector-length (get-joint-direction-vector constraint)))
+	)
+)
+;;; Writes the mechanism to a simulation file (.fsi)
+(define-method write-save-fedem-solver  main-mechanism-class ()
+  (let (
+	  (idcount 10)
+        (extidcount 0)
+        (superelements nil)
+        (triads nil)
+        )
+    (with-open-file (stream (logical-path (the path (:from !version-selection)) (concatenate "fedem_solver" ".fsi") )
+                          :direction :output
+                          :if-exists :overwrite
+                          )
+      (progn
+        ;(loop for link in !link-ref-list         
+        ;  do
+        ;  (setf idcount (1+ idcount))
+        ;  (setf extidcount (1+ extidcount))
+        ;  (setf superelements (append superelements (list idcount)))
+        ;  
+        ;  (loop for triad in (the solid-constraints-ref-list (:from link))
+        ;    for frame =  (vector-to-list (get-position-matrix (the main-frame (:from triad)) ) )
+        ;    when (not (and (equal 0 (the index (:from link))) (equal "open" (superior (the constraint-element (:from triad)))) ))
+        ;    do
+        ;    (setf idcount (1+ idcount))
+        ;    (setf extidcount (1+ extidcount))
+        ;    (format stream "~a~%" "&TRIAD")
+        ;    (format stream "~t id = ~d~%" idcount)
+        ;    (format stream "~t extId = ~d~%" extidcount)
+        ;    (format stream "~t nDOFs = ~d~%" (if (equal 0 (the index (:from link))) 0 6) )
+        ;    (format stream "~t ur = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
+        ;                                                         (append (subseq frame 4 7) (list (nth 13 frame)))
+        ;                                                         (append (subseq frame 8 11) (list (nth 14 frame)))
+        ;                                                         ) )
+        ;    (format stream "~%/~2%")
+        ;    
+        ;    and collect idcount into trs
+        ;    finally (setf triads (append triads (list trs)))  
+        ;    )
+        ;  
+        ;  )
+        (print triads)
+        (setf extidcount 0)
+        (loop for link in !link-ref-list
+          for id = (the index (:from link))
+;;;           from 0 to (1- (length !link-ref-list))
+          for triader = (nth id triads)
+          for frame =  (vector-to-list (get-position-matrix (the main-frame (:from (nth 0 (the solid-constraints-ref-list (:from link)))) ) ) )
+          when (not (equal 0 id ) )
+          do
+          (setf idcount (1+ idcount))
+          (format stream "~a~%" "&SUP_EL")
+          (format stream "~t id = ~d~%" idcount)
+          (format stream "~t extId = ~d~%" id)
+          (format stream "~t numGenDOFs = 0~%")
+          (format stream "~t numTriads = ~d~%" (length triader))
+          (format stream "~t triadIds = ~{~d ~}~%" triader)
+          (format stream "~t shadowPosAlg = 1~%")
+          (format stream "~t massCorrFlag = -1~%")
+          (format stream "~t stiffScale = 1.0~%")
+          (format stream "~t massScale = 1.0~%")
+          (format stream "~t alpha1 = 0.0, alpha2 = 0.0~%")
+          (format stream "~t subPos = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
+                                                                   (append (subseq frame 4 7) (list (nth 13 frame)))
+                                                                   (append (subseq frame 8 11) (list (nth 14 frame)))
+                                                                                  ) )
+          (format stream "~%/~2%")
+         ; (print (the solid-constraints-ref-list (:from link)) )
+         ; (loop for triad in (the solid-constraints-ref-list (:from link))
+         ;   for i = (the index (:from triad) )
+;;;      ;       for un_frame = (vector-to-list (matrix-multiply (get-position-matrix (the main-frame (:from triad))) (matrix-inverse frame) ))
+         ;   do
+         ;   (print i)
+         ;   (print triader)
+         ;   (format stream "~a~%" "&TRIAD_UNDPOS")
+         ;   (format stream "~t supElId = ~d~%" idcount)
+         ;   (format stream "~t triadId = ~d~%" (nth i triader) )
+;;;      ;       (format stream "~t undPosInSupElSystem = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq un_frame 0 3) (list (nth 12 un_frame)))
+;;;      ;                                                                             (append (subseq un_frame 4 7) (list (nth 13 un_frame)))
+;;;      ;                                                                             (append (subseq un_frame 8 11) (list (nth 14 un_frame)))
+;;;      ;                                                                             ) )
+         ;   (format stream "~%/~2%")
+         ;  )
+          )
+        )
+      )
+    )
+  )
