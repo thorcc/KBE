@@ -1,9 +1,15 @@
+;-----------------------------------------------------------------
+; Writes each link to a nastran .bdf file, stored in :nastran-data
+;----------------------------------------------------------------- 
 (define-method write-nastran-bdf-files main-mechanism-class ()
 	(loop for link in !final-link-ref-list do
 		(the analysis nastran-interface run-nastran@ (:from link))
 	)
 )
 
+;----------------------------------------------------------------------
+; Writes a fedem fmm file, stored in library\"mechanism-type"\"version"
+;----------------------------------------------------------------------
 (define-method write-fmm-model-file main-mechanism-class ()
 	(let (
 		  (baseID 			2)
@@ -120,6 +126,9 @@
 	)
 )
 
+;----------------------------------------------------------------
+; Below are self-explanatory helping functions for writing to fmm
+;---------------------------------------------------------------- 
 (defun write-static-top-part-to-fmm (stream)
 	(progn 
 		(format stream "FEDEMMODELFILE {R7.0.4 ASCII}~2%")
@@ -563,9 +572,7 @@
 	(format stream "Y_AXIS_RESULT = ~a;~%" y-result)
 	(format stream "Y_AXIS_RESULT_OBJECT = ~a;~%" y-object)
 	(format stream "Y_AXIS_RESULT_OPER = ~a;~%}~2%" y-oper)
-)
-	
-
+)	
 (defun get-rot-axis (constraint)
 	(cross-product '(0 0 1) (get-joint-direction-vector constraint))
 )	
@@ -579,90 +586,3 @@
 		collect (/ element (vector-length (get-joint-direction-vector constraint)))
 	)
 )
-;;; Writes the mechanism to a simulation file (.fsi)
-(define-method write-save-fedem-solver  main-mechanism-class ()
-  (let (
-	  (idcount 10)
-        (extidcount 0)
-        (superelements nil)
-        (triads nil)
-        )
-    (with-open-file (stream (logical-path (the path (:from !version-selection)) (concatenate "fedem_solver" ".fsi") )
-                          :direction :output
-                          :if-exists :overwrite
-                          )
-      (progn
-        ;(loop for link in !link-ref-list         
-        ;  do
-        ;  (setf idcount (1+ idcount))
-        ;  (setf extidcount (1+ extidcount))
-        ;  (setf superelements (append superelements (list idcount)))
-        ;  
-        ;  (loop for triad in (the solid-constraints-ref-list (:from link))
-        ;    for frame =  (vector-to-list (get-position-matrix (the main-frame (:from triad)) ) )
-        ;    when (not (and (equal 0 (the index (:from link))) (equal "open" (superior (the constraint-element (:from triad)))) ))
-        ;    do
-        ;    (setf idcount (1+ idcount))
-        ;    (setf extidcount (1+ extidcount))
-        ;    (format stream "~a~%" "&TRIAD")
-        ;    (format stream "~t id = ~d~%" idcount)
-        ;    (format stream "~t extId = ~d~%" extidcount)
-        ;    (format stream "~t nDOFs = ~d~%" (if (equal 0 (the index (:from link))) 0 6) )
-        ;    (format stream "~t ur = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
-        ;                                                         (append (subseq frame 4 7) (list (nth 13 frame)))
-        ;                                                         (append (subseq frame 8 11) (list (nth 14 frame)))
-        ;                                                         ) )
-        ;    (format stream "~%/~2%")
-        ;    
-        ;    and collect idcount into trs
-        ;    finally (setf triads (append triads (list trs)))  
-        ;    )
-        ;  
-        ;  )
-        (print triads)
-        (setf extidcount 0)
-        (loop for link in !link-ref-list
-          for id = (the index (:from link))
-;;;           from 0 to (1- (length !link-ref-list))
-          for triader = (nth id triads)
-          for frame =  (vector-to-list (get-position-matrix (the main-frame (:from (nth 0 (the solid-constraints-ref-list (:from link)))) ) ) )
-          when (not (equal 0 id ) )
-          do
-          (setf idcount (1+ idcount))
-          (format stream "~a~%" "&SUP_EL")
-          (format stream "~t id = ~d~%" idcount)
-          (format stream "~t extId = ~d~%" id)
-          (format stream "~t numGenDOFs = 0~%")
-          (format stream "~t numTriads = ~d~%" (length triader))
-          (format stream "~t triadIds = ~{~d ~}~%" triader)
-          (format stream "~t shadowPosAlg = 1~%")
-          (format stream "~t massCorrFlag = -1~%")
-          (format stream "~t stiffScale = 1.0~%")
-          (format stream "~t massScale = 1.0~%")
-          (format stream "~t alpha1 = 0.0, alpha2 = 0.0~%")
-          (format stream "~t subPos = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq frame 0 3) (list (nth 12 frame)))
-                                                                   (append (subseq frame 4 7) (list (nth 13 frame)))
-                                                                   (append (subseq frame 8 11) (list (nth 14 frame)))
-                                                                                  ) )
-          (format stream "~%/~2%")
-         ; (print (the solid-constraints-ref-list (:from link)) )
-         ; (loop for triad in (the solid-constraints-ref-list (:from link))
-         ;   for i = (the index (:from triad) )
-;;;      ;       for un_frame = (vector-to-list (matrix-multiply (get-position-matrix (the main-frame (:from triad))) (matrix-inverse frame) ))
-         ;   do
-         ;   (print i)
-         ;   (print triader)
-         ;   (format stream "~a~%" "&TRIAD_UNDPOS")
-         ;   (format stream "~t supElId = ~d~%" idcount)
-         ;   (format stream "~t triadId = ~d~%" (nth i triader) )
-;;;      ;       (format stream "~t undPosInSupElSystem = ~{~{~1,9e ~}~%~6t ~}"  (list (append (subseq un_frame 0 3) (list (nth 12 un_frame)))
-;;;      ;                                                                             (append (subseq un_frame 4 7) (list (nth 13 un_frame)))
-;;;      ;                                                                             (append (subseq un_frame 8 11) (list (nth 14 un_frame)))
-;;;      ;                                                                             ) )
-         ;   (format stream "~%/~2%")
-         ;  )
-          )
-        )
-      )
-    )
-  )

@@ -1,3 +1,7 @@
+;-------------------------------------------------------------------------------------------------------------
+; Class: load-model
+; Holds load parameters as well as the visual geometry for the modeling view
+;------------------------------------------------------------------------------------------------------------- 
 (define-class load-model
 	:inherit-from (union-object)
 	:properties (
@@ -24,7 +28,6 @@
 														(multiply-vector-by-scalar ^negative-random (/ ^mechanism-size 70)) 
 														)
 				 
-				 ;; Should create different geometry classes of the following:
 				 object-list (case ^load-type
 							  ('force (list ^line ^arrow1 ^arrow2 ))
 							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
@@ -43,16 +46,16 @@
 					point2 ^^arrow-vector2
 					)
 				 (arrow3 :class 'line-object
-					point1 			^^load-point
-					point2 			^^arrow-vector1
-					orientation 	(list (translate
-											(multiply-vector-by-scalar ^total-vector 0.1)
-											))
+					point1 		^^load-point
+					point2 		^^arrow-vector1
+					orientation	(list (translate
+										(multiply-vector-by-scalar ^total-vector 0.1)
+										))
 					)
 				 (arrow4 :class 'line-object
-					point1 ^^load-point
-					point2 ^^arrow-vector2
-					orientation (list (translate
+					point1 		^^load-point
+					point2 		^^arrow-vector2
+					orientation	(list (translate
 										(multiply-vector-by-scalar ^total-vector 0.1)
 										))
 					)
@@ -63,7 +66,9 @@
 				 orientation (list (translate 
 									(multiply-vector-by-scalar (normalize ^load-direction) (* -1 ^translation))
 									))
-				 
 				 line-width 1
 				)
 )
+;-------------------------------------------------------------------------------------------------------------
+; END load-model definitions
+;------------------------------------------------------------------------------------------------------------- 

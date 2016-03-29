@@ -1,4 +1,8 @@
-;;; Instantiates every member on a link 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: members-on-link-collection
+; Instantiates every member on a link as series-objects
+;------------------------------------------------------------------------------------------------------------- 
 (define-class members-on-link-collection
   :inherit-from (series-object)
   :properties (               
@@ -12,6 +16,14 @@
                )
   )
 
+;-------------------------------------------------------------------------------------------------------------
+; END members-on-link-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: member-solid-model
+; Creates the link cross-section sweep for a link member
+;-------------------------------------------------------------------------------------------------------------   
 (define-class member-solid-model
   :inherit-from (tagging-object general-sweep-class)
   :properties(
@@ -132,7 +144,10 @@
 		!connection-between-constraints)
 )
   
- ;;; Left-click button methods for member-solid-model
+ 
+;-------------------------------------------------
+; Left-click button methods for member-solid-model
+;-------------------------------------------------
 (define-method work-area-button1-action member-solid-model (params)
   (case params
     (:draw
@@ -173,7 +188,9 @@
     )
   )
 
- ;;; Right-click button methods for member-solid-model 
+;--------------------------------------------------
+; Right-click button methods for member-solid-model
+;--------------------------------------------------
 (define-method work-area-button3-action member-solid-model (params)
   (case params
     (:draw
@@ -185,15 +202,14 @@
     )
   )
 
-
-
-;;; Class generating a link's total geometry, including joints
-
-;;; -----------------------------
-;;; Sheth-Uicker DEFINITIONS
-;;; -----------------------------
-
-;;; Model creating a NURBS curve between two endpoints
+;-------------------------------------------------------------------------------------------------------------
+; END member-solid-model definitions
+;------------------------------------------------------------------------------------------------------------- 
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: connection-model
+; Creates a NURBS curve between two endpoints, using Sheth-Uicker definitions
+;-------------------------------------------------------------------------------------------------------------
 (define-class connection-model
   :inherit-from (nurb-curve-object)
   :properties (
@@ -321,11 +337,16 @@
   )
  
 
-;;; Middle point
-(defun m-point (p1 d1 p2 d2)
+;-----------------------------------------------------------------
+; Finds the middle point between p1 and p2, given the direction d1
+;-----------------------------------------------------------------
+(defun m-point (p1 d1 p2)
   (add-vectors p1 (proj_v d1 (multiply-vector-by-scalar (subtract-vectors p2 p1) 0.5) ) )
   )
-;;; Closest point
+
+;--------------------------------
+; Finds the closest point from p1
+;--------------------------------
 (defun cl-point (p1 d1 p2 d2)
   (let (
         (n1x (cross-product d1 d2))
@@ -337,12 +358,13 @@
         (l2s (multiply-vector-by-scalar d1 (/ n2d d1s)))
         
         )
-    (add-vectors p1 (subtract-vectors l1s l2s))
+		(add-vectors p1 (subtract-vectors l1s l2s))
       )
   )
 
-
-;;; Determine configuration of two lines in relation too eachother
+;-------------------------------------------------------------
+;Determine configuration of two lines in relation to eachother
+;-------------------------------------------------------------
 (define-method line-pose connection-model ()
   (let (
         (v0_1 (cross-product !pij !wij) )
@@ -356,10 +378,12 @@
     )
   )
 
-;;; Generalized closest points
-;;; If lines Gij Gjk are intersecting or skew: closest point
-;;; If lines Gij Gjk are coincident or parallel: mid-point
-;;; Calculate intersection between lines
+;---------------------------------------------------------
+; Generalized closest points
+; If lines Gij Gjk are intersecting or skew: closest point
+; If lines Gij Gjk are coincident or parallel: mid-point
+; Calculate intersection between lines
+;---------------------------------------------------------
 (define-method inter_section connection-model (line-config)
    (case line-config
      ('skew
@@ -376,7 +400,9 @@
       )
      )
    )
-;;; Get Generalized perpendicular direction                    
+;--------------------------------------------
+; Returns generalized perpendicular direction 
+;--------------------------------------------
 (define-method perp-dir connection-model (line-config)
   (let (
         (cross (cross-product !wij !wjk) )
@@ -398,17 +424,20 @@
   )
 
 
-;;; The orthogonal projection of a vector b onto some vector a
-;;; pi_a(b)
+;---------------------------------------------------------------------------
+; Returns the orthogonal projection of a vector b onto some vector a, pi_a(b)
+;---------------------------------------------------------------------------
 (defun proj_v (a b)
   (multiply-vector-by-scalar a (/ (dot-product b a ) (dot-product a a )) )
   )
 
-;;; The orthogonal projection of a vector b into the orthogonal complement of a of some vector a
-;;; tau_a(b) 
+;---------------------------------------------------------------------------------------------------
+; Returns the orthogonal projection of vector b into the orthogonal complement of vector a, tau_a(b)
+;---------------------------------------------------------------------------------------------------
 (defun orthogonal-projection-complement (a b)
   (subtract-vectors b (proj_v a b) )
   )
-;;; -----------------------------
-;;; END Sheth-Uicker DEFINITIONS
-;;; -----------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; END link-geometry-class definitions
+;-------------------------------------------------------------------------------------------------------------
