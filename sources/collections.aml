@@ -71,7 +71,7 @@
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
 		(:draw-joints
-			(loop for constraint in ^constraints-ref-list
+			(loop for constraint in (get-constraints (the))
 				do 
 				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? nil)		
 					(let (
@@ -89,7 +89,7 @@
 			)
 		)
 		(:draw-joints-mesh
-			(loop for constraint in ^constraints-ref-list
+			(loop for constraint in (get-constraints (the))
 				do 
 				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? t)		
 					(let (
@@ -191,6 +191,10 @@
                )
   )
 
+(define-method get-input-shapes shape-collection ()
+	(children (the) :class 'shape-data-model)
+)
+
 ;;; Reads each line of the shapes file and adds this to a list 
 (defun read-shapes-from-file (stream)
 ;;;   (with-open-file (file (logical-path (the path (:from ^mechanism-selection) ) "shapes.txt") :direction :input)
@@ -209,7 +213,9 @@
 (define-class link-collection
   :inherit-from (series-object)
   :properties (
-               (cross-section-type :class 'option-property-class
+               constraints-list 	nil ;;List of all master-joint-models in the mechanism
+			   input-shapes-list	nil ;;List of all initial shape-data-models
+			   (cross-section-type :class 'option-property-class
                    label "Cross-section Type"
                    mode 'menu
                    formula (nth 0 !options-list)
@@ -240,11 +246,10 @@
 					'("Undraw" (button1-parameters :undraw button3-parameters :unset)
 					ui-work-area-action-button-class)
 				)
-               ;;Traverse to Superior reference
-;;;                point-ref-list nil
-;;;                constraints-ref-list nil
-               link-list (sort (copy-seq (remove-duplicates (append-list (loop for kid in (the constraints-ref-list) 
-                                                                 collect (the link-incidence (:from kid)) 
+
+				;;Returns a sorted list of all link numbers in the mechanism. I.e: (0 1 2 3 4)
+				link-list (sort (copy-seq (remove-duplicates (append-list (loop for constraint in ^constraints-list
+                                                                 collect (the link-incidence (:from constraint)) 
                                                                  )
                                                                ))
                                         ) '<)
@@ -252,8 +257,9 @@
                (init-default-shape :class 'shape-data-model
                    )
                
-               default-shape (let(
-                                  (def (loop for shape in (children ^^shapes :class 'shape-data-model)
+               ;;; 
+			   default-shape (let(
+                                  (def (loop for shape in ^input-shapes-list
                                          when (equal 'default (the link-ref (:from shape)))
                                          do (return shape)
                                          ) )
@@ -274,8 +280,8 @@
 									if (equal ^index (nth 1 shape))
 									 do (return (nth 0 shape))
 							   )
-						   constraints-incident-on-link-list (loop for kid in (the constraints-ref-list)
-                                                               for con = (get-constraint-incidence kid ^link-index)
+						   constraints-incident-on-link-list (loop for constraint in ^constraints-list
+                                                               for con = (get-constraint-incidence constraint ^link-index)
                                                                when con collect con
                                                                )
                            )
@@ -360,7 +366,6 @@
 (define-class folder-collection
   :inherit-from (series-object)
   :properties (
-               
                ;; Removing ../ and ./
 			   ;; Returns a list of the contents in the library directory
                library-subfolder-list (rest (rest (directory #mechanism-library#)) )
@@ -396,7 +401,6 @@
 										)
 				 )
 	)
-	
 	
 	
 (define-method work-area-button1-action design-variable-class (params)
@@ -522,7 +526,7 @@
 				 ground-coords		nil
 				 
 				 type 				'spring
-				 from-constraint	(get-constraint (the superior superior superior) ^from-number)
+				 from-constraint	(get-constraint (the superior superior superior) ^from-number) ;;Should instantiate this
 				 to-constraint		(if (= -1 ^to-number) 
 										nil
 										(get-constraint (the superior superior superior) ^to-number)
@@ -593,12 +597,10 @@
 										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
 											collect link)
 											
-			   non-open-constraints-list (when ^constraints-ref-list
-											  (loop for constraint in ^constraints-ref-list do
-												  if (not (string-equal "open" (get-constraint-type constraint)))
-													  collect constraint
-											  )
-										  )
+			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
+											  if (not (string-equal "open" (get-constraint-type constraint)))
+												  collect constraint
+											)
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
 			   ;a (add-point-to-line-group (nth 1 ^point-ref-list))
@@ -692,7 +694,9 @@
                (points :class 'point-collection
                    )
 			   (links :class 'link-collection
-                   )
+                   constraints-list 	(get-constraints ^constraints)
+				   input-shapes-list	(get-input-shapes ^shapes)
+				   )
 			   (shapes :class 'shape-collection
                    )
                (design-variables :class 'design-variables-collection

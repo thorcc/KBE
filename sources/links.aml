@@ -558,7 +558,6 @@
                series-prefix 'member
                init-form '(
                            connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
-
                            shape-ref (nth ^index ^^shapes-on-link)          
                            )
                )
@@ -613,7 +612,7 @@
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
 			   mating-surface-list 					(append (loop for c in ^constraints-incident-on-link-list
 														collect (the mating-surface-nodes (:from c))
-														))               
+														))
 			   
                union-list 							(loop for constraint in ^constraints-incident-on-link-list
 														append (the union-list (:from constraint))
