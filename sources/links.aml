@@ -558,7 +558,6 @@
                series-prefix 'member
                init-form '(
                            connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
-
                            shape-ref (nth ^index ^^shapes-on-link)          
                            )
                )
@@ -613,7 +612,7 @@
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
 			   mating-surface-list 					(append (loop for c in ^constraints-incident-on-link-list
 														collect (the mating-surface-nodes (:from c))
-														))               
+														))
 			   
                union-list 							(loop for constraint in ^constraints-incident-on-link-list
 														append (the union-list (:from constraint))
@@ -719,7 +718,7 @@
   :properties (
                ;; properties set from parent init-form
                label											nil
-			   constraints-incident-on-link-list 				nil
+			   constraints-incident-on-link-list 				nil ;;List of joint-element-models
                connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
@@ -733,6 +732,7 @@
                (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-solid-geometry
                    mesh-database 			^^mesh-database
+				   link-model 				^superior
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object ^^link-mesh-model
@@ -742,9 +742,9 @@
 
 (define-method get-non-open-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
-		(loop for constraint in !constraints-incident-on-link-list do
-			if (not (string-equal "open" (get-constraint-type constraint)))
-				collect constraint
+		(loop for joint-element in !constraints-incident-on-link-list do
+			if (not (string-equal "open" (get-constraint-type joint-element)))
+				collect joint-element
 		)
 	)
 )

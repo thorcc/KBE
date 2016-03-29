@@ -19,6 +19,7 @@
            "analysis.aml"
            "links.aml"
            "collections.aml"
+		   "loads.aml"
            )
   )
 

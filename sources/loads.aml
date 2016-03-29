@@ -1,0 +1,69 @@
+(define-class load-model
+	:inherit-from (union-object)
+	:properties (
+				 load-type 		(default nil)
+				 magnitude 		(default nil)
+				 load-direction	(default nil)
+				 loadID			(default nil)
+				 load-point		(default nil)
+				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^load-direction) (/ ^mechanism-size 6))) ;;This defines the line length, controlled by the size of the mechanism
+				 total-vector 	(subtract-points ^end-point ^load-point) ;; Just to get the scalar with the vector
+				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
+				 translation	(default nil)
+				 
+				 ;;Visual geometry
+				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^load-direction))
+				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
+				 mirror-line 				(compute-plane-normal ^load-point ^end-point ^random-direction-normal)
+				 arrow-vector1 				(add-points 
+														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
+														(multiply-vector-by-scalar ^random-direction-normal (/ ^mechanism-size 70)) ;; How far the arrow points move from the line 
+														)
+				 arrow-vector2 				(add-points 
+														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
+														(multiply-vector-by-scalar ^negative-random (/ ^mechanism-size 70)) 
+														)
+				 
+				 ;; Should create different geometry classes of the following:
+				 object-list (case ^load-type
+							  ('force (list ^line ^arrow1 ^arrow2 ))
+							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
+							  ) 
+				 
+				 (line :class 'line-object
+					point1 ^^load-point
+					point2 ^^end-point
+					)
+				 (arrow1 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector1 
+					)
+				 (arrow2 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector2
+					)
+				 (arrow3 :class 'line-object
+					point1 			^^load-point
+					point2 			^^arrow-vector1
+					orientation 	(list (translate
+											(multiply-vector-by-scalar ^total-vector 0.1)
+											))
+					)
+				 (arrow4 :class 'line-object
+					point1 ^^load-point
+					point2 ^^arrow-vector2
+					orientation (list (translate
+										(multiply-vector-by-scalar ^total-vector 0.1)
+										))
+					)
+				 color (case ^load-type
+						('force 'orange)
+						('torque 'red)
+						)
+				 orientation (list (translate 
+									(multiply-vector-by-scalar (normalize ^load-direction) (* -1 ^translation))
+									))
+				 
+				 line-width 1
+				)
+)
