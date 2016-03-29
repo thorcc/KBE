@@ -1,5 +1,7 @@
- 
-;;; Class for holding male and female instantiations as subobjects
+;-------------------------------------------------------------------------------------------------------------
+; Class: master-joint-model
+; Used for holding male and female instantiations as subobjects
+;-------------------------------------------------------------------------------------------------------------
 (define-class master-joint-model
   :inherit-from (frame-data-model)
   :properties (
@@ -203,8 +205,9 @@
 (define-method get-link-incidence master-joint-model ()
 	!link-incidence
 )
-
-;; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
+;------------------------------------------------------------------------------------
+; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
+;------------------------------------------------------------------------------------
 (define-method get-male-triad-id-from-master-joint-model master-joint-model ()
 	(1- (* 2 !id))
 )
@@ -218,8 +221,9 @@
       )
     )
   )
-
- ;;; Left-click button methods for master-joint-model 
+;-------------------------------------------------
+; Left-click button methods for master-joint-model
+;-------------------------------------------------
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
 		(:draw-joint
@@ -246,7 +250,16 @@
 	)
 )
 
-;;; Superclass for male and female joint elements
+
+
+;-------------------------------------------------------------------------------------------------------------
+; END master-joint-model definitions
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: joint-element-model
+; Superclass for male and female joint elements
+;-------------------------------------------------------------------------------------------------------------
 (define-class joint-element-model
   :inherit-from (frame-data-model)
   :properties (
@@ -348,7 +361,9 @@
 		(the main-frame origin)
 	)
 )
-;; Used in (write-fmm-model-file) to generate unique IDs for each joint element  
+;-----------------------------------------------------------------------------
+; Used in (write-fmm-model-file) to generate unique IDs for each joint element
+;-----------------------------------------------------------------------------
 (define-method get-joint-element-id joint-element-model ()
 	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint
 )
@@ -357,3 +372,6 @@
  (when (member link-index ^link-incidence) (the self))
  )
 
+;-------------------------------------------------------------------------------------------------------------
+; END joint-element-model definitions
+;-------------------------------------------------------------------------------------------------------------
