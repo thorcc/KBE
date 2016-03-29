@@ -1,13 +1,12 @@
-;;; Creates the different collections (constraint, point, link, shape and meshdb) as subobjects
+;-------------------------------------------------------------------------------------------------------------
+; Class: main-mechanism-class
+; Initiates the system by creating all the collections
+;-------------------------------------------------------------------------------------------------------------
 (define-class main-mechanism-class
   :inherit-from (object)
   :properties (
                point-ref-list (children ^points :class 'point-data-model )
-			   build (remove nil(loop for point in ^point-ref-list
-							collect (add-point-to-line-group point)
-							)
-						)
-						
+					
 			   constraints-ref-list (children ^constraints :class 'master-joint-model)
 			   shapes-ref-list (children ^shapes :class 'shape-data-model)
                link-ref-list (children ^links :class 'link-model-class)
@@ -22,8 +21,6 @@
 											)
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
-			   ;a (add-point-to-line-group (nth 1 ^point-ref-list))
-
 			   
 			   ;; mechanism-selection is a list of folder-info-models
                (mechanism-selection :class 'option-property-class
@@ -60,14 +57,6 @@
 						)
 					)
 			   
-			   ;dv :class 'option-property-class
-				;	;options-list ^dv-ref-list
-				;	mode 'menu
-				;	options-list (loop for dv in ^dv-ref-list
-				;		collect (the dv-name (:from dv))
-				;		)
-				;	;formula (the dv-name (:from (nth 0 ^dv-ref-list)))
-				;	)
 			   
 			   property-objects-list (list 
 											(list (the superior mechanism-selection self) 
@@ -99,12 +88,10 @@
 			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
 			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
 			   			   
-			   
 			   objective-function (when (probe-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
 									(+ (the coord-ref (:from (nth 1 ^point-ref-list))) (the coord-ref (:from (nth 3 ^point-ref-list))))
 									)
 			   
-			   p (the version-path (:from ^version-selection))
 			   mechanism-type (the folder (:from ^mechanism-selection))
                )
   :subobjects (
@@ -126,13 +113,16 @@
                    )
                )
   )
-
-;; Adds a load-model object to the loads-list in main-mechanism-class  
+;-------------------------------------------------------------------
+; Adds a load-model object to the loads-list in main-mechanism-class  
+;-------------------------------------------------------------------
 (define-method add-load main-mechanism-class (load)
 	(change-value !loads-list (append !loads-list (list load)))
 )
 
-;; Returns the greatest distance within the mechanism
+;---------------------------------------------------
+; Returns the greatest distance within the mechanism
+;---------------------------------------------------
 (define-method calculate-mechanism-size main-mechanism-class ()
 	(let (
 		 (max-x 0)
@@ -156,24 +146,6 @@
 	)
 )
 
-;(define-method add-point-to-line-group main-mechanism-class ()
-;	(let (
-;		  (line-groups-list '() )
-;		  (group-names '() )
-;		  )
-;		 
-;			(loop for point in !point-ref-list
-;			if (the line-group (:from point))
-;				do (and
-;					(append group-names (the line-group (:from point)))
-;					(append line-groups-list (list (the line-group (:from point)) (list point)))
-;				)
-;			)
-;			line-groups-list
-;		 
-;	)
-;)
- 
 (define-method get-constraint main-mechanism-class (constraint-number)
 	(nth constraint-number !constraints-ref-list)
 )
@@ -181,24 +153,12 @@
 (define-method get-mechanism-type main-mechanism-class ()
 	(the mechanism-selection label)
 )
- 
-(defun add-point-to-line-group (point)
-	(if (the line-group (:from point))
-		(if (not *line-groups*) ;; Empty list check
-			(append *line-groups* (list (the line-group (:from point)) (list point)))
-			(loop for group in *line-groups*
-				if (= (the line-group (:from point)) (nth 0 group))
-					do (append (nth 1 group) point)
-					do (append *line-groups* (list (the line-group (:from point)) (list point)))
-			)
-		)
-	)
-)
 
-  
+;-------------------------------------------------
+; Creates buttons to draw and export the mechanism 
+;-------------------------------------------------
 (define-method work-area-button1-action main-mechanism-class (params)
 	(case params
-
 		(:draw-sewn-wo-mesh
 			(loop for link in !final-link-ref-list do
 				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
@@ -240,21 +200,29 @@
 		)
 	)
 )
+;-------------------------------------------------------------------------------------------------------------
+; END main-mechanism-class
+;-------------------------------------------------------------------------------------------------------------
 
-
-
-;;; Constructs a generic collecion-class, used by the different collections
+;-------------------------------------------------------------------------------------------------------------
+; Class: collecion-class
+; Constructs a generic collecion-class, used by the different collections
+;-------------------------------------------------------------------------------------------------------------
 (define-class collection-class
   :inherit-from (object)
   :properties (
                collection-type nil
                )
   )
-;;; Checks whether a specific file is accessible or not, if so then execute the corresponding read method
+
+;-----------------------------------------------------
+; Checks whether a specific file is accessible or not, 
+; if so then the corresponding read method is executed
+;-----------------------------------------------------
 (define-method read-from-file collection-class ()
   (let (
         (file-name (write-to-string !collection-type ))
-        (file-path (logical-path (the version-path (:from ^version-selection)) (concatenate file-name ".txt") ) )
+        (file-path (logical-path (the version-path (:from ^version-selection)) (concatenate file-name ".txt")))
         (function-name (read-from-string (concatenate "read-" file-name "-from-file")) )
         )
     (if (and
@@ -272,8 +240,14 @@
       )
     )
   )
+;-------------------------------------------------------------------------------------------------------------
+; END collecion-class
+;-------------------------------------------------------------------------------------------------------------
   
-;;; Executes the read-from-file method and creates the corresponding subobjects for the constraints
+;-------------------------------------------------------------------------------------------------------------
+; Class: constraint-class
+; Executes the read-from-file method and creates the corresponding subobjects for the constraints
+;-------------------------------------------------------------------------------------------------------------  
 (define-class constraint-collection
   :inherit-from (series-object collection-class)
   :properties (	
@@ -309,7 +283,9 @@
 	(children (the) :class 'master-joint-model)
 )
   
-;;; Button actions for drawing joints, with error-handler
+;-------------------------------
+; Creates buttons to draw joints
+;-------------------------------
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
 		(:draw-joints
@@ -353,20 +329,14 @@
 		)
 	)  
 )
-;;; Reads each line of the constraints file and adds this to a list 
-(defun read-constraints-from-file (stream)
-  (when stream
-    (loop for line = (read-line stream nil :eof)
-      until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-      for c-data = (list
-                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls))
-                    )
-      collect c-data
-      )
-    )
-  )
-;;; Executes the read-from-file and creates the corresponding subobjects for the points
+;-------------------------------------------------------------------------------------------------------------
+; END constraint-collection
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: point-collection
+; Executes the read-from-file and creates the corresponding subobjects for the points
+;-------------------------------------------------------------------------------------------------------------
 (define-class point-collection
   :inherit-from (series-object collection-class)
   :properties (
@@ -385,37 +355,17 @@
                            )
                )
   )
-;;; Reads each line of the coordinats file and adds this to a list  
-(defun read-coordinates-from-file (stream)
-  (when stream
-    (loop for line = (read-line stream nil :eof)
-      until (equal line :eof)
-	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-	  for coord-line = (list
-		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls)) (nth 7 ls) )
-      collect coord-line
-      )
-    )
-  )
-;;; Defines the default properties of each shape
-(define-class shape-data-model
-  :inherit-from (object)
-  :properties (
-               label nil
-			   link-ref (default 'default)
-               sweep-index (default 'default)
-               cross-section-type (read-from-string (remove "-section" (write-to-string (default 'circular-section))))
-               solid-dimensions '(0.04 0.04)
-               point-list nil
-               weight-list nil
-               )
-  )
-
-;;; Executes the read-from-file method and creates the corresponding subobjects for the shapes
+;-------------------------------------------------------------------------------------------------------------
+; END point-collection
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: shape-collection
+; Executes the read-from-file method and creates the corresponding subobjects for the shapes
+;-------------------------------------------------------------------------------------------------------------
 (define-class shape-collection
   :inherit-from (series-object collection-class)
   :properties (
-;;;                points-list (FORMATTED-list-FROM-FILE (logical-path MECHANISM-LIBRARY "coordinates.txt") :element-format '(x y z))
                collection-type 'shapes
                shapes-list (cdr (read-from-file !superior))
                quantity (length ^shapes-list)
@@ -436,22 +386,14 @@
 (define-method get-input-shapes shape-collection ()
 	(children (the) :class 'shape-data-model)
 )
+;-------------------------------------------------------------------------------------------------------------
+; END shape-collection
+;-------------------------------------------------------------------------------------------------------------
 
-;;; Reads each line of the shapes file and adds this to a list 
-(defun read-shapes-from-file (stream)
-;;;   (with-open-file (file (logical-path (the path (:from ^mechanism-selection) ) "shapes.txt") :direction :input)
- (when stream
-   (loop for line = (read-line stream  nil :eof)
-     until (equal line :eof)
-     for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-     for shape-data = (list
-                       (read-from-string(nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls)) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls))
-                       )
-     collect shape-data
-     )
-   )
- )
-;;; Creates all the links in the object tree
+;-------------------------------------------------------------------------------------------------------------
+; Class: link-collection
+; Creates all the links in the object tree
+;-------------------------------------------------------------------------------------------------------------
 (define-class link-collection
   :inherit-from (series-object)
   :properties (
@@ -529,12 +471,18 @@
                            )
                )
   )
-;;; Gets the link reference from a link-collection
+  
+;-----------------------------------------------
+; Gets the link reference from a link-collection
+;-----------------------------------------------
 (define-method get-link-ref link-collection (link-index)
   (nth (position link-index !link-list) ^link-ref-list)
   )
-;;; Button actions for drawing/undrawing links (with and without mesh),
-;;; setting cross-section-type and setting dimensions  
+  
+;--------------------------------------------------------------------
+; Button actions for drawing/undrawing links (with and without mesh),
+; setting cross-section-type and setting dimensions  
+;--------------------------------------------------------------------
 (define-method work-area-button1-action link-collection (params)
 	(case params
 		(:set-c
@@ -568,43 +516,46 @@
 	)
 	
 )
-;;; Defines the data-model for folders
-(define-class folder-info-model
-  :inherit-from (series-object)
-  :properties (
-               path nil
-               folder (subseq (remove #MECHANISM-LIBRARY# ^path) 1)
-               label (replace (copy-seq ^folder) " " :start1 (position "-" ^folder :test 'string-equal) )
+;-------------------------------------------------------------------------------------------------------------
+; END link-collection
+;-------------------------------------------------------------------------------------------------------------
 
-               class-name (let (
-                                (name (read-from-string (concatenate ^folder "-class" ) ))
-                                )
-                            (when (find-class name)
-                              name
-                              )
-                            )
-				
-				version-list (rest (rest (directory ^path)))
-				class-expression 'mechanism-version-info
-				series-prefix 'version
-				quantity (length ^version-list)
-				init-form '(
-							version-path (nth ^index ^^version-list)
-							version-name (subseq (remove ^^path ^version-path) 1)
-						    )
-               )
-  )
-  
-(define-class mechanism-version-info 
-	:inherit-from (object)
+;-------------------------------------------------------------------------------------------------------------
+; Class: spring-damper-collection
+;-------------------------------------------------------------------------------------------------------------
+(define-class spring-damper-collection
+	:inherit-from (series-object collection-class)
 	:properties (
-				 version-path nil				 
-				 version-name nil
+				 collection-type 	'spring-damper
+				 ;series-prefix 		'spring-damper
+				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
+				 quantity			(length ^sd-list)
+				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
+				 init-form '(
+							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
+							 from-number		(nth 0 (nth 1 (nth ^index ^sd-list)))
+							 to-number			(nth 1 (nth 1 (nth ^index ^sd-list)))
+							 ground-coords		(nth 2 (nth ^index ^sd-list))
+							 )
 				 )
-	)
-  
-;;; Reads all subfolders of the library folder in the file system and creates a subobject for each folder 
-;;; as a series-object of the type folder-info-model
+)
+
+(define-method get-springs spring-damper-collection ()
+	(children (the) :class 'spring-model-class)
+)
+
+(define-method get-dampers spring-damper-collection ()
+	(children (the) :class 'damper-model-class)
+)
+;-------------------------------------------------------------------------------------------------------------
+; END spring-damper-collection
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: folder-collection
+; Reads all subfolders of the library folder in the file system and creates a subobject for each folder 
+; as a series-object of the type folder-info-model
+;-------------------------------------------------------------------------------------------------------------
 (define-class folder-collection
   :inherit-from (series-object)
   :properties (
@@ -619,62 +570,13 @@
                            )
                )
   )
- 
-(define-class design-variable-class
-	:inherit-from (object)
-	:properties (
-				 dv-name nil
-				 direction nil
-				 line-name nil
-				 points-on-line nil
-				 affected-translation-coords-list nil
-				 coord-pos (position 1 ^direction)
-				 
-				 (dv-value :class 'editable-data-property-class
-					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-translation-coords-list) ^point-ref-list))))
-					label ^dv-name
-					)
-				 
-				 property-objects-list (list 
-										 (list (the superior dv-value self)
-												'(automatic-apply? t))
-										 '("Update design variable changes" (button1-parameters :update-dvs)
-											ui-work-area-action-button-class)
-										)
-				 )
-	)
-	
-	
-(define-method work-area-button1-action design-variable-class (params)
-	(case params
-		(:update-dvs
-			(progn 
-				(loop for id in !affected-translation-coords-list do 
-					(setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
-				)
-				(loop for id in !points-on-line do
-					;(setq (the coordinates (:from (nth id ^point-ref-list))) )
-				)
-			)
-		)
-	)
-)
+;-------------------------------------------------------------------------------------------------------------
+; END folder-collection
+;------------------------------------------------------------------------------------------------------------- 
 
-(defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
-	(if (= (nth 0 direction) 1)
-		(list 
-		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)) ) (- (nth 1 dv2) (nth 1 dv1)) ))
-		 (nth 1 dv2)
-		 (nth 2 dv2)
-		)
-		(list
-		 (nth 0 dv2)
-		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) (- (nth 0 dv2) (nth 0 dv1)) ))
-		 (nth 2 dv2)
-		)
-	)
-)
-
+;-------------------------------------------------------------------------------------------------------------
+; Class: design-variables-collection
+;-------------------------------------------------------------------------------------------------------------
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
 	:properties (
@@ -718,7 +620,62 @@
                              )
 				 )
 	 )	 
+;-------------------------------------------------------------------------------------------------------------
+; END design-variables-collection
+;-------------------------------------------------------------------------------------------------------------  
+
+;-----------------------------------------------------------
+; Reads each line of the shapes file and adds this to a list
+;-----------------------------------------------------------
+(defun read-shapes-from-file (stream)
+ (when stream
+   (loop for line = (read-line stream  nil :eof)
+     until (equal line :eof)
+     for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+     for shape-data = (list
+                       (read-from-string(nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls)) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls))
+                       )
+     collect shape-data
+     )
+   )
+ )
  
+;----------------------------------------------------------------
+; Reads each line of the constraints file and adds this to a list 
+;----------------------------------------------------------------
+(defun read-constraints-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream nil :eof)
+      until (equal line :eof)
+      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for c-data = (list
+                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls))
+                    )
+      collect c-data
+      )
+    )
+  )
+
+
+  
+;---------------------------------------------------------------
+; Reads each line of the coordinats file and adds this to a list
+;---------------------------------------------------------------
+(defun read-coordinates-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream nil :eof)
+      until (equal line :eof)
+	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+	  for coord-line = (list
+		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls)) (nth 7 ls) )
+      collect coord-line
+      )
+    )
+  )
+  
+;---------------------------------------------------------------------
+; Reads each line of the design-variables file and adds this to a list
+;---------------------------------------------------------------------  
 (defun read-design-variables-from-file (stream)
 	(when stream
 		(loop for line = (read-line stream  nil :eof)
@@ -730,23 +687,9 @@
 		)
    )
   
-(define-class spring-damper-collection
-	:inherit-from (series-object collection-class)
-	:properties (
-				 collection-type 	'spring-damper
-				 ;series-prefix 		'spring-damper
-				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
-				 quantity			(length ^sd-list)
-				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
-				 init-form '(
-							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-number		(nth 0 (nth 1 (nth ^index ^sd-list)))
-							 to-number			(nth 1 (nth 1 (nth ^index ^sd-list)))
-							 ground-coords		(nth 2 (nth ^index ^sd-list))
-							 )
-				 )
-)
-
+;------------------------------------------------------------------
+; Reads each line of the spring-damper file and adds this to a list
+;------------------------------------------------------------------
 (defun read-spring-damper-from-file (stream)
 	(when stream
 		(loop for line = (read-line stream  nil :eof)
@@ -757,12 +700,110 @@
 			)
 		)
 )
-  
-(define-method get-springs spring-damper-collection ()
-	(children (the) :class 'spring-model-class)
+;-------------------------------------------------------------------------------------------------------------
+; Class: folder-info-model
+; Defines the data-model for folders
+;-------------------------------------------------------------------------------------------------------------
+(define-class folder-info-model
+  :inherit-from (series-object)
+  :properties (
+               path nil
+               folder (subseq (remove #MECHANISM-LIBRARY# ^path) 1)
+               label (replace (copy-seq ^folder) " " :start1 (position "-" ^folder :test 'string-equal) )
+
+               class-name (let (
+                                (name (read-from-string (concatenate ^folder "-class" ) ))
+                                )
+                            (when (find-class name)
+                              name
+                              )
+                            )
+				
+				version-list (rest (rest (directory ^path)))
+				class-expression 'mechanism-version-info
+				series-prefix 'version
+				quantity (length ^version-list)
+				init-form '(
+							version-path (nth ^index ^^version-list)
+							version-name (subseq (remove ^^path ^version-path) 1)
+						    )
+               )
+  )
+;-------------------------------------------------------------------------------------------------------------
+; END folder-info-model
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: mechanism-version-info
+;-------------------------------------------------------------------------------------------------------------
+(define-class mechanism-version-info 
+	:inherit-from (object)
+	:properties (
+				 version-path nil				 
+				 version-name nil
+				 )
+	)
+;-------------------------------------------------------------------------------------------------------------
+; END mechanism-version-info
+;-------------------------------------------------------------------------------------------------------------   
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: design-variable-class
+;-------------------------------------------------------------------------------------------------------------
+(define-class design-variable-class
+	:inherit-from (object)
+	:properties (
+				 dv-name nil
+				 direction nil
+				 line-name nil
+				 points-on-line nil
+				 affected-translation-coords-list nil
+				 coord-pos (position 1 ^direction)
+				 
+				 (dv-value :class 'editable-data-property-class
+					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-translation-coords-list) ^point-ref-list))))
+					label ^dv-name
+					)
+				 
+				 property-objects-list (list 
+										 (list (the superior dv-value self)
+												'(automatic-apply? t))
+										 '("Update design variable changes" (button1-parameters :update-dvs)
+											ui-work-area-action-button-class)
+										)
+				 )
+	)
+	
+(define-method work-area-button1-action design-variable-class (params)
+	(case params
+		(:update-dvs
+			(progn 
+				(loop for id in !affected-translation-coords-list do 
+					(setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
+				)
+				(loop for id in !points-on-line do
+					;(setq (the coordinates (:from (nth id ^point-ref-list))) )
+				)
+			)
+		)
+	)
+)
+;-------------------------------------------------------------------------------------------------------------
+; END design-variable-class
+;------------------------------------------------------------------------------------------------------------- 
+
+(defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
+	(if (= (nth 0 direction) 1)
+		(list 
+		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)) ) (- (nth 1 dv2) (nth 1 dv1)) ))
+		 (nth 1 dv2)
+		 (nth 2 dv2)
+		)
+		(list
+		 (nth 0 dv2)
+		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) (- (nth 0 dv2) (nth 0 dv1)) ))
+		 (nth 2 dv2)
+		)
+	)
 )
 
-(define-method get-dampers spring-damper-collection ()
-	(children (the) :class 'damper-model-class)
-)
- 
