@@ -3,40 +3,6 @@
 ;;; CONSTRAINT DEFINITIONS
 ;;; -----------------------------
 
-;;; Superclass for all constraints
-(define-class general-joint-solid-model
-  :inherit-from (frame-data-model)
-  :properties (
-               max-element-size (deafult 0.04)
-			   min-element-size (deafult 0.01)
-               scale-factor (default 1.2)
-               
-               point-ref (default nil)
-               direction (default nil)
-               (z-vector-ref :class 'vector-data-model
-                   direction ^^direction
-                   )
-               (x-vector-ref :class 'vector-data-model
-                   direction (arbitrary-normal-to-vector ^^direction)
-                   )
-               
-               constraint-type (default nil)
-               
-               ;from-link (nth (position (nth 0 ^link-incidence) ^^link-list) ^^link-ref-list)
-               ;to-link (nth (position (nth 1 ^link-incidence) ^^link-list) ^^link-ref-list)
-               
-               link-incidence (default nil)
-
-               link-ref-incident-on-constraint nil
-               
-               constraint-variable (default (list ))
-               )
-  )
-
-(define-method get-constraint-type general-joint-solid-model ()
-	!constraint-type
-	)
-  
 (define-class load-model
 	:inherit-from (union-object)
 	:properties (
@@ -108,10 +74,25 @@
  
 ;;; Class for holding male and female instantiations as subobjects
 (define-class master-joint-model
-  :inherit-from (general-joint-solid-model)
+  :inherit-from (frame-data-model)
   :properties (
-               id (default nil)
-			   
+               id 					(default nil)
+			   link-incidence 		(default nil)
+			   max-element-size 	(deafult 0.04)
+			   min-element-size 	(deafult 0.01)
+               scale-factor 		(default 1.2)
+			   constraint-variable	(default nil)
+               
+               point-ref (default nil)
+               direction (default nil)
+               (z-vector-ref :class 'vector-data-model
+                   direction ^^direction
+                   )
+               (x-vector-ref :class 'vector-data-model
+                   direction (arbitrary-normal-to-vector ^^direction)
+                   )
+               
+               constraint-type (default nil)
 			   (max-width :class 'editable-data-property-class
 					label "Max width"
 					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
@@ -250,10 +231,11 @@
 			   )
   :subobjects (
                (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
-
+				   master-joint-object (the superior superior) ;; Instantiating a reference to the master-joint-model
                    )
                (female-element-solid-model :class (read-from-string (concatenate !constraint-type "-female-element"))
-                   (point-ref :class 'point-data-model
+                   master-joint-object (the superior superior)
+				   (point-ref :class 'point-data-model
                               coordinates (convert-coords ^^superior '(0 0 0) :from :local :to :global)
                               )
 							  
@@ -264,6 +246,10 @@
                    )
                )
   )
+ 
+(define-method get-constraint-type master-joint-model ()
+	!constraint-type
+) 
  
 (define-method get-female-element master-joint-model ()
 	(the female-element-solid-model)
@@ -283,6 +269,11 @@
 (define-method is-open-constraint master-joint-model ()
 	(equal "open" !constraint-type)
  )
+ 
+ 
+(define-method get-link-incidence master-joint-model ()
+	!link-incidence
+)
  
  ;;; Left-click button methods for master-joint-model 
 (define-method work-area-button1-action master-joint-model (params)
@@ -307,23 +298,6 @@
 						(draw !load-case)
 					)
 			)
-			;(let (
-			;		(load-model (if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
-			;			!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
-			;			(create-object 'load-model)
-			;			nil))
-			;	  )
-			;	 (if load-model
-			;		(progn
-			;			(change-value (the load-type (:from load-model)) !load-type)
-			;			(change-value (the magnitude (:from load-model)) !magnitude)
-			;			(change-value (the load-direction (:from load-model)) !load-direction)
-			;			(change-value (the loadID (:from load-model)) (1+ (get-male-triad-id-from-master-joint-model (the))))
-			;			(change-value (the mechanism-size (:from load-model)) (calculate-mechanism-size (the superior superior)))
-			;			(add-load (the superior superior) load-model)
-			;		)
-			;	 )
-			;)
 		)
 	)
 )
@@ -347,14 +321,14 @@
 
 ;;; Superclass for male and female joint elements
 (define-class joint-element-model
-  :inherit-from (general-joint-solid-model)
+  :inherit-from (frame-data-model)
   :properties (
 			   ;;; union-list is the list used for a union with the incident link. 
 			   ;;; different-list is the list of objects that are to be subtracted from the final geometry.
 			   ;;; See link-geometry-class in links.aml for the use
-               union-list nil
-               difference-list nil
-               
+               union-list 			nil
+               difference-list 		nil
+               master-joint-object	nil
 			   max-element-size (when (and ^max-width ^max-height)
 									(/ (min ^max-width ^max-height) 4)
 									)
@@ -365,7 +339,7 @@
                display? t
                gender (read-from-string (remove "-element-solid-model" (write-to-string (object-name !superior)))) 
                gender_int (case ^gender ('male 0) ('female 1) )
-               link-incidence (nth ^gender_int ^^link-incidence)
+               link-incidence (nth ^gender_int (get-link-incidence ^master-joint-object))
 			   
                link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence)
 			   link-mesh-model-object (when (the link-mesh-model (:from ^link-ref-incident-on-constraint))
@@ -454,7 +428,7 @@
         (pos (position link-index !link-incidence) )
         )
     (when pos
-      (nth pos (children (the) :class 'general-joint-solid-model))
+      (nth pos (children (the) :class 'joint-element-model))
       )
     )
   )
