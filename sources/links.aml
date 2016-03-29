@@ -718,7 +718,7 @@
   :properties (
                ;; properties set from parent init-form
                label											nil
-			   constraints-incident-on-link-list 				nil
+			   constraints-incident-on-link-list 				nil ;;List of joint-element-models
                connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
@@ -732,6 +732,7 @@
                (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-solid-geometry
                    mesh-database 			^^mesh-database
+				   link-model 				^superior
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object ^^link-mesh-model
@@ -741,9 +742,9 @@
 
 (define-method get-non-open-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
-		(loop for constraint in !constraints-incident-on-link-list do
-			if (not (string-equal "open" (get-constraint-type constraint)))
-				collect constraint
+		(loop for joint-element in !constraints-incident-on-link-list do
+			if (not (string-equal "open" (get-constraint-type joint-element)))
+				collect joint-element
 		)
 	)
 )

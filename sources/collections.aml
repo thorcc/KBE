@@ -38,7 +38,7 @@
                collection-type 'constraints
                constraint-list (cdr (read-from-file !superior))
                quantity (length ^constraint-list)
-               class-expression '(read-from-string (concatenate (nth 1 (nth !index !constraint-list)) "-constraint-class"))
+               class-expression '(read-from-string (concatenate (nth 1 (nth !index !constraint-list)) "-constraint-class")) ;;The "-constraint-classes" are master-joint-models
                series-prefix 'c
 			   
 			   init-form '(

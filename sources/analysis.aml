@@ -6,9 +6,10 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-               mesh-object ^link-mesh
+               link-model 	nil
+			   mesh-object ^link-mesh
 
-			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list (the superior superior))
+			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list ^link-model)
 			   
 			   joint-center-node-list	(loop for c in ^non-open-constraints-list
 											collect (the joint-center-node (:from c))
