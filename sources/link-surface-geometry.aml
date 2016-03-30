@@ -22,7 +22,7 @@
 
                ;;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
-                           minimize (max-height (the cross-section_D (:from (nth i ^members-ref-list))))
+                           minimize (get-max-height (the cross-section_D (:from (nth i ^members-ref-list))))
                            ))
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)
