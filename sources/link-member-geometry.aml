@@ -139,6 +139,10 @@
                )
   )
 
+(define-method get-connection member-solid-model ()
+	!connection
+)
+  
 (define-method get-joints-on-member member-solid-model ()
 	(when !connection-between-constraints
 		!connection-between-constraints)
