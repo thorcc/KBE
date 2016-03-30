@@ -298,11 +298,11 @@
                                      for pos = (position !superior (the connection-between-constraints (:from member)))
                                      when (and pos (the display? (:from member)))
                                      maximize (if (= pos 0)
-                                                  (max-width (the cross-section_D (:from member)) )
-                                                (max-width (the cross-section_A (:from member)) ) ) into max-w
+                                                  (get-max-width (the cross-section_D (:from member)) )
+                                                (get-max-width (the cross-section_A (:from member)) ) ) into max-w
                                      and  maximize (if (= pos 0)
-                                                       (max-height (the cross-section_D (:from member)) )
-                                                     (max-height (the cross-section_A (:from member)) ) ) into max-h
+                                                       (get-max-height (the cross-section_D (:from member)) )
+                                                     (get-max-height (the cross-section_A (:from member)) ) ) into max-h
                                      finally (return (list max-w max-h))
                                      )
 
