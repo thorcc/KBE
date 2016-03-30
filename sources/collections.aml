@@ -1,4 +1,3 @@
-;-------------------------------------------------------------------------------------------------------------
 ; Class: collecion-class
 ; Constructs a generic collecion-class, used by the different collections
 ;-------------------------------------------------------------------------------------------------------------
@@ -163,7 +162,7 @@
                collection-type 'shapes
                shapes-list (cdr (read-from-file !superior))
                quantity (length ^shapes-list)
-               class-expression 'shape-data-model
+               class-expression 'shape-model
                series-prefix 'shape
                init-form '(
 						   label 				(nth 0 (nth ^index ^shapes-list))
@@ -178,7 +177,7 @@
   )
 
 (define-method get-input-shapes shape-collection ()
-	(children (the) :class 'shape-data-model)
+	(children (the) :class 'shape-model)
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END shape-collection
@@ -192,7 +191,7 @@
   :inherit-from (series-object)
   :properties (
                constraints-list 	nil ;;List of all master-joint-models in the mechanism
-			   input-shapes-list	nil ;;List of all initial shape-data-models
+			   input-shapes-list	nil ;;List of all initial shape-models
 			   (cross-section-type :class 'option-property-class
                    label "Cross-section Type"
                    mode 'menu
@@ -232,7 +231,7 @@
                                                                ))
                                         ) '<)
  
-               (init-default-shape :class 'shape-data-model
+               (init-default-shape :class 'shape-model
                    )
                
                ;;; 
@@ -611,7 +610,7 @@
                point-ref-list (children ^points :class 'point-data-model )
 					
 			   constraints-ref-list (children ^constraints :class 'master-joint-model)
-			   shapes-ref-list (children ^shapes :class 'shape-data-model)
+			   shapes-ref-list (children ^shapes :class 'shape-model)
                link-ref-list (children ^links :class 'link-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list

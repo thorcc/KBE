@@ -1,9 +1,13 @@
-;;; Class responsible for meshing
+;-------------------------------------------------------------------------------------------------------------
+; Class: link-mesh-class
+; Class responsible for meshing
+;------------------------------------------------------------------------------------------------------------- 
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
                link-model 	nil
 			   mesh-object ^link-mesh
+               geometry-model-object (default nil)
 
 			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list ^link-model)
 			   
@@ -28,11 +32,10 @@
 				;										(setf min-elem (min-or-nil mw mh))))))
 				;					(/ min-elem 2))
 				;						
-               geometry-model-object (default nil) ;;This property is set on instantiation, under link-model-class.
                
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^joint-center-node-list)
-                   )
+                   ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
                (mesh-db :class 'mesh-database-class
@@ -41,7 +44,6 @@
 					object-to-mesh ^^geometry-model-object
 					mesh-database-object ^^mesh-db
 					element-shape :tri
-					;element-size-method 2
 					)
 			   (tet-mesh :class 'tet-mesh-class
 					mesh-database-object ^^mesh-db
@@ -78,7 +80,8 @@
                    ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
-			   (rbe2-list :class 'RBE2-collection)
+			   (rbe2-list :class 'RBE2-collection
+				   link-mesh ^superior)
                )
   )
 
@@ -107,28 +110,7 @@
 (define-method get-link-mesh-db link-mesh-class ()
 	!mesh-db
 	)
-	
-(define-class RBE2-collection
-	:inherit-from (series-object)
-	:properties (
-				 constraints-list 	(get-rbe2-constraints-list ^^link-mesh-model)
-				 link-mesh-db 		(get-link-mesh-db ^^link-mesh-model)
-				 
-				 class-expression 	'analysis-rigid-body-element-type-1-class
-				 series-prefix 		'rbe2
-				 quantity 			(length ^constraints-list)
-				 init-form '(
-							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
-							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
-							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
-                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
-							 )
-				 )
-	)
 
-
-	
 ;;; Returns the smallest number. If both are nil then return 10e10, if one is nil, then the other.  
 (defun min-or-nil (p q)
 	(if (or (not p) (not q))
@@ -143,4 +125,31 @@
 (define-method get-rigid-body-element-objects-list link-mesh-class ()
 	(when !rbe2-list 
 		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
+	)
+;-------------------------------------------------------------------------------------------------------------
+; END members-on-link-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+	
+;-------------------------------------------------------------------------------------------------------------
+; Class: members-on-link-collection
+; Instantiates every member on a link as series-objects
+;------------------------------------------------------------------------------------------------------------- 	
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 link-mesh 			nil ;;link-mesh-class
+				 constraints-list 	(get-rbe2-constraints-list ^link-mesh)
+				 link-mesh-db 		(get-link-mesh-db ^link-mesh)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
+							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 )
+				 )
 	)

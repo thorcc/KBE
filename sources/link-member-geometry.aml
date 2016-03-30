@@ -393,10 +393,10 @@
       (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
       )
      ('coincident
-      (list (m-point !pij !wij !pjk !wjk) (m-point !pjk !wjk !pij !wij) )
+      (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
       )
      ('paralell
-      (list (m-point !pij !wij !pjk !wjk) (m-point !pjk !wjk !pij !wij) )
+      (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
       )
      )
    )
