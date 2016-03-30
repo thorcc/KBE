@@ -319,6 +319,7 @@
 (define-class spring-damper-collection
 	:inherit-from (series-object collection-class)
 	:properties (
+				 constraints-list	nil
 				 collection-type 	'spring-damper
 				 ;series-prefix 		'spring-damper
 				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
@@ -326,9 +327,13 @@
 				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
 				 init-form '(
 							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-number		(nth 0 (nth 1 (nth ^index ^sd-list)))
-							 to-number			(nth 1 (nth 1 (nth ^index ^sd-list)))
-							 ground-coords		(nth 2 (nth ^index ^sd-list))
+							 from-constraint	(nth (nth 0 (nth 1 (nth ^index ^sd-list))) ^constraints-list)
+							 to-constraint		(if (= -1 (nth 1 (nth 1 (nth ^index ^sd-list))))
+													nil
+													(nth (nth 1 (nth 1 (nth ^index ^sd-list))) 
+														^constraints-list))
+							 ground-coords		(nth 2 (nth ^index ^sd-list)) ;;These exists if not connected
+																			  ;;to a constraint
 							 )
 				 )
 )
@@ -710,6 +715,7 @@
                (design-variables :class 'design-variables-collection
 					)
                (spring-dampers :class 'spring-damper-collection
+					constraints-list (get-constraints ^^constraints)
 					)
 			   (mesh-database :class 'meshdb-class
                    )
