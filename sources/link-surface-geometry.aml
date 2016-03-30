@@ -15,7 +15,7 @@
 			   (display? :class 'flag-property-class
                    formula  (loop for i in ^edge-combination
                               when (or (not (the display? (:from (nth i ^members)))) 
-								  (not (the connection geom (:from (nth i ^members)))) )
+								  (not (the geom (:from (get-connection (nth i ^members))))))
                               do (return nil)
                               finally (> ^thickness 0)
                               )
@@ -27,7 +27,7 @@
 
                ;;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
-                           minimize (max-height (the cross-section_D (:from (nth i ^members))))
+                           minimize (get-max-height (get-cross-section_D (nth i ^members)))
                            ))
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)

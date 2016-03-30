@@ -139,6 +139,10 @@
                )
   )
 
+(define-method get-cross-section_D member-solid-model ()
+	!cross-section_D
+)
+  
 (define-method get-connection member-solid-model ()
 	!connection
 )
