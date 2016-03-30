@@ -1,5 +1,7 @@
-
-;;; Use point-object to define position properties
+;-------------------------------------------------------------------------------------------------------------
+; Class: point-data-model
+; Used for define position properties
+;-------------------------------------------------------------------------------------------------------------
 (define-class point-data-model
   :inherit-from (point-object create-event)
   :properties (
@@ -29,11 +31,17 @@
                )
   )
 
-;;; Direction vector
+;-------------------------------------------------------------------------------------------------------------
+; END point-data-model definitions
+;-------------------------------------------------------------------------------------------------------------
+ 
+;-------------------------------------------------------------------------------------------------------------
+; Class: vector-data-model
+; Used for defining a direction vector
+;-------------------------------------------------------------------------------------------------------------
 (define-class vector-data-model
   :inherit-from (vector-class)
   :properties (
-               ;;; Superior reference traverse
                point-ref (default ^point-default)
                (point-default :class 'point-data-model
                    coordinates '(0 0 0)
@@ -44,7 +52,7 @@
                    )
                length 0.2
 
-               base-point (the coordinates (:from (the superior point-ref)) )
+               base-point (the coordinates (:from (the superior point-ref)))
                
                property-objects-list (list 
                                       (list (the coordinates self (:from (the superior point-ref)) ) 
@@ -56,9 +64,14 @@
 
                )
   )
+;-------------------------------------------------------------------------------------------------------------
+; END vector-data-model definitions
+;-------------------------------------------------------------------------------------------------------------
 
-
-;;; Frame, coordinate system
+;-------------------------------------------------------------------------------------------------------------
+; Class: frame-data-model
+; Used for creating a frame, i.e. a coordinate system
+;-------------------------------------------------------------------------------------------------------------
 (define-class frame-data-model
   :inherit-from (coordinate-system-class)
   :properties (
@@ -92,6 +105,14 @@
                )
   )
   
+;-------------------------------------------------------------------------------------------------------------
+; END frame-data-model definitions
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: analysis-link-model-class
+; Used for placing a constraint's sub-frame. Explicit values are set on instantiation
+;-------------------------------------------------------------------------------------------------------------
 (define-class sub-point-data-model
   :inherit-from (point-data-model)
   :properties (
@@ -99,12 +120,23 @@
                coordinates '(0 0 0)
                )
   )
+;-------------------------------------------------------------------------------------------------------------
+; END sub-point-data-model definitions
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: sub-frame-data-model
+; Explicit sub-frame class
+; When a sub-point-ref is specified in a joint element, its sub-frame will be placed accordingly
+;-------------------------------------------------------------------------------------------------------------
 (define-class sub-frame-data-model
   :inherit-from (frame-data-model)
   :properties (
-               ;;When a sub-point-ref is specified in a joint element, its sub-frame will be placed accordingly
 			   (point-ref :class 'point-data-model
                    coordinates (convert-coords ^sub-point-ref (the coordinates (:from ^sub-point-ref)))
                    )
                )
   )
+;-------------------------------------------------------------------------------------------------------------
+; END sub-frame-data-model definitions
+;-------------------------------------------------------------------------------------------------------------

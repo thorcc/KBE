@@ -1,8 +1,12 @@
-
+;-------------------------------------------------------------------------------------------------------------
+; Class: analysis-link-model-class
+; Used for creating objects for writing to the nastran bdf file.
+; Can also be used to set up a load case for use in an AML analysis
+;-------------------------------------------------------------------------------------------------------------
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
-               mesh-model-object 				nil ;;This property is set on instantiation as a link-mesh-class
+               mesh-model-object 				nil ;;This property is set as a link-mesh-class
                mesh-database-object 			^^mesh-database
                
                z-load 							(default -100.0)
@@ -75,7 +79,8 @@
                    analysis-model-object ^superior
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string (object-name ^^superior)) ".bdf")
-                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) ;; could write 'nastran-version :nx-nastran' but this shows the available versions
+                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) 
+				   ;; could write 'nastran-version :nx-nastran' but this shows the available versions
                    )
                )
   )
@@ -89,3 +94,6 @@
          )
    )
   )
+;-------------------------------------------------------------------------------------------------------------
+; END analysis-link-model-class definitions
+;-------------------------------------------------------------------------------------------------------------
