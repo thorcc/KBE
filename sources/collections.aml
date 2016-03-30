@@ -206,7 +206,8 @@
                common-width 0.04
                common-height 0.04
                property-objects-list (list
-					(the superior cross-section-type self) 
+					(list (the superior cross-section-type self) 
+					'(automatic-apply? t))
 					'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
 					ui-work-area-action-button-class)
 					
