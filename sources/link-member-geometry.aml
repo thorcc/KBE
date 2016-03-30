@@ -1,219 +1,3 @@
-
-;-------------------------------------------------------------------------------------------------------------
-; Class: members-on-link-collection
-; Instantiates every member on a link as series-objects
-;------------------------------------------------------------------------------------------------------------- 
-(define-class members-on-link-collection
-  :inherit-from (series-object)
-  :properties (               
-               quantity (length ^connection-between-2-constraints-combinations)
-               class-expression 'member-solid-model
-               series-prefix 'member
-               init-form '(
-                           connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
-                           shape-ref (nth ^index ^^shapes-on-link)          
-                           )
-               )
-  )
-
-;-------------------------------------------------------------------------------------------------------------
-; END members-on-link-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
-
-;-------------------------------------------------------------------------------------------------------------
-; Class: member-solid-model
-; Creates the link cross-section sweep for a link member
-;-------------------------------------------------------------------------------------------------------------   
-(define-class member-solid-model
-  :inherit-from (tagging-object general-sweep-class)
-  :properties(
-              tag-dimensions '(1 2 3)
-              tag-attributes (list ^^max-element-size .1
-                                   0 0.1 0 20.0 1.0e-5)
-              
-              (display? :class 'flag-property-class
-                  formula (when (the cross-section-type (:from ^shape-ref)) t)
-                  )
-              
-              connection-between-constraints nil ;;List of the two constraints on the member
-              frame_D (the sub-frame (:from (nth 0 ^connection-between-constraints) ))
-              frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
-              point-ref_D (the point-ref (:from ^frame_D ))
-              point-ref_A (the point-ref (:from ^frame_A ))
-              
-              z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
-              z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
-              
-              ;;cross section dimension, width 0.04 / height 0.04
-              shape-ref nil
-              width (nth 0 (the solid-dimensions (:from ^shape-ref)))
-              height (if (< 1 (length (the solid-dimensions (:from ^shape-ref))))
-                         (nth 1 (the solid-dimensions (:from ^shape-ref)))
-                       (nth 0 (the solid-dimensions (:from ^shape-ref)))
-                       )
-              width-end (if (< 2 (length (the solid-dimensions (:from ^shape-ref))))
-                            (nth 2 (the solid-dimensions (:from ^shape-ref)))
-                          (nth 0 (the solid-dimensions (:from ^shape-ref)))
-                          )
-              height-end (if (< 3 (length (the solid-dimensions (:from ^shape-ref))))
-                            (nth 3 (the solid-dimensions (:from ^shape-ref)))
-                          (nth 1 (the solid-dimensions (:from ^shape-ref)))
-                          )
-              
-              ;;; Sweep parameters
-              profile-objects-list (list
-                                    ^cross-section_D
-                                    ^cross-section_A
-                                    )
-              path-points-coords-list (list
-                                       (the origin (:from ^frame_D))
-                                       (the origin (:from ^frame_A))
-                                       )
-              profile-match-points-coords-list (list
-                                                (vertex-of-object ^cross-section_D)
-                                                (vertex-of-object ^cross-section_A)
-                                                )
-
-              path-object ^connection
-              tangential-sweep? t
-                               
-              ;;; If two cross-sections, only nil works, with one cross-section t gives best mesh
-              simplify? nil
-              render 'shaded
-
-              ;;; cross-section selection
-              (cross-section-type :class 'option-property-class
-                  label "Cross-section Type"
-                  mode 'menu
-                  formula (if (the cross-section-type (:from ^shape-ref))
-                              (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) !labels-list)  !options-list)
-                            (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) !labels-list)  !options-list) )
-                  options-list (reverse (class-direct-defined-subclasses 'section-model))
-                  labels-list (loop for option in !options-list
-                                collect (remove "-section" (write-to-string option))
-                                )
-                  )
-
-              property-objects-list (list 
-                                     (list (the superior cross-section-type self) 
-                                           '(automatic-apply? t)
-                                           )
-                                     (the superior width self)
-                                     (the superior height self)
-                                     (the superior width-end self)
-                                     (the superior height-end self)
-                                     (list (the superior display? self)
-                                           '(automatic-apply? t)
-                                           )
-                                     '("Draw..." (button1-parameters :draw button3-parameters :draw)
-                                       ui-work-area-action-button-class)
-                                     '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
-                                       ui-work-area-action-button-class)
-									   ""
-									 '("Set end frame equal to start frame (remove twisting)" (button1-parameters :remove-twisting)
-                                       ui-work-area-action-button-class)
-									 '("Reset values" (button1-parameters :reset-values)
-                                       ui-work-area-action-button-class)
-                                     )
-              )
-  :subobjects (
-               (connection :class 'connection-model
-                   )
-               
-               (cross-section_D :class !cross-section-type
-                   reference-object (the spline-frame_start (:from ^connection))
-                   orientation (list
-                                (rotate 90 :x-axis)
-                                (rotate 90 :z-axis)
-                                )
-                   )
-               (cross-section_A :class !cross-section-type
-                   width ^width-end 
-                   height ^height-end
-                   reference-object (the spline-frame_end (:from ^connection))
-                   orientation (list
-                                (rotate 90 :x-axis)
-                                (rotate 90 :z-axis)
-                                )
-                   )
-               )
-  )
-
-(define-method get-cross-section_D member-solid-model ()
-	!cross-section_D
-)
-  
-(define-method get-connection member-solid-model ()
-	!connection
-)
-  
-(define-method get-joints-on-member member-solid-model ()
-	(when !connection-between-constraints
-		!connection-between-constraints)
-)
-  
- 
-;-------------------------------------------------
-; Left-click button methods for member-solid-model
-;-------------------------------------------------
-(define-method work-area-button1-action member-solid-model (params)
-  (case params
-    (:draw
-     (draw self :draw-subobjects? nil)
-     )
-    (:undraw
-     (undraw self :subobjects? nil)
-     )
-	(:remove-twisting
-		(let (
-			  (start (the spline-frame_start (:from !connection)))
-			  (end (the spline-frame_end (:from !connection)))
-			  )
-			(if (or (not (equal (the z-vector-ref (:from start))
-								(the z-vector-ref (:from end))))
-					(not (equal (the direction (:from (the x-vector-ref (:from start))))
-								(the direction (:from (the x-vector-ref (:from end)))))
-                     )
-				 )
-				 (progn (change-value (the z-vector-ref (:from end))
-							   (the z-vector-ref (:from start)))
-					    (change-value (the x-vector-ref (:from end))
-							   (the x-vector-ref (:from start)))
-					    (draw self :draw-subobjects? nil)
-					)
-				 nil
-				)
-		)
-	 )
-	(:reset-values
-		(progn 
-			(smash-value (the z-vector-ref (:from (the spline-frame_end (:from !connection)))))
-			(smash-value (the x-vector-ref (:from (the spline-frame_end (:from !connection)))))
-			(draw self :draw-subobjects? nil)
-		)
-	)
-	
-    )
-  )
-
-;--------------------------------------------------
-; Right-click button methods for member-solid-model
-;--------------------------------------------------
-(define-method work-area-button3-action member-solid-model (params)
-  (case params
-    (:draw
-     (draw self :draw-subobjects? t)
-     )
-    (:undraw
-     (undraw self :subobjects? t)
-     )
-    )
-  )
-
-;-------------------------------------------------------------------------------------------------------------
-; END member-solid-model definitions
-;------------------------------------------------------------------------------------------------------------- 
-  
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: connection-model
 ; Creates a NURBS curve between two endpoints, using Sheth-Uicker definitions
@@ -449,3 +233,218 @@
 ;-------------------------------------------------------------------------------------------------------------
 ; END connection-model definitions
 ;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: member-solid-model
+; Creates the link cross-section sweep for a link member
+;-------------------------------------------------------------------------------------------------------------   
+(define-class member-solid-model
+  :inherit-from (tagging-object general-sweep-class)
+  :properties(
+              tag-dimensions '(1 2 3)
+              tag-attributes (list ^^max-element-size .1
+                                   0 0.1 0 20.0 1.0e-5)
+              
+              (display? :class 'flag-property-class
+                  formula (when (the cross-section-type (:from ^shape-ref)) t)
+                  )
+              
+              connection-between-constraints nil ;;List of the two constraints on the member
+              frame_D (the sub-frame (:from (nth 0 ^connection-between-constraints) ))
+              frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
+              point-ref_D (the point-ref (:from ^frame_D ))
+              point-ref_A (the point-ref (:from ^frame_A ))
+              
+              z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
+              z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
+              
+              ;;cross section dimension, width 0.04 / height 0.04
+              shape-ref nil
+              width (nth 0 (the solid-dimensions (:from ^shape-ref)))
+              height (if (< 1 (length (the solid-dimensions (:from ^shape-ref))))
+                         (nth 1 (the solid-dimensions (:from ^shape-ref)))
+                       (nth 0 (the solid-dimensions (:from ^shape-ref)))
+                       )
+              width-end (if (< 2 (length (the solid-dimensions (:from ^shape-ref))))
+                            (nth 2 (the solid-dimensions (:from ^shape-ref)))
+                          (nth 0 (the solid-dimensions (:from ^shape-ref)))
+                          )
+              height-end (if (< 3 (length (the solid-dimensions (:from ^shape-ref))))
+                            (nth 3 (the solid-dimensions (:from ^shape-ref)))
+                          (nth 1 (the solid-dimensions (:from ^shape-ref)))
+                          )
+              
+              ;;; Sweep parameters
+              profile-objects-list (list
+                                    ^cross-section_D
+                                    ^cross-section_A
+                                    )
+              path-points-coords-list (list
+                                       (the origin (:from ^frame_D))
+                                       (the origin (:from ^frame_A))
+                                       )
+              profile-match-points-coords-list (list
+                                                (vertex-of-object ^cross-section_D)
+                                                (vertex-of-object ^cross-section_A)
+                                                )
+
+              path-object ^connection
+              tangential-sweep? t
+                               
+              ;;; If two cross-sections, only nil works, with one cross-section t gives best mesh
+              simplify? nil
+              render 'shaded
+
+              ;;; cross-section selection
+              (cross-section-type :class 'option-property-class
+                  label "Cross-section Type"
+                  mode 'menu
+                  formula (if (the cross-section-type (:from ^shape-ref))
+                              (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) !labels-list)  !options-list)
+                            (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) !labels-list)  !options-list) )
+                  options-list (reverse (class-direct-defined-subclasses 'section-model))
+                  labels-list (loop for option in !options-list
+                                collect (remove "-section" (write-to-string option))
+                                )
+                  )
+
+              property-objects-list (list 
+                                     (list (the superior cross-section-type self) 
+                                           '(automatic-apply? t)
+                                           )
+                                     (the superior width self)
+                                     (the superior height self)
+                                     (the superior width-end self)
+                                     (the superior height-end self)
+                                     (list (the superior display? self)
+                                           '(automatic-apply? t)
+                                           )
+                                     '("Draw..." (button1-parameters :draw button3-parameters :draw)
+                                       ui-work-area-action-button-class)
+                                     '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
+                                       ui-work-area-action-button-class)
+									   ""
+									 '("Set end frame equal to start frame (remove twisting)" (button1-parameters :remove-twisting)
+                                       ui-work-area-action-button-class)
+									 '("Reset values" (button1-parameters :reset-values)
+                                       ui-work-area-action-button-class)
+                                     )
+              )
+  :subobjects (
+               (connection :class 'connection-model
+                   )
+               
+               (cross-section_D :class !cross-section-type
+                   reference-object (the spline-frame_start (:from ^connection))
+                   orientation (list
+                                (rotate 90 :x-axis)
+                                (rotate 90 :z-axis)
+                                )
+                   )
+               (cross-section_A :class !cross-section-type
+                   width ^width-end 
+                   height ^height-end
+                   reference-object (the spline-frame_end (:from ^connection))
+                   orientation (list
+                                (rotate 90 :x-axis)
+                                (rotate 90 :z-axis)
+                                )
+                   )
+               )
+  )
+
+(define-method get-cross-section_D member-solid-model ()
+	!cross-section_D
+)
+  
+(define-method get-connection member-solid-model ()
+	!connection
+)
+  
+(define-method get-joints-on-member member-solid-model ()
+	(when !connection-between-constraints
+		!connection-between-constraints)
+)
+  
+ 
+;-------------------------------------------------
+; Left-click button methods for member-solid-model
+;-------------------------------------------------
+(define-method work-area-button1-action member-solid-model (params)
+  (case params
+    (:draw
+     (draw self :draw-subobjects? nil)
+     )
+    (:undraw
+     (undraw self :subobjects? nil)
+     )
+	(:remove-twisting
+		(let (
+			  (start (the spline-frame_start (:from !connection)))
+			  (end (the spline-frame_end (:from !connection)))
+			  )
+			(if (or (not (equal (the z-vector-ref (:from start))
+								(the z-vector-ref (:from end))))
+					(not (equal (the direction (:from (the x-vector-ref (:from start))))
+								(the direction (:from (the x-vector-ref (:from end)))))
+                     )
+				 )
+				 (progn (change-value (the z-vector-ref (:from end))
+							   (the z-vector-ref (:from start)))
+					    (change-value (the x-vector-ref (:from end))
+							   (the x-vector-ref (:from start)))
+					    (draw self :draw-subobjects? nil)
+					)
+				 nil
+				)
+		)
+	 )
+	(:reset-values
+		(progn 
+			(smash-value (the z-vector-ref (:from (the spline-frame_end (:from !connection)))))
+			(smash-value (the x-vector-ref (:from (the spline-frame_end (:from !connection)))))
+			(draw self :draw-subobjects? nil)
+		)
+	)
+	
+    )
+  )
+
+;--------------------------------------------------
+; Right-click button methods for member-solid-model
+;--------------------------------------------------
+(define-method work-area-button3-action member-solid-model (params)
+  (case params
+    (:draw
+     (draw self :draw-subobjects? t)
+     )
+    (:undraw
+     (undraw self :subobjects? t)
+     )
+    )
+  )
+
+;-------------------------------------------------------------------------------------------------------------
+; END member-solid-model definitions
+;------------------------------------------------------------------------------------------------------------- 
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: members-on-link-collection
+; Instantiates every member on a link as series-objects
+;------------------------------------------------------------------------------------------------------------- 
+(define-class members-on-link-collection
+  :inherit-from (series-object)
+  :properties (               
+               quantity (length ^connection-between-2-constraints-combinations)
+               class-expression 'member-solid-model
+               series-prefix 'member
+               init-form '(
+                           connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
+                           shape-ref (nth ^index ^^shapes-on-link)          
+                           )
+               )
+  )
+
+;-------------------------------------------------------------------------------------------------------------
+; END members-on-link-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
