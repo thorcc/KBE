@@ -1,5 +1,3 @@
-;;; An open constraint is a joint with no geometry
-;;; Used for leaving the end of a link open
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: open-constraint-class
 ; An open constraint is a joint with no geometry
@@ -13,12 +11,12 @@
 
   
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END open-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: open-male-element
-; This element is placed on
+; Male element of an open constraint type. As this element is open, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class open-male-element
   :inherit-from (joint-element-model)
@@ -26,13 +24,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END open-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: open-female-element
+; Female element of an open constraint type. As this element is open, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class open-female-element
   :inherit-from (joint-element-model)
@@ -50,15 +47,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END open-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Method finding the translational value for an open female element
 ;------------------------------------------------------------------------------------------------------------- 
-;;Method finding the other joint on member, and then retrieving its max height.
 (define-method get-translational-z-value open-female-element ()
 	(let (
 		  (displayed-member
@@ -74,9 +68,7 @@
 )
  
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: rigid-constraint-class
 ;-------------------------------------------------------------------------------------------------------------  
 (define-class rigid-constraint-class
   :inherit-from (master-joint-model)
@@ -84,13 +76,11 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END rigid-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: helical-constraint-class
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class helical-constraint-class
   :inherit-from (master-joint-model)
@@ -108,13 +98,11 @@
   
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END helical-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: prismatic-constraint-class
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class prismatic-constraint-class
   :inherit-from (master-joint-model)
@@ -131,13 +119,11 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END prismatic-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: cylindric-constraint-class
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class cylindric-constraint-class
   :inherit-from (master-joint-model)
@@ -155,9 +141,11 @@
   )
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; END cylindric-constraint-class definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: planar-constraint-class
 ;-------------------------------------------------------------------------------------------------------------   
 (define-class planar-constraint-class
   :inherit-from (master-joint-model)
@@ -176,27 +164,27 @@
                )
   )
 
-;;; Class holding revolute male and female elements on instantiation
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; END cylindric-constraint-class definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: revolute-constraint-class
+; Holding revolute male and female elements on instantiation
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class revolute-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                diameter 0
-               ;;; dimensions to make sure connected joints match
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END revolute-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: revolute-male-element
+; Defines geometry for the revolute male element
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class revolute-male-element
   :inherit-from (joint-element-model)
@@ -254,13 +242,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END revolute-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: revolute-female-element
+; Defines geometry for the revolute female element
 ;-------------------------------------------------------------------------------------------------------------   
 (define-class revolute-female-element
   :inherit-from (difference-object joint-element-model)
@@ -309,14 +296,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END revolute-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
-;;; Class holding spherical male and female elements on instantiation
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: spheric-constraint-class
+; Holding spherical male and female elements on instantiation
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class spheric-constraint-class
   :inherit-from (master-joint-model)
@@ -331,14 +316,13 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END spheric-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
-;-------------------------------------------------------------------------------------------------------------   
+; Class: spheric-male-element
+; Defines geometry for the spheric male element
+;------------------------------------------------------------------------------------------------------------- 
 (define-class spheric-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
@@ -399,13 +383,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END spheric-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: spheric-female-element
+; Defines geometry for the spherical female element
 ;-------------------------------------------------------------------------------------------------------------   
 (define-class spheric-female-element
   :inherit-from (difference-object joint-element-model)
@@ -459,14 +442,12 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END spheric-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
-;;; Class holding knuckle male and female elements on instantiation
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: solid-knuckle-constraint-class
+; Holding knuckle male and female elements on instantiation
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class solid-knuckle-constraint-class  
 	:inherit-from (master-joint-model)
@@ -474,13 +455,12 @@
 				 )
  )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END solid-knuckle-constraint-class definitions
 ;-------------------------------------------------------------------------------------------------------------  
  
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: solid-knuckle-female-element
+; Defines geometry for the knuckle female element
 ;-------------------------------------------------------------------------------------------------------------  
 (define-class solid-knuckle-female-element
 	:inherit-from (difference-object joint-element-model)
@@ -533,14 +513,13 @@
 				)
  )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END solid-knuckle-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
  
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
-;-------------------------------------------------------------------------------------------------------------  
+; Class: solid-knuckle-male-element
+; Defines geometry for the knuckle male element
+;------------------------------------------------------------------------------------------------------------- 
 (define-class solid-knuckle-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
@@ -662,5 +641,5 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END load-model definitions
+; END solid-knuckle-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 

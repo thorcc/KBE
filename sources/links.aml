@@ -1,4 +1,3 @@
-
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: link-model-class 
 ; Used to hold the link geometry, its mesh and the analysis as subobjects
@@ -107,7 +106,7 @@
 
                constraint-connection-combination	(connection-combinations (length ^constraints-incident-on-link-list))
                
-               surfaces-ref-list 					(children ^surfaces :class 'surface-data-model :test '(and !geom !display?))
+               surfaces-ref-list 					(children ^surfaces :class 'surface-model :test '(and !geom !display?))
 			   
                members-ref-list						(children ^sweeps :class 'member-solid-model)
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
@@ -248,4 +247,4 @@
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END shape-model definitions
-;-------------------------------------------------------------------------------------------------------------  
+;-------------------------------------------------------------------------------------------------------------
