@@ -1,8 +1,5 @@
-;-------------------------------------------------------------------------------------------------------------
-; Class: surface-model
-; Model creating a thickened surface from three connected curves
-;------------------------------------------------------------------------------------------------------------- 
-(define-class surface-model
+;;; Model creating a thickened surface from three connected curves
+(define-class surface-data-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
                tag-dimensions '(1 2 3)
@@ -48,14 +45,7 @@
                )
   )
 
-;-------------------------------------------------------------------------------------------------------------
-; END surface-model definitions
-;------------------------------------------------------------------------------------------------------------- 
-
-;-------------------------------------------------------------------------------------------------------------
-; Class: surfaces-on-link-collection
-; Instantiates every surface-model on a link as series-objects
-;------------------------------------------------------------------------------------------------------------- 
+;;; Instantiates every surface-data-model on a link 
 (define-class surfaces-on-link-collection
   :inherit-from (series-object)
   :properties (
@@ -65,7 +55,7 @@
                                        )
                valid-surface-loops (intersection ^closed-loops-combinations (list-3-subset-combinations ^visible-members-index))
                quantity (length ^valid-surface-loops)
-               class-expression 'surface-model
+               class-expression 'surface-data-model
                series-prefix 'surface
                init-form '(
                            edge-combination (nth ^index ^valid-surface-loops)
@@ -86,11 +76,9 @@
       )
     )
   )
-
-;-----------------------------------------------------------
-; Binomial: C(n,3) = 3! / ( 3! (n - 3)! 
-; Output: List unique combinations of three, given n numbers
-;-----------------------------------------------------------
+  
+;;; Binomial: C(n,3) = 3! / ( 3! (n - 3)! 
+;;; Output: List unique combinations of three, given n numbers
 (defun 3-edge-loop-combinations (n)
    (loop for i from 0 to (- n 3)   
      append (loop for j from (1+ i) to (- n 2)
@@ -115,6 +103,4 @@
       )
     )
   )
-;-------------------------------------------------------------------------------------------------------------
-; END surface-model definitions
-;-------------------------------------------------------------------------------------------------------------
+ 
