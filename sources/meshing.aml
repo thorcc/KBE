@@ -1,4 +1,31 @@
 ;-------------------------------------------------------------------------------------------------------------
+; Class: RBE2-collection
+; Instantiates every RBE2 as a series-object
+;------------------------------------------------------------------------------------------------------------- 
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 link-mesh 			nil ;;link-mesh-class
+				 constraints-list 	(get-rbe2-constraints-list ^link-mesh)
+				 link-mesh-db 		(get-link-mesh-db ^link-mesh)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
+							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 )
+				 )
+	)
+;-------------------------------------------------------------------------------------------------------------
+; END RBE2-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
 ; Class: link-mesh-class
 ; Class responsible for meshing
 ;------------------------------------------------------------------------------------------------------------- 
@@ -111,7 +138,10 @@
 	!mesh-db
 	)
 
-;;; Returns the smallest number. If both are nil then return 10e10, if one is nil, then the other.  
+;---------------------------------------------------------------
+;Returns the smallest number. If both are nil then return 10e10, 
+;if one is nil, then the other.  
+;---------------------------------------------------------------
 (defun min-or-nil (p q)
 	(if (or (not p) (not q))
 		(if (and (not p) (not q))
@@ -127,29 +157,5 @@
 		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
 	)
 ;-------------------------------------------------------------------------------------------------------------
-; END members-on-link-collection definitions
+; END link-mesh-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
-	
-;-------------------------------------------------------------------------------------------------------------
-; Class: members-on-link-collection
-; Instantiates every member on a link as series-objects
-;------------------------------------------------------------------------------------------------------------- 	
-(define-class RBE2-collection
-	:inherit-from (series-object)
-	:properties (
-				 link-mesh 			nil ;;link-mesh-class
-				 constraints-list 	(get-rbe2-constraints-list ^link-mesh)
-				 link-mesh-db 		(get-link-mesh-db ^link-mesh)
-				 
-				 class-expression 	'analysis-rigid-body-element-type-1-class
-				 series-prefix 		'rbe2
-				 quantity 			(length ^constraints-list)
-				 init-form '(
-							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
-							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
-							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
-                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
-							 )
-				 )
-	)
