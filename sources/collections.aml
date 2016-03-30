@@ -1,210 +1,3 @@
-;-------------------------------------------------------------------------------------------------------------
-; Class: main-mechanism-class
-; Initiates the system by creating all the collections
-;-------------------------------------------------------------------------------------------------------------
-(define-class main-mechanism-class
-  :inherit-from (object)
-  :properties (
-               point-ref-list (children ^points :class 'point-data-model )
-					
-			   constraints-ref-list (children ^constraints :class 'master-joint-model)
-			   shapes-ref-list (children ^shapes :class 'shape-model)
-               link-ref-list (children ^links :class 'link-model-class)
-			   
-			   final-link-ref-list (loop for link in ^link-ref-list
-										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
-											collect link)
-											
-			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
-											  if (not (string-equal "open" (get-constraint-type constraint)))
-												  collect constraint
-											)
-			   
-			   dv-ref-list (children ^design-variables :class 'design-variable-class)
-			   
-			   ;; mechanism-selection is a list of folder-info-models
-               (mechanism-selection :class 'option-property-class
-                   labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
-                                when (the path (:from subfolder))
-                                collect (the label (:from subfolder))
-                                )
-                   options-list (children ^folders :class 'folder-info-model)
-                   mode 'menu
-                   formula (nth (position "four bar" !labels-list) !options-list)
-				   label "Select Mechanism"
-                   )
-				   
-			   (version-selection :class 'option-property-class
-					options-list (children ^^mechanism-selection :class 'mechanism-version-info)
-					labels-list (loop for version in !options-list
-									collect (the version-name (:from version))
-									)
-					mode 'menu
-					formula (nth 0 !options-list)
-					;formula (nth (- (length !options-list) 1) !options-list)
-					label "Select Version"
-					)
-					
-			   (dv :class 'data-matrix-property-class
-					label "Edit design variables"
-					mode 'pop-up
-					columns-labels-list (list "Value")
-					rows-labels-list (loop for dv in ^dv-ref-list
-						collect (string (the dv-name (:from dv)))
-						)
-					formula (loop for dv in ^dv-ref-list
-						collect (list (the dv-value (:from dv)))
-						)
-					)
-			   
-			   
-			   property-objects-list (list 
-											(list (the superior mechanism-selection self) 
-												'(automatic-apply? t))
-											(list (the superior version-selection self) 
-												'(automatic-apply? t))
-											""
-											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
-											ui-work-area-action-button-class)
-											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tet-mesh)
-											ui-work-area-action-button-class)
-											'("Draw mechanism with 2D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
-											ui-work-area-action-button-class)
-											""
-											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
-											ui-work-area-action-button-class)
-											'("Export to FEDEM" (button1-parameters :bdf-export)
-											ui-work-area-action-button-class)
-											(list (the superior dv self)
-												'(automatic-apply? t))
-                                     )
-               
-               ;;Property storing folders from library
-               (folders :class 'folder-collection
-                   )
-				
-			   loads-list '() ;; When a user creates a load, it will be added here
-			   
-			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
-			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
-			   			   
-			   objective-function (when (probe-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
-									(+ (the coord-ref (:from (nth 1 ^point-ref-list))) (the coord-ref (:from (nth 3 ^point-ref-list))))
-									)
-			   
-			   mechanism-type (the folder (:from ^mechanism-selection))
-               )
-  :subobjects (
-               (constraints :class 'constraint-collection
-                   )
-               (points :class 'point-collection
-                   )
-			   (links :class 'link-collection
-                   constraints-list 	(get-constraints ^constraints)
-				   input-shapes-list	(get-input-shapes ^shapes)
-				   )
-			   (shapes :class 'shape-collection
-                   )
-               (design-variables :class 'design-variables-collection
-					)
-               (spring-dampers :class 'spring-damper-collection
-					)
-			   (mesh-database :class 'meshdb-class
-                   )
-               )
-  )
-;-------------------------------------------------------------------
-; Adds a load-model object to the loads-list in main-mechanism-class  
-;-------------------------------------------------------------------
-(define-method add-load main-mechanism-class (load)
-	(change-value !loads-list (append !loads-list (list load)))
-)
-
-;---------------------------------------------------
-; Returns the greatest distance within the mechanism
-;---------------------------------------------------
-(define-method calculate-mechanism-size main-mechanism-class ()
-	(let (
-		 (max-x 0)
-		 (max-y 0)
-		 (max-z 0)
-		)
-	   (loop for point in !point-ref-list do
-		 (progn
-			 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
-				(setf max-x (abs (nth 0 (the coordinates (:from point)))))
-			 )
-			 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
-				(setf max-y (abs (nth 1 (the coordinates (:from point)))))
-			 )
-			 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
-				(setf max-z (abs (nth 2 (the coordinates (:from point)))))
-			 )
-		 )
-		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
-	   )
-	)
-)
-
-(define-method get-constraint main-mechanism-class (constraint-number)
-	(nth constraint-number !constraints-ref-list)
-)
- 
-(define-method get-mechanism-type main-mechanism-class ()
-	(the mechanism-selection label)
-)
-
-;-------------------------------------------------
-; Creates buttons to draw and export the mechanism 
-;-------------------------------------------------
-(define-method work-area-button1-action main-mechanism-class (params)
-	(case params
-		(:draw-sewn-wo-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
-				)
-			)
-		)
-		(:draw-sewn-with-tet-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
-				)
-			)
-		)
-		(:draw-sewn-with-tri-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-mesh-model link-mesh elements-query (:from link)))
-				)
-			)
-		)
-		(:undraw
-			(undraw self)
-		)
-		(:bdf-export
-			(if !loads-list 
-				(progn 
-					(write-nastran-bdf-files (the))
-					(write-fmm-model-file (the))
-				)
-				(if (equal "Yes" (pop-up-message (format nil "No loads have been added. Continue writing to FEDEM?")
-					:width 200 :done-label "Yes" :cancel-label "No")) ;; The pop-up-message returns the selected label
-					(progn 
-						(write-nastran-bdf-files (the))
-						(write-fmm-model-file (the))
-					)
-				)
-			)
-		)
-	)
-)
-;-------------------------------------------------------------------------------------------------------------
-; END main-mechanism-class
-;-------------------------------------------------------------------------------------------------------------
-
-;-------------------------------------------------------------------------------------------------------------
 ; Class: collecion-class
 ; Constructs a generic collecion-class, used by the different collections
 ;-------------------------------------------------------------------------------------------------------------
@@ -807,3 +600,208 @@
 	)
 )
 
+;-------------------------------------------------------------------------------------------------------------
+; Class: main-mechanism-class
+; Initiates the system by creating all the collections
+;-------------------------------------------------------------------------------------------------------------
+(define-class main-mechanism-class
+  :inherit-from (object)
+  :properties (
+               point-ref-list (children ^points :class 'point-data-model )
+					
+			   constraints-ref-list (children ^constraints :class 'master-joint-model)
+			   shapes-ref-list (children ^shapes :class 'shape-model)
+               link-ref-list (children ^links :class 'link-model-class)
+			   
+			   final-link-ref-list (loop for link in ^link-ref-list
+										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
+											collect link)
+											
+			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
+											  if (not (string-equal "open" (get-constraint-type constraint)))
+												  collect constraint
+											)
+			   
+			   dv-ref-list (children ^design-variables :class 'design-variable-class)
+			   
+			   ;; mechanism-selection is a list of folder-info-models
+               (mechanism-selection :class 'option-property-class
+                   labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
+                                when (the path (:from subfolder))
+                                collect (the label (:from subfolder))
+                                )
+                   options-list (children ^folders :class 'folder-info-model)
+                   mode 'menu
+                   formula (nth (position "four bar" !labels-list) !options-list)
+				   label "Select Mechanism"
+                   )
+				   
+			   (version-selection :class 'option-property-class
+					options-list (children ^^mechanism-selection :class 'mechanism-version-info)
+					labels-list (loop for version in !options-list
+									collect (the version-name (:from version))
+									)
+					mode 'menu
+					formula (nth 0 !options-list)
+					;formula (nth (- (length !options-list) 1) !options-list)
+					label "Select Version"
+					)
+					
+			   (dv :class 'data-matrix-property-class
+					label "Edit design variables"
+					mode 'pop-up
+					columns-labels-list (list "Value")
+					rows-labels-list (loop for dv in ^dv-ref-list
+						collect (string (the dv-name (:from dv)))
+						)
+					formula (loop for dv in ^dv-ref-list
+						collect (list (the dv-value (:from dv)))
+						)
+					)
+			   
+			   
+			   property-objects-list (list 
+											(list (the superior mechanism-selection self) 
+												'(automatic-apply? t))
+											(list (the superior version-selection self) 
+												'(automatic-apply? t))
+											""
+											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
+											ui-work-area-action-button-class)
+											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tet-mesh)
+											ui-work-area-action-button-class)
+											'("Draw mechanism with 2D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
+											ui-work-area-action-button-class)
+											""
+											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
+											ui-work-area-action-button-class)
+											'("Export to FEDEM" (button1-parameters :bdf-export)
+											ui-work-area-action-button-class)
+											(list (the superior dv self)
+												'(automatic-apply? t))
+                                     )
+               
+               ;;Property storing folders from library
+               (folders :class 'folder-collection
+                   )
+				
+			   loads-list '() ;; When a user creates a load, it will be added here
+			   
+			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
+			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
+			   			   
+			   objective-function (when (probe-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
+									(+ (the coord-ref (:from (nth 1 ^point-ref-list))) (the coord-ref (:from (nth 3 ^point-ref-list))))
+									)
+			   
+			   mechanism-type (the folder (:from ^mechanism-selection))
+               )
+  :subobjects (
+               (constraints :class 'constraint-collection
+                   )
+               (points :class 'point-collection
+                   )
+			   (links :class 'link-collection
+                   constraints-list 	(get-constraints ^constraints)
+				   input-shapes-list	(get-input-shapes ^shapes)
+				   )
+			   (shapes :class 'shape-collection
+                   )
+               (design-variables :class 'design-variables-collection
+					)
+               (spring-dampers :class 'spring-damper-collection
+					)
+			   (mesh-database :class 'meshdb-class
+                   )
+               )
+  )
+;-------------------------------------------------------------------
+; Adds a load-model object to the loads-list in main-mechanism-class  
+;-------------------------------------------------------------------
+(define-method add-load main-mechanism-class (load)
+	(change-value !loads-list (append !loads-list (list load)))
+)
+
+;---------------------------------------------------
+; Returns the greatest distance within the mechanism
+;---------------------------------------------------
+(define-method calculate-mechanism-size main-mechanism-class ()
+	(let (
+		 (max-x 0)
+		 (max-y 0)
+		 (max-z 0)
+		)
+	   (loop for point in !point-ref-list do
+		 (progn
+			 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
+				(setf max-x (abs (nth 0 (the coordinates (:from point)))))
+			 )
+			 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
+				(setf max-y (abs (nth 1 (the coordinates (:from point)))))
+			 )
+			 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
+				(setf max-z (abs (nth 2 (the coordinates (:from point)))))
+			 )
+		 )
+		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
+	   )
+	)
+)
+
+(define-method get-constraint main-mechanism-class (constraint-number)
+	(nth constraint-number !constraints-ref-list)
+)
+ 
+(define-method get-mechanism-type main-mechanism-class ()
+	(the mechanism-selection label)
+)
+
+;-------------------------------------------------
+; Creates buttons to draw and export the mechanism 
+;-------------------------------------------------
+(define-method work-area-button1-action main-mechanism-class (params)
+	(case params
+		(:draw-sewn-wo-mesh
+			(loop for link in !final-link-ref-list do
+				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+				)
+			)
+		)
+		(:draw-sewn-with-tet-mesh
+			(loop for link in !final-link-ref-list do
+				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+				)
+			)
+		)
+		(:draw-sewn-with-tri-mesh
+			(loop for link in !final-link-ref-list do
+				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+					(draw (the link-mesh-model link-mesh elements-query (:from link)))
+				)
+			)
+		)
+		(:undraw
+			(undraw self)
+		)
+		(:bdf-export
+			(if !loads-list 
+				(progn 
+					(write-nastran-bdf-files (the))
+					(write-fmm-model-file (the))
+				)
+				(if (equal "Yes" (pop-up-message (format nil "No loads have been added. Continue writing to FEDEM?")
+					:width 200 :done-label "Yes" :cancel-label "No")) ;; The pop-up-message returns the selected label
+					(progn 
+						(write-nastran-bdf-files (the))
+						(write-fmm-model-file (the))
+					)
+				)
+			)
+		)
+	)
+)
+;-------------------------------------------------------------------------------------------------------------
+; END main-mechanism-class
+;-------------------------------------------------------------------------------------------------------------

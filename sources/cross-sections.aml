@@ -1,40 +1,32 @@
-;;; -----------------------------
-;;; CROSS-SECTION DEFINITIONS
-;;; -----------------------------
-
-;;; Superclass used for querying class-names
+;-------------------------------------------------------------------------------------------------------------
+; Class: section-model
+; Superclass used for querying class-names
+;-------------------------------------------------------------------------------------------------------------
 (define-class section-model
   :inherit-from(tagging-object position-object)
   :properties (
                ;;; must be set on init from parent object
-               
                max-element-size 0.004
                tag-dimensions '(1 2)
                tag-attributes (list ^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
                )
   )
-(define-method max-width section-model ()
+  
+(define-method get-max-width section-model ()
   !width
   )
 
-(define-method max-height section-model ()
+(define-method get-max-height section-model ()
   !height
   )
-
-;;; Unused from ------->
-(define-method set-initial-dimension property-object (&key (property-list (list (object-name (the self)))) (default-value 0.02) )
-  (let ()
-    (loop for property in property-list
-      do
-;;;       (change-value (the-list (list property 'self) :from ^^z-vector_A-ref) (max default-value (the-list (list property) :from ^^z-vector_A-ref)) )
-;;;       (change-value (the-list (list property 'self) :from ^^z-vector_D-ref) (max default-value (the-list (list property) :from ^^z-vector_D-ref)) )
-      )
-    default-value
-    )
-  )
-;;; Unused to <-------
+;-------------------------------------------------------------------------------------------------------------
+; END section-model
+;-------------------------------------------------------------------------------------------------------------
   
+;-------------------------------------------------------------------------------------------------------------
+; Class: circular-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class circular-section
   :inherit-from (imprint-class section-model)
   :properties (
@@ -50,13 +42,19 @@
                    )
                )
   )
-(define-method max-width circular-section ()
+(define-method get-max-width circular-section ()
   !diameter
   )
-(define-method max-height circular-section ()
+(define-method get-max-height circular-section ()
   !diameter
   )
-
+;-------------------------------------------------------------------------------------------------------------
+; END circular-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: circular-tube-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class circular-tube-section
   :inherit-from (imprint-class section-model)
   :properties (
@@ -87,13 +85,19 @@
                    )
                )
   )
-(define-method max-width circular-tube-section ()
+(define-method get-max-width circular-tube-section ()
   !outer-diameter
   )
-(define-method max-height circular-tube-section ()
+(define-method get-max-height circular-tube-section ()
   !outer-diameter
   )
-
+;-------------------------------------------------------------------------------------------------------------
+; END circular-tube-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: rectangle-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class rectangle-section
   :inherit-from (imprint-class section-model )
   :properties (
@@ -112,7 +116,13 @@
                    )
                )
   )
-
+;-------------------------------------------------------------------------------------------------------------
+; END rectangle-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: rectangle-tube-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class rectangle-tube-section
   :inherit-from (section-model difference-object)
   :properties (
@@ -135,20 +145,13 @@
                    )
                )
   )
-
-;;; (define-class square-section
-;;;   :inherit-from (rectangle-section section-model)
-;;;   :properties (
-;;;                height ^width
-;;;                )
-;;;   )
-;;; (define-class square-tube-section
-;;;   :inherit-from (rectangle-tube-section section-model)
-;;;   :properties (
-;;;                height ^width
-;;;                )
-;;;   )
-
+;-------------------------------------------------------------------------------------------------------------
+; END rectangle-tube-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: line-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class line-section
   :inherit-from (line-object section-model)
   :properties (
@@ -159,14 +162,20 @@
                )
   )
 
-(define-method max-width line-section ()
+(define-method get-max-width line-section ()
   !height
   )
 
-(define-method max-height line-section ()
+(define-method get-max-height line-section ()
   0
   )
-
+;-------------------------------------------------------------------------------------------------------------
+; END line-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: I-beam-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class I-beam-section
   :inherit-from (union-object section-model)
   :properties (
@@ -202,10 +211,16 @@
                )
   )
 
-(define-method max-height I-beam-section ()
+(define-method get-max-height I-beam-section ()
   (+ !flange-thickness !height)
  )
-
+;-------------------------------------------------------------------------------------------------------------
+; END I-beam-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: H-beam-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class H-beam-section
   :inherit-from (union-object section-model)
   :properties (
@@ -240,10 +255,16 @@
                    )              
                )
   )
-(define-method max-width H-beam-section ()
+(define-method get-max-width H-beam-section ()
   (+ !width !flange-thickness)
  )
-
+;-------------------------------------------------------------------------------------------------------------
+; END H-beam-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: hexagon-section
+;------------------------------------------------------------------------------------------------------------- 
 (define-class hexagon-section
   :inherit-from (imprint-class section-model)
   :properties (
@@ -268,14 +289,19 @@
                )
   )
 
-(define-method max-width hexagon-section ()
+(define-method get-max-width hexagon-section ()
   (* 2 !R)
   )
-(define-method max-height hexagon-section ()
+(define-method get-max-height hexagon-section ()
   (* !R (sqrt 3))
   )
-                                           
-
+;-------------------------------------------------------------------------------------------------------------
+; END hexagon-section
+;-------------------------------------------------------------------------------------------------------------
+  
+;-------------------------------------------------------------------------------------------------------------
+; Class: polygon-section
+;-------------------------------------------------------------------------------------------------------------
 (define-class polygon-section
   :inherit-from (polygon-object section-model)
   :properties (
@@ -283,5 +309,6 @@
                dimension 2
                )
   )
-                                
-
+;-------------------------------------------------------------------------------------------------------------
+; END polygon-section
+;-------------------------------------------------------------------------------------------------------------

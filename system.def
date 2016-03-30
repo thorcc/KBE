@@ -13,18 +13,18 @@
 
 (define-system :mechanism-system
   :files '(
-           "collections.aml"
            "data-models.aml"
+	   "loads.aml"
            "constraints.aml"
 		   "constraint-types.aml"
+		   "meshing.aml"
+           "analysis.aml"
            "links.aml"
 		   "link-member-geometry.aml"
            "cross-sections.aml"
 		   "link-surface-geometry.aml"
 		   "springs-dampers.aml"
-		   "loads.aml"
-		   "meshing.aml"
-           "analysis.aml"
+		   "collections.aml"
 		   "geometry-export.aml"
            )
   )
