@@ -153,7 +153,6 @@
                                 ^difference-list
                                 )
                    simplify? t
-
                    )
                                 
                (union-element :class '(tagging-object union-object)
@@ -177,6 +176,7 @@
                )
   :subobjects (
                (surfaces :class 'surfaces-on-link-collection
+				   members-list ^^members-ref-list
                    )
                (sweeps :class 'members-on-link-collection
                    )

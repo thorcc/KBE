@@ -3,16 +3,11 @@
 	:properties (
 				 ;; 'nil' properties are set on instantiation
 				 label 				nil
-				 from-number 		nil
-				 to-number 			nil
+				 from-constraint	nil
+				 to-constraint		nil
 				 ground-coords		nil
 				 
 				 type				'damper
-				 from-constraint	(get-constraint (the superior superior superior) ^from-number)
-				 to-constraint		(if (= -1 ^to-number) 
-										nil
-										(get-constraint (the superior superior superior) ^to-number)
-									)
 				 
 				 point1				(get-main-frame-coords ^from-constraint)
 				 point2				(if ^to-constraint
@@ -22,7 +17,7 @@
 				 
 				 line-width 		6
 				 color				'magenta
-				 )
+				)
 )
  
 (define-class spring-model-class
@@ -30,16 +25,11 @@
 	:properties (
 				 ;; 'nil' properties are set on instantiation
 				 label 				nil
-				 from-number		nil
-				 to-number 			nil
+				 from-constraint	nil
+				 to-constraint		nil
 				 ground-coords		nil
 				 
 				 type 				'spring
-				 from-constraint	(get-constraint (the superior superior superior) ^from-number) ;;Should instantiate this
-				 to-constraint		(if (= -1 ^to-number) 
-										nil
-										(get-constraint (the superior superior superior) ^to-number)
-									)
 				 
 				 point1				(get-main-frame-coords ^from-constraint)
 				 point2				(if ^to-constraint

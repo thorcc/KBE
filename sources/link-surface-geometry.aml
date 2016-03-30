@@ -5,7 +5,8 @@
 (define-class surface-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
-               tag-dimensions '(1 2 3)
+               members 		nil
+			   tag-dimensions '(1 2 3)
                tag-attributes (list ^^max-element-size .1
                                     0 0.1 0 20.0 1.0e-5)
 									
@@ -13,19 +14,20 @@
 			   
 			   (display? :class 'flag-property-class
                    formula  (loop for i in ^edge-combination
-                              when (or (not (the display? (:from (nth i ^members-ref-list)))) (not (the connection geom (:from (nth i ^members-ref-list)))) )
+                              when (or (not (the display? (:from (nth i ^members)))) 
+								  (not (the geom (:from (get-connection (nth i ^members))))))
                               do (return nil)
                               finally (> ^thickness 0)
                               )
                    )
                edge-combination nil
 			   
-			   ;;; The source-object HAS to be nil when it can't be displayed. If not, there will be a null geom error
+			   ;;The source-object has to be nil when it can't be displayed. Else there will be a null geom
                source-object (if ^display? ^surface nil)
 
                ;;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
-                           minimize (max-height (the cross-section_D (:from (nth i ^members-ref-list))))
+                           minimize (get-max-height (get-cross-section_D (nth i ^members)))
                            ))
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)
@@ -41,9 +43,9 @@
   :subobjects (
                (surface :class 'surface-from-three-edge-curves-class
 			       ;;; the connection is a nurb-curve-object
-                   edge-1-object (the connection (:from (nth (nth 0 ^edge-combination) ^members-ref-list)) )
-                   edge-2-object (the connection (:from (nth (nth 1 ^edge-combination) ^members-ref-list)) )
-                   edge-3-object (the connection (:from (nth (nth 2 ^edge-combination) ^members-ref-list)) )
+                   edge-1-object (get-connection (nth (nth 0 ^edge-combination) ^members))
+                   edge-2-object (get-connection (nth (nth 1 ^edge-combination) ^members))
+                   edge-3-object (get-connection (nth (nth 2 ^edge-combination) ^members))
                    )
                )
   )
@@ -59,16 +61,20 @@
 (define-class surfaces-on-link-collection
   :inherit-from (series-object)
   :properties (
-               closed-loops-combinations (sweep-loop-combinations (length ^constraints-incident-on-link-list))
-               visible-members-index (loop for mem in ^visible-members-ref-list
-                                       collect (the index (:from mem))
-                                       )
-               valid-surface-loops (intersection ^closed-loops-combinations (list-3-subset-combinations ^visible-members-index))
-               quantity (length ^valid-surface-loops)
-               class-expression 'surface-model
-               series-prefix 'surface
+               members-list					nil
+               closed-loops-combinations	(sweep-loop-combinations 
+												(length ^constraints-incident-on-link-list))
+			   visible-members-index 		(loop for mem in ^visible-members-ref-list
+											   collect (the index (:from mem))
+											   )
+               valid-surface-loops 			(intersection ^closed-loops-combinations 
+												(list-3-subset-combinations ^visible-members-index))
+               quantity 					(length ^valid-surface-loops)
+               class-expression 			'surface-model
+               series-prefix 				'surface
                init-form '(
-                           edge-combination (nth ^index ^valid-surface-loops)
+                           edge-combination	(nth ^index ^valid-surface-loops)
+						   members			^members-list
                            )
                )
   )
