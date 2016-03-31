@@ -56,11 +56,6 @@
 									)
 							)
                 )
-			   
-               link-ref-incident-on-constraint (list
-                                                (the link-ref-incident-on-constraint (:from ^male-element-solid-model))
-                                                (the link-ref-incident-on-constraint (:from ^female-element-solid-model))
-                                                )
                
 			   (load-type :class 'option-property-class
 					mode 			'radio
@@ -161,15 +156,17 @@
 			   )
   :subobjects (
                (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
-				   master-joint-object (the superior superior) ;; Instantiating a reference to the master-joint-model
-				   gender 'male
+				   master-joint-object	(the superior superior) ;; Reference to the master-joint-model
+				   gender 				'male
+				   incident-link 		(nth 0 ^^incident-links)
                    )
                (female-element-solid-model :class (read-from-string (concatenate !constraint-type "-female-element"))
-                   master-joint-object (the superior superior)
 				   (point-ref :class 'point-data-model
                               coordinates (convert-coords ^^superior '(0 0 0) :from :local :to :global)
                               )
-                   gender 'female
+                   master-joint-object	(the superior superior)
+                   gender 				'female
+				   incident-link 		(nth 1 ^^incident-links)
                    )
                )
   )
@@ -177,6 +174,10 @@
 (define-method get-constraint-type master-joint-model ()
 	!constraint-type
 ) 
+ 
+(define-method get-incident-links master-joint-model ()
+	!incident-links
+)
  
 (define-method get-female-element master-joint-model ()
 	(the female-element-solid-model)
@@ -267,6 +268,7 @@
                difference-list 		nil
 			   
                master-joint-object	nil
+               incident-link		nil ;;link-model-class
 			   constraint-type		(get-constraint-type ^master-joint-object)
 			   direction			(get-direction ^master-joint-object)
 			   max-element-size 	(when (and ^max-width ^max-height)
@@ -281,25 +283,24 @@
                gender_int 			(case ^gender ('male 0) ('female 1) )
                link-incidence 		(nth ^gender_int (get-link-incidence ^master-joint-object))
 			   
-               link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence) ;;link-model-class
-			   link-mesh-model-object (when (the link-mesh-model (:from ^link-ref-incident-on-constraint))
-										(the link-mesh-model (:from ^link-ref-incident-on-constraint)))
+			   link-mesh-model-object (when (the link-mesh-model (:from ^incident-link))
+										(the link-mesh-model (:from ^incident-link)))
                
-               local-joint-index (position !superior (the constraints-incident-on-link-list (:from ^link-ref-incident-on-constraint)) )
-               members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^link-ref-incident-on-constraint)) ))
+               local-joint-index (position !superior (the constraints-incident-on-link-list (:from ^incident-link)) )
+               members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link)) ))
                                                     when (position !superior (the connection-between-constraints (:from member)))
                                                     collect member
                                                     )
                
-			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-geometry (:from ^link-ref-incident-on-constraint))))
+			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link))))
                                      for pos = (position !superior (the connection-between-constraints (:from member)))
                                      when (and pos (the display? (:from member)))
                                      maximize (if (= pos 0)
                                                   (get-width (the cross-section_D (:from member)) )
                                                 (get-width (the cross-section_A (:from member)) ) ) into max-w
                                      and  maximize (if (= pos 0)
-                                                       (get-height (the cross-section_D (:from member)) )
-                                                     (get-height (the cross-section_A (:from member)) ) ) into max-h
+                                                       (get-height (the cross-section_D (:from member)))
+                                                     (get-height (the cross-section_A (:from member)))) into max-h
                                      finally (return (list max-w max-h))
                                      )
 
@@ -307,7 +308,7 @@
                    )
 			   
 			   ;;Property used for writing to FEDEM
-			   is-incident-link-drawable? 	(is-link-drawable? ^link-ref-incident-on-constraint)
+			   is-incident-link-drawable? 	(is-link-drawable? ^incident-link)
                )
   :subobjects (
                 (main-frame :class 'frame-data-model
@@ -337,7 +338,7 @@
                    )
 			   (joint-center-node :class 'mesh-node-class
                    coordinates (the origin (:from ^main-frame))
-                   mesh-object (get-surface-mesh (get-mesh-object ^link-ref-incident-on-constraint))
+                   mesh-object (get-surface-mesh (get-mesh-model-object ^^incident-link))
 				   display? nil
                    )
                )
@@ -348,10 +349,15 @@
 )
 
 (define-method get-incident-link joint-element-model ()
+	!incident-link
 )
 	
 (define-method get-max-height joint-element-model ()
 	(when !max-height !max-height)
+)
+ 
+(define-method get-main-frame joint-element-model ()
+	!main-frame
 )
  
 (define-method is-open-constraint joint-element-model ()

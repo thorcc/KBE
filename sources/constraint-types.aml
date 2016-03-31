@@ -189,7 +189,8 @@
 (define-class revolute-male-element
   :inherit-from (joint-element-model)
   :properties (
-               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+               main-frame-object (get-main-frame (the superior))
+			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-pin ^eye)
                             )
                
@@ -208,7 +209,7 @@
                    )
                
                (pin :class 'cylinder-object
-                   reference-object ^main-frame
+                   reference-object ^main-frame-object
                    height (* 2 ^^max-height ^^scale-factor)
                    diameter (/ ^^max-width 2)
                    orientation (list
@@ -232,7 +233,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-query-nodes-from-interface-class
 					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
-					interface-object 				(the point-ref (:from ^^main-frame))
+					interface-object 				(the point-ref (:from ^^main-frame-object))
 					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
 					quantity 						nil ;;Collect all nodes within the tolerance
 					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
@@ -252,7 +253,8 @@
 (define-class revolute-female-element
   :inherit-from (difference-object joint-element-model)
   :properties(
-               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+               main-frame-object (get-main-frame (the superior))
+			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
 							(list ^fork)
                            )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -268,11 +270,11 @@
                    )
                
                (pin-hole :class 'cylinder-object
-                   reference-object ^main-frame
+                   reference-object ^^main-frame-object
                    height (* 4 ^^max-height ^^scale-factor)
                    diameter (/ ^^max-width 2)
                    )
-                              
+                
                (fork :class '(tagging-object cylinder-object)
                    tag-dimensions '(1 2 3)
                    tag-attributes (list ^^max-element-size ^^min-element-size
@@ -288,7 +290,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-pin-hole)
-				   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+				   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -325,7 +327,8 @@
 (define-class spheric-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
-               tag-dimensions '(1 2 3)
+               main-frame-object (get-main-frame (the superior))
+			   tag-dimensions '(1 2 3)
                tag-attributes (list ^^max-element-size ^^min-element-size
                                     0 0.1 0 20.0 1.0e-5)
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -341,7 +344,7 @@
                    )
                (stud :class 'cylinder-object
                    reference-object ^sub-frame
-                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame)) (the origin (:from ^main-frame)) ) )
+                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame)) (the origin (:from ^main-frame-object)) ) )
                    diameter (/ (the diameter (:from ^ball)) 2)
                    orientation (list
                                 (translate (list 0 0 (/ ^height 2)) )
@@ -354,7 +357,7 @@
                                         0 0.1 0 20.0 1.0e-5)
                    )
                (ball :class 'sphere-object
-                   reference-object ^main-frame
+                   reference-object ^main-frame-object
                    diameter (* 3 (/ ^^max-width 4))
                    )
                (plate :class '(tagging-object cylinder-object)
@@ -375,10 +378,10 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
                    color 'green
 				   display? nil
-                   )               
+                   )       
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -392,7 +395,8 @@
 (define-class spheric-female-element
   :inherit-from (difference-object joint-element-model)
   :properties (
-               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+               main-frame-object (get-main-frame (the superior))
+			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-socket)
                             )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -434,7 +438,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
                    color 'green
 				   display? nil
                    )
@@ -464,6 +468,7 @@
 (define-class solid-knuckle-female-element
 	:inherit-from (difference-object joint-element-model)
 	:properties (	
+				  main-frame-object (get-main-frame (the superior))
 				  outer-radius (* ^max-width ^scale-factor)
 				  inner-radius (* ^outer-radius 0.6)
 				
@@ -483,7 +488,7 @@
 					   )
 				   
 				  (pin-hole :class 'cylinder-object
-					   reference-object ^main-frame
+					   reference-object ^main-frame-object
 					   height (* ^^inner-radius 4)
 					   diameter ^^inner-radius
 					   )
@@ -505,7 +510,7 @@
 	:subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
-						   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+						   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
 						   color 'green
 						   display? nil
 						)
@@ -522,6 +527,7 @@
 (define-class solid-knuckle-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
+			   main-frame-object (get-main-frame (the superior))
 			   ;;; Helping variables
 			   outer-radius (* ^max-width ^scale-factor)
 			   inner-radius (* ^outer-radius 0.6)
@@ -551,7 +557,7 @@
 					)
 				
 			   (subtracted-box :class 'box-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					width (* ^^outer-radius 1.5)
 					height ^^outer-radius
 					depth ^^max-width
@@ -561,7 +567,7 @@
 					)
 			   
 			   (box :class 'box-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					width (* ^^outer-radius 2)
 					height ^^outer-radius
 					depth (* ^^outer-radius 1.5)
@@ -571,13 +577,13 @@
 					)
                    
                (pin :class 'cylinder-object
-                   reference-object ^main-frame
+                   reference-object ^main-frame-object
                    diameter ^^inner-radius
                    height (* ^^outer-radius 2)
                    )
 				
 			   (trim-box :class 'box-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					width ^^inner-radius
 					height ^^outer-radius
 					depth (* ^^outer-radius 1.5)
@@ -587,7 +593,7 @@
 					)
 				
 			   (trim-cyl :class 'cylinder-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					diameter ^^outer-radius
 					height (* ^^outer-radius 1.5)
 					)
@@ -598,12 +604,12 @@
 			    
 				
 				(difference-sphere :class 'sphere-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					diameter (* ^^outer-radius 3)
 					)
 					
 				(trim-sphere :class 'sphere-object
-					reference-object ^main-frame
+					reference-object ^main-frame-object
 					diameter (* ^^outer-radius 4)
 					)
 					
@@ -617,7 +623,7 @@
 					object-list(list ^^subtracted-box ^^eye)
 					)
 			   (eye :class '(cylinder-object)
-					   reference-object ^main-frame
+					   reference-object ^main-frame-object
 					   height ^^max-height
 					   diameter ^^outer-radius
 					   )
@@ -633,7 +639,7 @@
   :subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
-						mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+						mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
 						color 'green
 						display? nil
 					)
