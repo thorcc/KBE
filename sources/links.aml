@@ -27,6 +27,11 @@
   :properties (
 			   property-objects-list (list
 										"Link sewn with incident joint element"
+										(list (the superior cross-section-type self) 
+										'(automatic-apply? t))
+										'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
+										ui-work-area-action-button-class)
+										
 										'("Draw" (button1-parameters :draw-sewn-geometry)
 										ui-work-area-action-button-class)
 										'("Draw with mesh" (button1-parameters :draw-with-mesh)
@@ -167,13 +172,19 @@
 ;-------------------------------------------------
 (define-method work-area-button1-action link-geometry-class (params)
   (case params
-    ;;; Sewn geometry refers to the union of a member and a joint
+	(:set-c
+		(loop for m in (the members-ref-list (:from self)) do
+				(change-value (the cross-section-type self (:from m)) !cross-section-type)
+			)
+		
+	)
+	;;; Sewn geometry refers to the union of a member and a joint
     (:draw-sewn-geometry
-     (draw self :draw-subobjects? nil)
+		(draw self :draw-subobjects? nil)
      )
     (:undraw-sewn
-     (undraw self :subobjects? t)
-	 (undraw (the superior link-mesh-model))
+		 (undraw self :subobjects? t)
+		 (undraw (the superior link-mesh-model))
      )
 	(:draw-with-mesh
 		(draw self :draw-subobjects? nil)
@@ -200,15 +211,15 @@
                connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
-			   has-line-cross-section?							(has-line-cross-section ^link-solid-geometry)
-			   is-link-drawable?								(> (length (the drawable-members-ref-list (:from ^link-solid-geometry))) 0)
-			   are-all-members-displayed?						(> (length (the visible-members-ref-list (:from ^link-solid-geometry))) 0)             
+			   has-line-cross-section?							(has-line-cross-section ^link-geometry)
+			   is-link-drawable?								(> (length (the drawable-members-ref-list (:from ^link-geometry))) 0)
+			   are-all-members-displayed?						(> (length (the visible-members-ref-list (:from ^link-geometry))) 0)             
 			   )
   :subobjects (
-               (link-solid-geometry :class 'link-geometry-class
+               (link-geometry :class 'link-geometry-class
                    )
                (link-mesh-model :class 'link-mesh-class
-                   geometry-model-object	^link-solid-geometry
+                   geometry-model-object	^link-geometry
                    mesh-database 			^^mesh-database
 				   link-model 				^superior
                    )

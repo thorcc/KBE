@@ -289,20 +289,20 @@
 										(the link-mesh-model (:from ^link-ref-incident-on-constraint)))
                
                local-joint-index (position !superior (the constraints-incident-on-link-list (:from ^link-ref-incident-on-constraint)) )
-               members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-solid-geometry (:from ^link-ref-incident-on-constraint)) ))
+               members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^link-ref-incident-on-constraint)) ))
                                                     when (position !superior (the connection-between-constraints (:from member)))
                                                     collect member
                                                     )
                
-			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-solid-geometry (:from ^link-ref-incident-on-constraint))))
+			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-geometry (:from ^link-ref-incident-on-constraint))))
                                      for pos = (position !superior (the connection-between-constraints (:from member)))
                                      when (and pos (the display? (:from member)))
                                      maximize (if (= pos 0)
-                                                  (get-max-width (the cross-section_D (:from member)) )
-                                                (get-max-width (the cross-section_A (:from member)) ) ) into max-w
+                                                  (get-width (the cross-section_D (:from member)) )
+                                                (get-width (the cross-section_A (:from member)) ) ) into max-w
                                      and  maximize (if (= pos 0)
-                                                       (get-max-height (the cross-section_D (:from member)) )
-                                                     (get-max-height (the cross-section_A (:from member)) ) ) into max-h
+                                                       (get-height (the cross-section_D (:from member)) )
+                                                     (get-height (the cross-section_A (:from member)) ) ) into max-h
                                      finally (return (list max-w max-h))
                                      )
 
