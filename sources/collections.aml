@@ -211,8 +211,10 @@
 					'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
 					ui-work-area-action-button-class)
 					
-					(the superior common-width self)
-					(the superior common-height self) 
+					(list (the superior common-width self)
+					'(automatic-apply? t))
+					(list (the superior common-height self) 
+					'(automatic-apply? t))
 					'("Set all dimensions" (button1-parameters :set-d button3-parameters :unset)
 					ui-work-area-action-button-class)
 					""
@@ -281,14 +283,14 @@
 	(case params
 		(:set-c
 			(loop for l in ^link-ref-list do
-				(loop for s in (the members-ref-list (:from (the link-solid-geometry (:from l)) )) do
+				(loop for s in (the members-ref-list (:from (the link-geometry (:from l)) )) do
 					(change-value (the cross-section-type self (:from s)) !cross-section-type)
 				)
 			)
 		)
 		(:set-d
 			(loop for l in ^link-ref-list
-				do (loop for s in (the members-ref-list (:from (the link-solid-geometry (:from l)) ))
+				do (loop for s in (the members-ref-list (:from (the link-geometry (:from l)) ))
 					do (change-value (the width self (:from s)) !common-width)
 					(change-value (the height self (:from s)) !common-height)
 				)
@@ -296,7 +298,7 @@
 		)
 		(:draw-without-mesh
 			(loop for link in ^link-ref-list
-				do (loop for member in (the visible-members-ref-list (:from (the link-solid-geometry (:from link)) ))
+				do (loop for member in (the visible-members-ref-list (:from (the link-geometry (:from link)) ))
 					do (draw member :draw-subobjects? nil )
 				)
 			)
@@ -771,7 +773,7 @@
 		(:draw-sewn-wo-mesh
 			(loop for link in !final-link-ref-list do
 				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-solid-geometry (:from link)) :draw-subobjects? nil)
+					(draw (the link-geometry (:from link)) :draw-subobjects? nil)
 				)
 			)
 		)
