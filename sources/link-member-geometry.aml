@@ -255,14 +255,7 @@
               frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
               point-ref_D (the point-ref (:from ^frame_D ))
               point-ref_A (the point-ref (:from ^frame_A ))
-              
-              ;;test for "link twist"
-			;	z-vector-ref_A (if (is-vectors-dependent (the direction (:from (the z-vector-ref (:from ^frame_D)))) 
-			;		(the direction (:from (the z-vector-ref (:from ^frame_A)))) 
-			;		(the direction (:from (the x-vector-ref (:from (the spline-frame_start (:from ^connection)))))))
-			;		(the z-vector-ref (:from ^frame_A))
-			;		(the z-vector-ref (:from ^frame_D))
-			;	)
+
 			 z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
              z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
               
@@ -335,10 +328,6 @@
                                      '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
                                        ui-work-area-action-button-class)
 									   ""
-									 ;'("Set end frame equal to start frame (remove twisting)" (button1-parameters :remove-twisting)
-                                      ; ui-work-area-action-button-class)
-									 ;'("Reset values" (button1-parameters :reset-values)
-                                      ; ui-work-area-action-button-class)
                                      )
               )
   :subobjects (
@@ -391,29 +380,6 @@
     (:undraw
      (undraw self :subobjects? nil)
      )
-	;(:remove-twisting
-	;	(let (
-	;		  (start (the spline-frame_start (:from !connection)))
-	;		  (end (the spline-frame_end (:from !connection)))
-	;		  )
-	;	(if (not (is-vectors-dependent (the direction (:from (the z-vector-ref (:from end)))) (the direction (:from (the z-vector-ref (:from start)))) (the direction (:from (the x-vector-ref (:from start))))))
-	;		;(is-vectors-dependent (the z-vector-ref (:from end)) (the z-vector-ref (:from start)) (the direction (:from (the x-vector-ref (:from start)))))
-	;			(progn (change-value (the z-vector-ref (:from end))
-	;					   (the z-vector-ref (:from start)))
-	;				    (draw self :draw-subobjects? nil)
-	;				)
-	;			 nil
-	;			)
-	;	)
-	; )
-	;(:reset-values
-	;	(progn 
-	;		(smash-value (the z-vector-ref (:from (the spline-frame_end (:from !connection)))))
-	;		(smash-value (the x-vector-ref (:from (the spline-frame_end (:from !connection)))))
-	;		(draw self :draw-subobjects? nil)
-	;	)
-	;)
-	
     )
   )
 
