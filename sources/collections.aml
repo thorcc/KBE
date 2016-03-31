@@ -233,11 +233,11 @@
 				)
 
 				;;Returns a sorted list of all link numbers in the mechanism. I.e: (0 1 2 3 4)
-				link-list (sort (copy-seq (remove-duplicates (append-list (loop for constraint in ^constraints-list
+				link-list (sort (remove nil (copy-seq (remove-duplicates (append-list (loop for constraint in ^constraints-list
                                                                  collect (the link-incidence (:from constraint)) 
                                                                  )
                                                                ))
-                                        ) '<)
+                                        )) '<)
 										
                (init-default-shape :class 'shape-model
                    )
