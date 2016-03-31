@@ -217,9 +217,9 @@
   )
 
 
-;---------------------------------------------------------------------------
+;----------------------------------------------------------------------------
 ; Returns the orthogonal projection of a vector b onto some vector a, pi_a(b)
-;---------------------------------------------------------------------------
+;----------------------------------------------------------------------------
 (defun proj_v (a b)
   (multiply-vector-by-scalar a (/ (dot-product b a ) (dot-product a a )) )
   )
@@ -257,9 +257,7 @@
               point-ref_A (the point-ref (:from ^frame_A ))
               
               ;;test for "link twist"
-				z-vector-ref_A (if (is-vectors-dependent (the direction (:from (the z-vector-ref (:from ^frame_D)))) 
-					(the direction (:from (the z-vector-ref (:from ^frame_A)))) 
-					(the direction (:from (the x-vector-ref (:from (the spline-frame_start (:from ^connection)))))))
+				z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
 					(the z-vector-ref (:from ^frame_A))
 					(the z-vector-ref (:from ^frame_D))
 				)
@@ -358,7 +356,18 @@
                    )
                )
   )
+  
+(define-method get-z-vector-ref_A sub-frame-data-model ()
+	(the direction (:from !z-vector-ref )) 
+)
 
+(define-method get-z-vector-ref_D sub-frame-data-model ()
+	(the direction (:from !z-vector-ref)) 
+)
+
+(define-method get-x-vector-ref_D connection-model ()
+	(the direction (:from (the x-vector-ref (:from !spline-frame_start))))
+)
 (define-method get-cross-section_D member-solid-model ()
 	!cross-section_D
 )
