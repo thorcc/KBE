@@ -13,13 +13,13 @@
                )
   )
   
-(define-method get-max-width section-model ()
-  !width
-  )
-
-(define-method get-max-height section-model ()
-  !height
-  )
+;(define-method get-width section-model ()
+;  !width
+;  )
+;
+;(define-method get-height section-model ()
+;  !height
+;  )
 ;-------------------------------------------------------------------------------------------------------------
 ; END section-model
 ;-------------------------------------------------------------------------------------------------------------
@@ -42,10 +42,10 @@
                    )
                )
   )
-(define-method get-max-width circular-section ()
+(define-method get-width circular-section ()
   !diameter
   )
-(define-method get-max-height circular-section ()
+(define-method get-height circular-section ()
   !diameter
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -85,10 +85,10 @@
                    )
                )
   )
-(define-method get-max-width circular-tube-section ()
+(define-method get-width circular-tube-section ()
   !outer-diameter
   )
-(define-method get-max-height circular-tube-section ()
+(define-method get-height circular-tube-section ()
   !outer-diameter
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -115,6 +115,12 @@
                    height ^^height
                    )
                )
+  )
+(define-method get-width rectangle-section ()
+  !width
+  )
+(define-method get-height rectangle-section ()
+  !height
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END rectangle-section
@@ -145,6 +151,13 @@
                    )
                )
   )
+(define-method get-width rectangle-tube-section ()
+  !width
+  )
+  
+(define-method get-height rectangle-tube-section ()
+  !height
+  )
 ;-------------------------------------------------------------------------------------------------------------
 ; END rectangle-tube-section
 ;-------------------------------------------------------------------------------------------------------------
@@ -162,11 +175,11 @@
                )
   )
 
-(define-method get-max-width line-section ()
+(define-method get-width line-section ()
   !height
   )
 
-(define-method get-max-height line-section ()
+(define-method get-height line-section ()
   0
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -210,8 +223,10 @@
                
                )
   )
-
-(define-method get-max-height I-beam-section ()
+(define-method get-width I-beam-section ()
+  !width
+  )
+(define-method get-height I-beam-section ()
   (+ !flange-thickness !height)
  )
 ;-------------------------------------------------------------------------------------------------------------
@@ -255,8 +270,11 @@
                    )              
                )
   )
-(define-method get-max-width H-beam-section ()
+(define-method get-width H-beam-section ()
   (+ !width !flange-thickness)
+ )
+(define-method get-height H-beam-section ()
+  !height
  )
 ;-------------------------------------------------------------------------------------------------------------
 ; END H-beam-section definitions
@@ -289,26 +307,12 @@
                )
   )
 
-(define-method get-max-width hexagon-section ()
+(define-method get-width hexagon-section ()
   (* 2 !R)
   )
-(define-method get-max-height hexagon-section ()
+(define-method get-height hexagon-section ()
   (* !R (sqrt 3))
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END hexagon-section definitions
-;-------------------------------------------------------------------------------------------------------------
-  
-;-------------------------------------------------------------------------------------------------------------
-; Class: polygon-section
-;-------------------------------------------------------------------------------------------------------------
-(define-class polygon-section
-  :inherit-from (polygon-object section-model)
-  :properties (
-               vertices '( (1 1 0) (-1 1 0) (-1 -1 0) (1 -1 0))
-               dimension 2
-               )
-  )
-;-------------------------------------------------------------------------------------------------------------
-; END polygon-section definitions
 ;-------------------------------------------------------------------------------------------------------------
