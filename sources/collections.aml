@@ -60,8 +60,8 @@
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
-						   incident-links		(concatenate !index "xdfghg") ;(list (nth (first (nth 2 (nth !index ^constraint-list))) ^links-list) 
-												;	  (nth (second (nth 2 (nth !index ^constraint-list))) ^links-list))
+						   incident-links		(list (nth (first (nth 2 (nth !index ^constraint-list))) ^links-list) 
+													  (nth (second (nth 2 (nth !index ^constraint-list))) ^links-list))
 						   id 					(+ ^index 1)
                            )
 						   
@@ -238,7 +238,7 @@
                                                                  )
                                                                ))
                                         ) '<)
- 
+										
                (init-default-shape :class 'shape-model
                    )
                

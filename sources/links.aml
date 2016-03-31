@@ -212,8 +212,6 @@
                link-index 										nil
 			   
 			   has-line-cross-section?							(has-line-cross-section ^link-geometry)
-			   is-link-drawable?								(> (length (the drawable-members-ref-list (:from ^link-geometry))) 0)
-			   are-all-members-displayed?						(> (length (the visible-members-ref-list (:from ^link-geometry))) 0)             
 			   )
   :subobjects (
                (link-geometry :class 'link-geometry-class
@@ -225,10 +223,10 @@
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object ^^link-mesh-model
-                   )               
+                   )
                )
   )
-
+  
 (define-method get-non-open-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
 		(loop for joint-element in !constraints-incident-on-link-list do
@@ -236,6 +234,18 @@
 				collect joint-element
 		)
 	)
+)
+
+(define-method is-link-drawable? link-model-class ()
+ 	(> (length (the drawable-members-ref-list (:from !link-geometry))) 0)
+)
+ 
+(define-method are-all-members-displayed? link-model-class ()
+ 	(> (length (the visible-members-ref-list (:from !link-geometry))) 0)
+)
+ 
+(define-method get-mesh-model-object link-model-class ()
+ 	!link-mesh-model
 )
  
 ;-----------------------------------------------------------------
