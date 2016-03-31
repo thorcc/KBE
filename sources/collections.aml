@@ -300,8 +300,12 @@
 		(:set-d
 			(loop for l in ^link-ref-list
 				do (loop for s in (the members-ref-list (:from (the link-geometry (:from l)) ))
-					do (change-value (the width self (:from s)) !common-width)
+					do (progn
+					(change-value (the width self (:from s)) !common-width)
 					(change-value (the height self (:from s)) !common-height)
+					(change-value (the width-end self (:from s)) !common-width)
+					(change-value (the height-end self (:from s)) !common-height)
+					)
 				)
 			)
 		)
