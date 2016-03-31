@@ -155,11 +155,12 @@
 				)
 			   )
   :subobjects (
-               (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
+			   (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
 				   master-joint-object	(the superior superior) ;; Reference to the master-joint-model
 				   gender 				'male
 				   incident-link 		(nth 0 ^^incident-links)
-                   )
+				   )
+			   
                (female-element-solid-model :class (read-from-string (concatenate !constraint-type "-female-element"))
 				   (point-ref :class 'point-data-model
                               coordinates (convert-coords ^^superior '(0 0 0) :from :local :to :global)
@@ -363,6 +364,14 @@
 (define-method is-open-constraint joint-element-model ()
 	(equal "open" !constraint-type)
  ) 
+ 
+(define-method get-joint-union-list joint-element-model ()
+	!union-list
+)
+
+(define-method get-joint-difference-list joint-element-model ()
+	!difference-list
+)
  
 (define-method get-main-frame-coords joint-element-model (&optional params)
 	(if params

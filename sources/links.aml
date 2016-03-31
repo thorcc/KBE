@@ -25,20 +25,7 @@
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
   :properties (
-			   property-objects-list (list
-										"Link sewn with incident joint element"
-										(list (the superior cross-section-type self) 
-										'(automatic-apply? t))
-										'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
-										ui-work-area-action-button-class)
-										
-										'("Draw" (button1-parameters :draw-sewn-geometry)
-										ui-work-area-action-button-class)
-										'("Draw with mesh" (button1-parameters :draw-with-mesh)
-										ui-work-area-action-button-class)
-										'("Undraw" (button1-parameters :undraw-sewn)
-										ui-work-area-action-button-class)
-										)
+			   incident-constraints	nil
 											
                source-object 			^difference-element ;; Used for geometry-with-split-periodic-faces-class
 			   
@@ -67,31 +54,27 @@
 											  )
 											)
 
-               constraint-connection-combination	(connection-combinations (length ^constraints-incident-on-link-list))
+               constraint-connection-combination	(connection-combinations (length ^incident-constraints))
                
                surfaces-ref-list 					(children ^surfaces :class 'surface-model :test '(and !geom !display?))
 			   
                members-ref-list						(children ^sweeps :class 'member-solid-model)
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
-			   mating-surface-list 					(append (loop for c in ^constraints-incident-on-link-list
+			   mating-surface-list 					(append (loop for c in ^incident-constraints
 														collect (the mating-surface-nodes (:from c))
 														))
 			   
-               union-list 							(loop for constraint in ^constraints-incident-on-link-list
-														append (the union-list (:from constraint))
+               union-list 							(loop for constraint in ^incident-constraints
+														append (get-joint-union-list constraint)
 														)
-               difference-list 						(loop for constraint in ^constraints-incident-on-link-list
-														append (the difference-list (:from constraint))
+               difference-list 						(loop for constraint in ^incident-constraints
+														append (get-joint-difference-list constraint)
 														)
 			   ;;; List of the final geometry
                object-list 							(append
 														(list ^imprint-union-element)
 														^difference-list
 														)
-			   
-			   ;;; simplify? t removes common boundaries in the geometry
-			   ;;; simplify? nil keeps them
-			   simplify? 							nil
                
                (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
                    tag-dimensions '(1 2 3)
@@ -99,31 +82,28 @@
                                         0 0.1 0 20.0 1.0e-5)
                    source-object ^^union-element
                    )
-			   ;;; Imprints the union-element with the 
+			   ;;; Imprints the union-element with the point reference
                (imprint-constraint-points :class '(tagging-object imprint-class)
                    target-object ^^imprint-union-element
-                   tool-object-list (loop for c in ^constraints-incident-on-link-list
+                   tool-object-list (loop for c in ^incident-constraints
                                       collect (the point-ref (:from c))
                                       )
                    )
-               (difference-element :class '(tagging-object difference-object)
+               ;;The final sewn geometry of members, surfaces and joints
+			   (difference-element :class '(tagging-object difference-object)
                    tag-dimensions '(1 2 3)
                    tag-attributes (list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
-                   object-list (append
-                                (list ^union-element)
-;;;                             (list ^imprint-union-element)
-                                ^difference-list
-                                )
+				   object-list (append (list ^union-element) ^difference-list)
                    simplify? t
                    )
                                 
-               (union-element :class '(tagging-object union-object)
+			   ;;Union of surfaces, members and joint geometry without difference objects
+               (union-element :class '(tagging-object union-object) 
                    tag-dimensions '(1 2 3)
                    tag-attributes (list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
-                   object-list (append  ^surfaces-ref-list
-;;;                                         (list ^sewn-links)
+                   object-list (append  (if ^surfaces-ref-list ^surfaces-ref-list nil)
                                         ^visible-members-ref-list
                                         ^^union-list)
 				   simplify? t
@@ -136,7 +116,25 @@
 												if (the geom (:from member)) 
 													collect member
 												)
-               )
+                ;;; simplify? t removes common boundaries in the geometry
+			    ;;; simplify? nil keeps them
+			    simplify? 	nil
+				
+				property-objects-list (list
+										"Link sewn with incident joint element"
+										(list (the superior cross-section-type self) 
+										'(automatic-apply? t))
+										'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
+										ui-work-area-action-button-class)
+										
+										'("Draw" (button1-parameters :draw-sewn-geometry)
+										ui-work-area-action-button-class)
+										'("Draw with mesh" (button1-parameters :draw-with-mesh)
+										ui-work-area-action-button-class)
+										'("Undraw" (button1-parameters :undraw-sewn)
+										ui-work-area-action-button-class)
+										)
+			   )
   :subobjects (
                (surfaces :class 'surfaces-on-link-collection
 				   members-list ^^members-ref-list
@@ -215,6 +213,7 @@
 			   )
   :subobjects (
                (link-geometry :class 'link-geometry-class
+				   incident-constraints ^^constraints-incident-on-link-list
                    )
                (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry

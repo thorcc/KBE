@@ -378,7 +378,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
                    color 'green
 				   display? nil
                    )       
@@ -438,7 +438,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -510,7 +510,7 @@
 	:subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
-						   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
+						   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
 						   color 'green
 						   display? nil
 						)
@@ -534,7 +534,7 @@
 			   
 			   ;;; Lists sent to link-geometry-class ------->
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-                            (list !superior) ;!superior is a reference to the union object?
+                            (list !superior) 
                             )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
                                 (list ^subtracted-box)
@@ -639,7 +639,7 @@
   :subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
-						mesh-object (the link-mesh (:from (the link-mesh-model (:from ^incident-link))))
+						mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
 						color 'green
 						display? nil
 					)
