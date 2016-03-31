@@ -44,11 +44,14 @@
 (define-class constraint-collection
   :inherit-from (series-object collection-class)
   :properties (	
-               collection-type 'constraints
-               constraint-list (cdr (read-from-file !superior))
-               quantity (length ^constraint-list)
-               class-expression '(read-from-string (concatenate (nth 1 (nth !index !constraint-list)) "-constraint-class")) ;;The "-constraint-classes" are master-joint-models
-               series-prefix 'c
+               links-list 		nil ;;Set as link-model-class objects
+			   collection-type 	'constraints
+               constraint-list 	(cdr (read-from-file !superior))
+               quantity 		(length ^constraint-list)
+               series-prefix 	'c
+               class-expression	'(read-from-string (concatenate 
+									(nth 1 (nth !index !constraint-list)) "-constraint-class")) 
+									;;The "-constraint-classes" are master-joint-models
 			   
 			   init-form '(
                            point-ref 			(nth (nth 0 (nth !index ^constraint-list)) ^point-ref-list)
@@ -57,6 +60,8 @@
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
+						   incident-links		(concatenate !index "xdfghg") ;(list (nth (first (nth 2 (nth !index ^constraint-list))) ^links-list) 
+												;	  (nth (second (nth 2 (nth !index ^constraint-list))) ^links-list))
 						   id 					(+ ^index 1)
                            )
 						   
@@ -264,6 +269,10 @@
                            )
                )
   )
+  
+(define-method get-links link-collection ()
+	(children (the) :class 'link-model-class)
+)
   
 ;-----------------------------------------------
 ; Gets the link reference from a link-collection
@@ -619,13 +628,12 @@
                link-ref-list (children ^links :class 'link-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list
-										if (and (the is-link-drawable? (:from link)) (the are-all-members-displayed? (:from link)) ) 
+										if (and (is-link-drawable? link) (are-all-members-displayed? link))
 											collect link)
 											
 			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
 											  if (not (string-equal "open" (get-constraint-type constraint)))
-												  collect constraint
-											)
+												  collect constraint)
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
 			   
@@ -703,6 +711,7 @@
                )
   :subobjects (
                (constraints :class 'constraint-collection
+				   links-list (get-links ^links)
                    )
                (points :class 'point-collection
                    )

@@ -9,11 +9,12 @@
 			   link-incidence 		(default nil)
 			   max-element-size 	(deafult 0.04)
 			   min-element-size 	(deafult 0.01)
-               scale-factor 		(default 1.2)
+               scale-factor 		(default 1.2) ;;Scaling of the constraint dimensions 
 			   constraint-variable	(default nil)
-               
-               point-ref (default nil)
-               direction (default nil)
+			   incident-links		(default nil) ;; Ref to the link-model-class objects
+			   
+               point-ref 			(default nil)
+               direction 			(default nil)
                (z-vector-ref :class 'vector-data-model
                    direction ^^direction
                    )
@@ -26,17 +27,17 @@
 					label "Max width"
 					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
 				formula (let (
-								   (fem-max (first (the local-max-dimension (:from ^female-element-solid-model))))
-								   (male-max (first (the local-max-dimension (:from ^male-element-solid-model)) ))
+							   (fem-max (first (the local-max-dimension (:from ^female-element-solid-model))))
+							   (male-max (first (the local-max-dimension (:from ^male-element-solid-model))))
+							  )
+							  (if (and fem-max male-max)
+								  (* ^scale-factor (max fem-max male-max))
+								  (if fem-max
+									(* ^scale-factor fem-max)
+									(* ^scale-factor male-max)
 								  )
-								  (if (and fem-max male-max)
-									  (* ^scale-factor (max fem-max male-max))
-									  (if fem-max
-										(* ^scale-factor fem-max)
-										(* ^scale-factor male-max)
-									  )
-									)
 								)
+							)
 					available? ^formula
 				)
                (max-height :class 'editable-data-property-class
@@ -192,7 +193,6 @@
 	)
 )
 
-
 (define-method get-direction master-joint-model ()
 	!direction
 )
@@ -249,9 +249,6 @@
 		)
 	)
 )
-
-
-
 ;-------------------------------------------------------------------------------------------------------------
 ; END master-joint-model definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -284,7 +281,7 @@
                gender_int 			(case ^gender ('male 0) ('female 1) )
                link-incidence 		(nth ^gender_int (get-link-incidence ^master-joint-object))
 			   
-               link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence)
+               link-ref-incident-on-constraint (get-link-ref ^links ^link-incidence) ;;link-model-class
 			   link-mesh-model-object (when (the link-mesh-model (:from ^link-ref-incident-on-constraint))
 										(the link-mesh-model (:from ^link-ref-incident-on-constraint)))
                
@@ -310,7 +307,7 @@
                    )
 			   
 			   ;;Property used for writing to FEDEM
-			   is-incident-link-drawable? 	(the is-link-drawable? (:from ^link-ref-incident-on-constraint))
+			   is-incident-link-drawable? 	(is-link-drawable? ^link-ref-incident-on-constraint)
                )
   :subobjects (
                 (main-frame :class 'frame-data-model
@@ -319,8 +316,12 @@
 						direction (let (
 										(first-sweep (nth 0 ^members-connected-to-joint-element))
 										(x-dir  (subtract-vectors
-												(the coordinates (:from (the point-ref (:from (nth 0 (the connection-between-constraints (:from first-sweep) ) )))))
-												(the coordinates (:from (the point-ref (:from (nth 1 (the connection-between-constraints (:from first-sweep) ) ))))))
+												(the coordinates (:from (the point-ref (:from (nth 0 
+													(the connection-between-constraints (:from first-sweep))
+													)))))
+												(the coordinates (:from (the point-ref (:from (nth 1 
+													(the connection-between-constraints (:from first-sweep))
+													))))))
 											)
 										(x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
 									   )
@@ -336,7 +337,7 @@
                    )
 			   (joint-center-node :class 'mesh-node-class
                    coordinates (the origin (:from ^main-frame))
-                   mesh-object (the link-mesh (:from (the link-mesh-model (:from ^link-ref-incident-on-constraint))))
+                   mesh-object (get-surface-mesh (get-mesh-object ^link-ref-incident-on-constraint))
 				   display? nil
                    )
                )
@@ -345,8 +346,10 @@
 (define-method get-constraint-type joint-element-model ()
 	!constraint-type
 )
+
+(define-method get-incident-link joint-element-model ()
+)
 	
- 
 (define-method get-max-height joint-element-model ()
 	(when !max-height !max-height)
 )

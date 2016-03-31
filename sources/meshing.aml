@@ -112,6 +112,10 @@
                )
   )
 
+(define-method get-surface-mesh link-mesh-class ()
+	!link-mesh
+)
+  
 (define-method get-mesh-model-subobject link-mesh-class (subobject-type)
 	(case subobject-type
 		(mesh-db !mesh-db)
