@@ -255,9 +255,15 @@
               frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
               point-ref_D (the point-ref (:from ^frame_D ))
               point-ref_A (the point-ref (:from ^frame_A ))
-
+              
+              ;;test for "link twist"
+				z-vector-ref_A (if (is-vectors-dependent (the direction (:from (the z-vector-ref (:from ^frame_D)))) 
+					(the direction (:from (the z-vector-ref (:from ^frame_A)))) 
+					(the direction (:from (the x-vector-ref (:from (the spline-frame_start (:from ^connection)))))))
+					(the z-vector-ref (:from ^frame_A))
+					(the z-vector-ref (:from ^frame_D))
+				)
 			 z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
-             z-vector-ref_A (the z-vector-ref (:from ^frame_A ))
               
               ;;cross section dimension, width 0.04 / height 0.04
               shape-ref nil
