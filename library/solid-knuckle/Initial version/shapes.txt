@@ -1,1 +1,2 @@
-default	default	"circular"	"(0.1 0.1)"	"()"	"()"
+Name				Link	Member	Cross-section	Dimension		Points-list		Weights-list
+"arm"				default	default	"circular"		"(0.1 0.1)"		"()"			"()"
