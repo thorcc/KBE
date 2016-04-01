@@ -20,40 +20,55 @@
 
                middle-points (case ^line-config
                                ('paralell (let (
-                                                (start-tangent (add-vectors ^start-point (multiply-vector-by-scalar (normalize ^perpendicular-dir) (half ^param_b) ) ))
-                                                (end-tangent (add-vectors ^end-point (multiply-vector-by-scalar (normalize ^perpendicular-dir) (- (half ^param_b)) ) ))
-                                                (start-weight (list 0.5))
-                                                (end-weight (list 0.5))
-                                                )
-                                            (if (roughly-same-point start-tangent end-tangent)
-                                                (list (append start-tangent start-weight) )
-                                              (list (append start-tangent start-weight) (append end-tangent end-weight) )
-                                              )
-                                            ) )
+									(start-tangent (add-vectors ^start-point (multiply-vector-by-scalar 
+										(normalize ^perpendicular-dir) (half ^param_b) ) ))
+									(end-tangent (add-vectors ^end-point (multiply-vector-by-scalar 
+										(normalize ^perpendicular-dir) (- (half ^param_b)) ) ))
+									(start-weight (list 0.5))
+									(end-weight (list 0.5))
+									)
+								(if (roughly-same-point start-tangent end-tangent)
+									(list (append start-tangent start-weight) )
+								  (list (append start-tangent start-weight) (append end-tangent end-weight) )
+								  )
+								) )
                                ;; if param_a == param_c && paramb=0
                                ('intersecting (let (
-                                                    (center (nth 0 ^inter_points ))
+									(center (nth 0 ^inter_points ))
 
-                                                    (middle-point (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors ^start-point center) (subtract-vectors ^end-point center ))) ^param_a) ) )
-                                                    (angle-start-middle (/ (angle-between-2-vectors (subtract-vectors ^start-point center) (subtract-vectors middle-point center )) 2 ))
-                                                    (start-tangent (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors ^start-point center) (subtract-vectors middle-point center ))) (/ ^param_a (cosd angle-start-middle))) ) )
+									(middle-point (add-vectors center (multiply-vector-by-scalar (normalize 
+										(add-vectors (subtract-vectors ^start-point center) 
+											(subtract-vectors ^end-point center ))) ^param_a) ) )
+									(angle-start-middle (/ (angle-between-2-vectors 
+										(subtract-vectors ^start-point center) 
+										(subtract-vectors middle-point center )) 2 ))
+									(start-tangent (add-vectors center (multiply-vector-by-scalar 
+										(normalize (add-vectors (subtract-vectors ^start-point center) 
+											(subtract-vectors middle-point center ))) 
+											(/ ^param_a (cosd angle-start-middle))) ) )
 
-                                                    (angle-middle-end (/ (angle-between-2-vectors (subtract-vectors middle-point center) (subtract-vectors ^end-point center )) 2))
-                                                    (end-tangent (add-vectors center (multiply-vector-by-scalar (normalize (add-vectors (subtract-vectors middle-point center) (subtract-vectors ^end-point center ))) (/ ^param_a (cosd angle-middle-end))) ) )
-                                                    
-                                                    (start-weight (list (sind (/ (angle-between-2-vectors
-                                                                            (subtract-vectors start-tangent ^start-point)
-                                                                            (subtract-vectors start-tangent middle-point)
-                                                                            ) 2) ) ) )
-                                                    (middle-weight (list 1))
-                                                    (end-weight (list (sind (/ (angle-between-2-vectors
-                                                                            (subtract-vectors end-tangent middle-point)
-                                                                            (subtract-vectors end-tangent ^end-point)
-                                                                            ) 2) ) ) )
-                                                    )
-                                                 (list (append start-tangent start-weight) (append middle-point middle-weight) (append end-tangent end-weight) )
-                                                )
-                                              )
+									(angle-middle-end (/ (angle-between-2-vectors 
+										(subtract-vectors middle-point center) 
+										(subtract-vectors ^end-point center )) 2))
+									(end-tangent (add-vectors center (multiply-vector-by-scalar 
+										(normalize (add-vectors (subtract-vectors middle-point center) 
+											(subtract-vectors ^end-point center ))) 
+											(/ ^param_a (cosd angle-middle-end))) ) )
+									
+									(start-weight (list (sind (/ (angle-between-2-vectors
+															(subtract-vectors start-tangent ^start-point)
+															(subtract-vectors start-tangent middle-point)
+															) 2) ) ) )
+									(middle-weight (list 1))
+									(end-weight (list (sind (/ (angle-between-2-vectors
+															(subtract-vectors end-tangent middle-point)
+															(subtract-vectors end-tangent ^end-point)
+															) 2) ) ) )
+									)
+								 (list (append start-tangent start-weight) (append middle-point middle-weight) 
+									 (append end-tangent end-weight) )
+								)
+							  )
                                )
                start-weight (list (append ^start-point (list 1)))
                end-weight (list (append ^end-point (list 1)))
@@ -167,7 +182,7 @@
         (normal-mag (vector-length (cross-product !wij !wjk) ) )
         (coincident (vector-length (cross-product (subtract-vectors !pjk !pij) !wij) ) )
         )
-    (if (/= 0 coplan) 'skew (if (/= 0 normal-mag) 'intersecting (if (= 0 coincident) 'coincident 'paralell) ) )
+    (if (/= 0 coplan) 'skew (if (/= 0 normal-mag) 'intersecting (if (= 0 coincident) 'coincident 'paralell)))
     )
   )
 
@@ -242,8 +257,9 @@
 (define-class member-solid-model
   :inherit-from (tagging-object general-sweep-class)
   :properties(
-              tag-dimensions '(1 2 3)
-              tag-attributes (list ^^max-element-size .1
+              mesh-size-factor (default 0.25) ;;25% of the member's smallest dimension
+			  tag-dimensions '(1 2 3)
+              tag-attributes (list (calculate-mesh-size (the superior)) .1
                                    0 0.1 0 20.0 1.0e-5)
               
               (display? :class 'flag-property-class
@@ -380,6 +396,10 @@
 (define-method get-joints-on-member member-solid-model ()
 	(when !joints-on-member
 		!joints-on-member)
+)
+
+(define-method calculate-mesh-size member-solid-model ()
+	(* (min !width !height !width-end !height-end) !mesh-size-factor)
 )
 
 ;---------------------------------------------------------------------

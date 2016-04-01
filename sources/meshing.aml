@@ -40,25 +40,7 @@
 			   
 			   joint-center-node-list	(loop for c in ^non-open-constraints-list
 											collect (the joint-center-node (:from c))
-											)
-			   
-			   
-			   ;;; Sets the element size to half of the smallest dimension of a link's joints
-			    ;element-size (let (
-				;				  (min-elem nil)
-				;				  )
-				;				   (loop for constraint in ^^constraints-incident-on-link-list
-				;							if (not (string-equal "open" (the constraint-type (:from constraint)))) do
-				;							(let (
-				;								  (mw (if (= (the max-width (:from constraint)) 0) nil (the max-width (:from constraint))))   ;;max might be 0 due to open constraints
-				;								  (mh (if (= (the max-height (:from constraint)) 0) nil (the max-height (:from constraint))))
-				;								 )
-				;								(if (not min-elem)
-				;									(setf min-elem (min-or-nil mw mh))
-				;									(if (< min-elem (min-or-nil mw mh))
-				;										(setf min-elem (min-or-nil mw mh))))))
-				;					(/ min-elem 2))
-				;						
+											)				
                
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^joint-center-node-list)
