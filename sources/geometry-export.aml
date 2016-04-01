@@ -67,8 +67,8 @@
 					(setf conID (1+ conID))
 					(let (
 						  (triadID 				(get-male-triad-id-from-master-joint-model constraint))
-						  (is-male-drawable? 	(the male-element-solid-model is-incident-link-drawable? (:from constraint)))
-						  (is-female-drawable?	(the female-element-solid-model is-incident-link-drawable? (:from constraint)))
+						  (is-male-drawable? 	(the male-joint-element is-incident-link-drawable? (:from constraint)))
+						  (is-female-drawable?	(the female-joint-element is-incident-link-drawable? (:from constraint)))
 						  )
 						 ;;Case 1: male element has a drawable link, female does not. 
 						 ;;Master triad is the ground, slave triad is the male element
@@ -76,8 +76,8 @@
 							(progn 
 								(write-joint-type-to-fmm stream constraint baseID conID (1+ triadID) triadID)
 								(setf baseID (1+ baseID))
-								(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
-									(get-main-frame-coords (the female-element-solid-model (:from constraint))) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+								(write-triad-to-fmm stream baseID (get-joint-element-id (the male-joint-element (:from constraint)))
+									(get-main-frame-coords (the female-joint-element (:from constraint))) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
 								(setf triads-written (1+ triads-written))
 							)
 							;;Case 2: female element has a drawable link, male does not
@@ -86,8 +86,8 @@
 								(progn
 									(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
 									(setf baseID (1+ baseID))
-									(write-triad-to-fmm stream baseID (get-joint-element-id (the male-element-solid-model (:from constraint)))
-										(get-main-frame-coords (the male-element-solid-model (:from constraint))) -1 -1)
+									(write-triad-to-fmm stream baseID (get-joint-element-id (the male-joint-element (:from constraint)))
+										(get-main-frame-coords (the male-joint-element (:from constraint))) -1 -1)
 									(setf triads-written (1+ triads-written))
 								)
 								;;Case 3: both elements have drawable links

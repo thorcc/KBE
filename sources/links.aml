@@ -153,6 +153,10 @@
 	)
 )
 
+(define-method get-members link-geometry-class ()
+	!members-ref-list
+)
+
 ;----------------------------------------------------------
 ; Returns all possible connections with all incident joints
 ; Input: Number of incident joints
@@ -160,7 +164,7 @@
 (defun connection-combinations (n)
 	(loop for j from 0 to (- n 2)
      append (loop for k from (1+ j) to (1- n)
-             collect (list j k)                   
+             collect (list j k)
           )
      )
    )
@@ -235,6 +239,9 @@
 	)
 )
 
+(define-method get-link-geometry link-model-class ()
+	!link-geometry
+)
 (define-method is-link-drawable? link-model-class ()
  	(> (length (the drawable-members-ref-list (:from !link-geometry))) 0)
 )
@@ -253,12 +260,12 @@
 ;-----------------------------------------------------------------
 (defun list-combinations (p)
   (let (
-        (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ) ) ) )
+        (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ))))
         (n (length l))
         )
     (loop for j from 0 to (- n 2)
       append (loop for k from (1+ j) to (1- n)
-               collect (list (nth j l) (nth k l))                   
+               collect (list (nth j l) (nth k l))                 
                )
       )
     )

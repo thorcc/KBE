@@ -3,17 +3,28 @@
 ; Used for holding male and female instantiations as subobjects
 ;-------------------------------------------------------------------------------------------------------------
 (define-class master-joint-model
-  :inherit-from (frame-data-model)
+  :inherit-from (series-object frame-data-model)
   :properties (
                id 					(default nil)
 			   link-incidence 		(default nil)
-			   max-element-size 	(deafult 0.04)
-			   min-element-size 	(deafult 0.01)
-               scale-factor 		(default 1.2) ;;Scaling of the constraint dimensions 
+			   max-element-size 	(default 0.04)
+			   min-element-size 	(default 0.01)
+               scale-factor 		(default 1.2) ;;Scaling of the constraint dimensions
 			   constraint-variable	(default nil)
-			   incident-links		(default nil) ;; Ref to the link-model-class objects
+			   incident-links		(default nil) ;;Ref to the link-model-class objects
 			   
-               point-ref 			(default nil)
+			   gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
+											(list (if (nth 1 ^link-incidence) "female" nil))))
+			   
+               joint-elements		(when (children (the superior)) (children (the superior)))
+			   male-joint-element	(loop for element in ^joint-elements
+										when (equal 'male (get-gender element)) do
+											(return element))
+			   female-joint-element	(loop for element in ^joint-elements
+										when (equal 'female (get-gender element)) do
+											(return element))
+			   
+			   point-ref 			(default nil)
                direction 			(default nil)
                (z-vector-ref :class 'vector-data-model
                    direction ^^direction
@@ -23,39 +34,18 @@
                    )
                
                constraint-type (default nil)
+			   
+			   dimensions (calculate-dimensions (the superior))
+			   
 			   (max-width :class 'editable-data-property-class
 					label "Max width"
-					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
-				formula (let (
-							   (fem-max (first (the local-max-dimension (:from ^female-element-solid-model))))
-							   (male-max (first (the local-max-dimension (:from ^male-element-solid-model))))
-							  )
-							  (if (and fem-max male-max)
-								  (* ^scale-factor (max fem-max male-max))
-								  (if fem-max
-									(* ^scale-factor fem-max)
-									(* ^scale-factor male-max)
-								  )
-								)
-							)
-					available? ^formula
-				)
+					formula (nth 0 ^dimensions)
+					;available? ^formula
+					)
                (max-height :class 'editable-data-property-class
 					label "Max height"
-					;;Have to check if the max dimensions are not nil to avoid error. Workaround for the open constraint type.
-					formula (let (
-								   (fem-max (second (the local-max-dimension (:from ^female-element-solid-model))))
-								   (male-max (second (the local-max-dimension (:from ^male-element-solid-model)) ))
-								  )
-								  (if (and fem-max male-max)
-									  (* ^scale-factor (max fem-max male-max))
-									  (if fem-max
-										(* ^scale-factor fem-max)
-										(* ^scale-factor male-max)
-									  )
-									)
-							)
-                )
+					formula (nth 1 ^dimensions)
+					)
                
 			   (load-type :class 'option-property-class
 					mode 			'radio
@@ -66,7 +56,7 @@
 			   (magnitude :class 'var-unit-data-property-class
 					current-load (case ^^load-type
 									('force 'N)
-									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm));; Adding the unit should probably only be done once
+									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
 								  )
 					value-in 	1
 					unit-in 	^current-load
@@ -88,14 +78,14 @@
                                  )
 					formula (progn 
 								;(change-value ^constraint-type (remove "-constraint-class" (write-to-string (nth (position ^constraint-type !labels-list) !options-list))))
-								(change-class ^male-element-solid-model (read-from-string (concatenate ^constraint-type "-male-element")))
+								(change-class ^male-joint-element (read-from-string (concatenate ^constraint-type "-male-element")))
 							)
 					)
 			   
-			   meshing-list (list (the display? (:from (the mating-surface-nodes (:from ^male-element-solid-model))))
-								  (the display? (:from (the mating-surface-nodes (:from ^female-element-solid-model))))
-								  (the display? (:from (the joint-center-node (:from ^male-element-solid-model))))
-								  (the display? (:from (the joint-center-node (:from ^female-element-solid-model))))
+			   meshing-list (list (the display? (:from (the mating-surface-nodes (:from ^male-joint-element))))
+								  (the display? (:from (the mating-surface-nodes (:from ^female-joint-element))))
+								  (the display? (:from (the joint-center-node (:from ^male-joint-element))))
+								  (the display? (:from (the joint-center-node (:from ^female-joint-element))))
 								  )
 			   
 			   (toggle-mesh :class 'flag-property-class
@@ -104,14 +94,24 @@
 								do
 									(if (equal disp t) (change-value disp nil) (change-value disp  t))
 								)
-					;progn (change-value (the display? (:from (the mating-surface-nodes (:from ^male-element-solid-model)))) t)
-					;				(change-value (the display? (:from (the mating-surface-nodes (:from ^female-element-solid-model)))) t)
-					;				(change-value (the display? (:from (the joint-center-node (:from ^male-element-solid-model)))) t)
-					;				(change-value (the display? (:from (the joint-center-node (:from ^female-element-solid-model)))) t)
+					;progn (change-value (the display? (:from (the mating-surface-nodes (:from ^male-joint-element)))) t)
+					;				(change-value (the display? (:from (the mating-surface-nodes (:from ^female-joint-element)))) t)
+					;				(change-value (the display? (:from (the joint-center-node (:from ^male-joint-element)))) t)
+					;				(change-value (the display? (:from (the joint-center-node (:from ^female-joint-element)))) t)
 					;				)
 					)
 			   ;;Not in use to <<<<
 			   
+			   quantity			(length ^gender-list)
+			   class-expression '(read-from-string (concatenate !constraint-type "-" (nth !index ^gender-list) "-element"))
+			  
+			   init-form '(
+						   master-joint-object	(the superior superior) ;;Reference to the master-joint-model
+						   gender 				(read-from-string (nth !index ^gender-list))
+						   incident-link 		(nth !index (remove nil ^incident-links))
+						   label				(concatenate (nth !index ^gender-list) "-joint-element")
+						   )
+			  
 			   (load-case :class 'load-model
 					load-type 		^^load-type
 					load-point 		^^origin
@@ -154,22 +154,6 @@
 					)	
 				)
 			   )
-  :subobjects (
-			   (male-element-solid-model :class (read-from-string (concatenate !constraint-type "-male-element"))
-				   master-joint-object	(the superior superior) ;; Reference to the master-joint-model
-				   gender 				'male
-				   incident-link 		(nth 0 ^^incident-links)
-				   )
-			   
-               (female-element-solid-model :class (read-from-string (concatenate !constraint-type "-female-element"))
-				   (point-ref :class 'point-data-model
-                              coordinates (convert-coords ^^superior '(0 0 0) :from :local :to :global)
-                              )
-                   master-joint-object	(the superior superior)
-                   gender 				'female
-				   incident-link 		(nth 1 ^^incident-links)
-                   )
-               )
   )
  
 (define-method get-constraint-type master-joint-model ()
@@ -179,13 +163,42 @@
 (define-method get-incident-links master-joint-model ()
 	!incident-links
 )
+
+;-----------------------------------------------------------------------------------------------
+; Calculates the dimensions by retrieving the biggest width and height from the incident members
+; Dimensions are scaled with the scale-factor
+;-----------------------------------------------------------------------------------------------
+(define-method calculate-dimensions master-joint-model ()
+	(let (
+		(max-w 0)
+		(max-h 0)
+		)
+	   (loop for joint-elem in !joint-elements do
+		   (loop for link in !incident-links do
+			 (loop for member in (get-members (get-link-geometry link)) do
+				(let (
+					  (dimensions (get-max-dimensions member joint-elem))
+					  )
+					  (progn
+						(if (> (nth 0 dimensions) max-w)
+							(setf max-w (nth 0 dimensions)))
+						(if (> (nth 1 dimensions) max-h)
+							(setf max-h (nth 1 dimensions)))
+					  )
+				)
+			 )
+		   )
+		   finally (return (list (* max-w !scale-factor) (* max-h !scale-factor)))
+		)
+	)
+)
  
 (define-method get-female-element master-joint-model ()
-	(the female-element-solid-model)
+	!female-joint-element
 )
  
 (define-method get-joint-direction-vector master-joint-model () 
-	(the male-element-solid-model direction) 
+	(the male-joint-element direction) 
 )
 
 (define-method get-main-frame-coords master-joint-model (&optional params)
@@ -214,9 +227,9 @@
 	(1- (* 2 !id))
 )
   
-(define-method get-constraint-incidence master-joint-model (link-index)
+(define-method get-constraint-incidence master-joint-model (link)
   (let (
-        (pos (position link-index !link-incidence) )
+        (pos (position link !incident-links) )
         )
     (when pos
       (nth pos (children (the) :class 'joint-element-model))
@@ -232,10 +245,10 @@
 			(draw self)
 		)
 		(:draw-male
-			(draw (the male-element-solid-model))
+			(draw (the male-joint-element))
 		)
 		(:draw-female
-			(draw (the female-element-solid-model))
+			(draw (the female-joint-element))
 		)
 		(:undraw
 			(undraw self)
@@ -262,6 +275,8 @@
 (define-class joint-element-model
   :inherit-from (frame-data-model)
   :properties (
+			   label nil
+			   
 			   ;;; union-list is the list used for a union with the incident link. 
 			   ;;; different-list is the list of objects that are to be subtracted from the final geometry.
 			   ;;; See link-geometry-class in links.aml for the use
@@ -287,23 +302,14 @@
 			   link-mesh-model-object (when (the link-mesh-model (:from ^incident-link))
 										(the link-mesh-model (:from ^incident-link)))
                
-               local-joint-index (position !superior (the constraints-incident-on-link-list (:from ^incident-link)) )
-               members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link)) ))
-                                                    when (position !superior (the connection-between-constraints (:from member)))
+               ;members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link)) ))
+				;   when (position !superior (the connection-between-constraints (:from member)))
+               ;                                     collect member
+               ;                                     )
+			   members-connected-to-joint-element (loop for member in (get-members (get-link-geometry ^incident-link))
+                                                    when (position !superior (get-joints-on-member member))
                                                     collect member
                                                     )
-               
-			   local-max-dimension (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link))))
-                                     for pos = (position !superior (the connection-between-constraints (:from member)))
-                                     when (and pos (the display? (:from member)))
-                                     maximize (if (= pos 0)
-                                                  (get-width (the cross-section_D (:from member)) )
-                                                (get-width (the cross-section_A (:from member)) ) ) into max-w
-                                     and  maximize (if (= pos 0)
-                                                       (get-height (the cross-section_D (:from member)))
-                                                     (get-height (the cross-section_A (:from member)))) into max-h
-                                     finally (return (list max-w max-h))
-                                     )
 
                (sub-point-ref :class 'sub-point-data-model
                    )
@@ -319,10 +325,10 @@
 										(first-sweep (nth 0 ^members-connected-to-joint-element))
 										(x-dir  (subtract-vectors
 												(the coordinates (:from (the point-ref (:from (nth 0 
-													(the connection-between-constraints (:from first-sweep))
+													(get-joints-on-member first-sweep)
 													)))))
 												(the coordinates (:from (the point-ref (:from (nth 1 
-													(the connection-between-constraints (:from first-sweep))
+													(get-joints-on-member first-sweep)
 													))))))
 											)
 										(x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
@@ -351,6 +357,10 @@
 
 (define-method get-incident-link joint-element-model ()
 	!incident-link
+)
+
+(define-method get-gender joint-element-model ()
+	!gender
 )
 	
 (define-method get-max-height joint-element-model ()

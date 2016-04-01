@@ -250,18 +250,18 @@
                   formula (when (the cross-section-type (:from ^shape-ref)) t)
                   )
               
-              connection-between-constraints nil ;;List of the two constraints on the member
-              frame_D (the sub-frame (:from (nth 0 ^connection-between-constraints) ))
-              frame_A (the sub-frame (:from (nth 1 ^connection-between-constraints) ))
+              joints-on-member nil ;;List of the two joint elements on the member
+              frame_D (the sub-frame (:from (nth 0 ^joints-on-member) ))
+              frame_A (the sub-frame (:from (nth 1 ^joints-on-member) ))
               point-ref_D (the point-ref (:from ^frame_D ))
               point-ref_A (the point-ref (:from ^frame_A ))
               
               ;;test for "link twist"
-				z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
+			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
 					(the z-vector-ref (:from ^frame_A))
 					(the z-vector-ref (:from ^frame_D))
 				)
-			 z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
+			  z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
               
               ;;cross section dimension, width 0.04 / height 0.04
               shape-ref nil
@@ -368,6 +368,7 @@
 (define-method get-x-vector-ref_D connection-model ()
 	(the direction (:from (the x-vector-ref (:from !spline-frame_start))))
 )
+
 (define-method get-cross-section_D member-solid-model ()
 	!cross-section_D
 )
@@ -377,8 +378,30 @@
 )
   
 (define-method get-joints-on-member member-solid-model ()
-	(when !connection-between-constraints
-		!connection-between-constraints)
+	(when !joints-on-member
+		!joints-on-member)
+)
+
+;---------------------------------------------------------------------
+; Returns the members width and height for a given joint-element-model
+;---------------------------------------------------------------------
+(define-method get-max-dimensions member-solid-model (joint-element)
+	(let (
+		  (pos (position joint-element (get-joints-on-member (the))))
+		  (width (if pos 
+					(if (= pos 0)
+						(get-width !cross-section_D)
+						(get-width !cross-section_A))
+					0)) ;;A joint not on the member might be sent as input
+						;;In that case, return 0
+		  (height (if pos
+					(if (= pos 0)
+						(get-height !cross-section_D)
+						(get-height !cross-section_A))
+					0))
+		  )
+		 (list width height)
+	)
 )
 
 ;-------------------------------------------------
@@ -434,7 +457,7 @@
                class-expression 'member-solid-model
                series-prefix 'member
                init-form '(
-                           connection-between-constraints (nth ^index ^^connection-between-2-constraints-combinations)
+                           joints-on-member (nth ^index ^^connection-between-2-constraints-combinations)
                            shape-ref (nth ^index ^^shapes-on-link)          
                            )
                )
