@@ -301,10 +301,10 @@
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: spheric-constraint-class
-; Holding spherical male and female elements on instantiation
+; Class: ball-constraint-class
+; Holding ball male and female elements on instantiation
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class spheric-constraint-class
+(define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
 			   orientation (list
@@ -317,14 +317,14 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END spheric-constraint-class definitions
+; END ball-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: spheric-male-element
-; Defines geometry for the spheric male element
+; Class: ball-male-element
+; Defines geometry for the ball male element
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class spheric-male-element
+(define-class ball-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
@@ -385,14 +385,14 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END spheric-male-element definitions
+; END ball-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: spheric-female-element
-; Defines geometry for the spherical female element
+; Class: ball-female-element
+; Defines geometry for the ball female element
 ;-------------------------------------------------------------------------------------------------------------   
-(define-class spheric-female-element
+(define-class ball-female-element
   :inherit-from (difference-object joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
@@ -445,7 +445,7 @@
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END spheric-female-element definitions
+; END ball-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
   
 ;-------------------------------------------------------------------------------------------------------------

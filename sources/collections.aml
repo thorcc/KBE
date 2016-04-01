@@ -210,8 +210,8 @@
                    mode 'menu
                    formula (nth 0 !options-list)
 				   
-				   ;Returns all classes that inherits from section-model, i.e. all cross-sections
-                   options-list (reverse (class-direct-defined-subclasses 'section-model))
+				   ;Returns all classes that inherits from cross-section-model, i.e. all cross-sections
+                   options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
                    labels-list (loop for option in !options-list
                                  collect (remove "-section" (write-to-string option))
                                  )
@@ -269,9 +269,16 @@
                series-prefix 'link
                init-form '(
                            link-index (nth ^index ^^link-list)
-                           label (loop for shape in ^shape-list
-									if (equal ^index (nth 1 shape))
-									 do (return (nth 0 shape))
+                           label (let(
+									  (shape-name (loop for shape in ^shape-list
+										if (equal ^index (nth 1 shape))
+											do (return (nth 0 shape)))
+									   )
+									 )
+									(if (equal shape-name nil) 
+										(concatenate "Link-" (write-to-string !index))
+										(concatenate (write-to-string !index) " " (write-to-string shape-name))
+									)
 							   )
 						   constraints-incident-on-link-list (loop for constraint in ^constraints-list
                                                                for con = (get-constraint-incidence constraint (the superior))
