@@ -1,19 +1,19 @@
-Index	Name			X-pos	Y-pos	Z-pos	Design-variables
-0	"Spindle"		0.0	0.0	0.0	nil	nil	nil
-1	"Upper kingpin joint"	0.25	0.0	1.0	nil	nil	nil
-2	"Lower kingpin joint"	0.25	0.0	-1.0	nil	nil	nil
-3	"Steering joint"	0.1	0.5	0.0	nil	nil	nil
-4	"Upper ball joint 1"	1.25	0.5	1.0	nil	nil	nil
-5	"Upper ball joint 2"	1.25	-0.5	1.0	nil	nil	nil
-6	"Lower ball joint 1"	1.25	0.5	-1.0	nil	nil	nil
-7	"Lower ball joint 2"	1.25	-0.5	-1.0	nil	nil	nil
-8	"Control point 1"	1.75	0.25	0.0	nil	nil	nil
-9	"Control point 2"	1.5	0.0	1.0	nil	nil	nil
-10	"Control point 3"	1.5	0.0	-1.0	nil	nil	nil
-11	"Control point 4"	0.0	0.0	0.8	nil	nil	nil
-12	"Control point 5"	0.0	0.0	-0.8	nil	nil	nil
-13	"Control point 6"	1.0	-0.5	1.0	nil	nil	nil
-14	"Control point 7"	1.0	0.5	1.0	nil	nil	nil
-15	"Control point 8"	1.0	-0.5	-1.0	nil	nil	nil
-16	"Control point 9"	1.0	0.5	-1.0	nil	nil	nil
-17	"Control point 10"	0.0	0.3	0.0	nil	nil	nil
+Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+0		"Spindle"					0.0		0.0		0.0			
+1		"Upper-ball-joint"			0.25	0.0		1.0			
+2		"Upper-ball-joint"			0.25	0.0		-1.0			
+3		"Steering-joint"			0.1		0.5		0.0			
+4		"Upper-rev-jont-l"			1.25	0.5		1.0			
+5		"upper-rev-jont-r"			1.25	-0.5	1.0			
+6		"Lower-rev-jont-l"			1.25	0.5		-1.0			
+7		"Lower-rev-jont-r"			1.25	-0.5	-1.0			
+8		"Control-point-1"			1.75	0.25	0.0			
+9		"Control-point-2"			1.5		0.0		1.0			
+10		"Control-point-3"			1.5		0.0		-1.0			
+11		"Control-point-4"			0.0		0.0		0.8			
+12		"Control-point-5"			0.0		0.0		-0.8			
+13		"Control-point-6"			1.0		-0.5	1.0			
+14		"Control-point-7"			1.0		0.5		1.0			
+15		"Control-point-8"			1.0		-0.5	-1.0			
+16		"Control-point-9"			1.0		0.5		-1.0			
+17		"Control-point-10"			0.0		0.3		0.0			

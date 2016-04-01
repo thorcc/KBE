@@ -323,7 +323,7 @@
                   formula (if (the cross-section-type (:from ^shape-ref))
                               (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) !labels-list)  !options-list)
                             (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) !labels-list)  !options-list) )
-                  options-list (reverse (class-direct-defined-subclasses 'section-model))
+                  options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
                   labels-list (loop for option in !options-list
                                 collect (remove "-section" (write-to-string option))
                                 )

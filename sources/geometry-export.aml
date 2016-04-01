@@ -233,7 +233,7 @@
 				(format stream "Z_TRANS_STATUS = FREE;~%}~3%")
 			)
 		)
-		(if (equal "spheric" (get-constraint-type constraint))
+		(if (equal "ball" (get-constraint-type constraint))
 			(let (
 				  (unit-vector	(get-unit-vector constraint))
 				  (rot-angle (get-rot-angle constraint))
