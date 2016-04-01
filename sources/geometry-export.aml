@@ -112,7 +112,6 @@
 											triads-written ;; This is the triad2-iD
 										)
 									  ))
-						   ;(coords (get-main-frame-coords (get-female-element (the from-constraint (:from spring)))))
 						  )
 						 (write-spring-properties-to-fmm stream baseID (1+ (the index (:from spring))) 
 							triad1-ID triad2-ID)

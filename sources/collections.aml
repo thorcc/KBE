@@ -97,16 +97,21 @@
 		(:draw-joints
 			(loop for constraint in (get-constraints (the))
 				do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? nil)		
+				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+						(object-name constraint))) :show-system-error? nil)
 					(let (
 							(male (the male-joint-element (:from constraint)))
 							(female (the female-joint-element (:from constraint)))
 						)
 						(progn
-							(change-value (the display? (:from (the joint-center-node (:from male)))) nil)
-							(change-value (the display? (:from (the joint-center-node (:from female)))) nil)
-							(change-value (the display? (:from (the mating-surface-nodes (:from male)))) nil)
-							(change-value (the display? (:from (the mating-surface-nodes (:from female)))) nil)
+							(if male (progn 
+								(change-value (the display? (:from (the joint-center-node (:from male)))) nil)
+								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) nil)
+								))
+							(if female (progn
+								(change-value (the display? (:from (the joint-center-node (:from female)))) nil)
+								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) nil)
+								))
 						)
 					)
 				(draw constraint))
@@ -115,16 +120,21 @@
 		(:draw-joints-mesh
 			(loop for constraint in (get-constraints (the))
 				do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? t)		
+				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+						(object-name constraint))) :show-system-error? t)
 					(let (
 							(male (the male-joint-element (:from constraint)))
 							(female (the female-joint-element (:from constraint)))
 						)
 						(progn
-							(change-value (the display? (:from (the joint-center-node (:from male)))) t)
-							(change-value (the display? (:from (the joint-center-node (:from female)))) t)
-							(change-value (the display? (:from (the mating-surface-nodes (:from male)))) t)
-							(change-value (the display? (:from (the mating-surface-nodes (:from female)))) t)
+							(if male (progn 
+								(change-value (the display? (:from (the joint-center-node (:from male)))) t)
+								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) t)
+								))
+							(if female (progn
+								(change-value (the display? (:from (the joint-center-node (:from female)))) t)
+								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) t)
+								))
 						)
 					)
 				(draw constraint))

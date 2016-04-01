@@ -1,2 +1,4 @@
 *.aml~
 Mechanism-system*/
+*.fmm
+*.log
