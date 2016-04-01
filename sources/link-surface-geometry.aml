@@ -94,7 +94,7 @@
   )
 
 ;-----------------------------------------------------------
-; Binomial: C(n,3) = 3! / ( 3! (n - 3)! 
+; C(n,3) = 3! / ( 3! (n - 3)! 
 ; Output: List unique combinations of three, given n numbers
 ;-----------------------------------------------------------
 (defun 3-edge-loop-combinations (n)
