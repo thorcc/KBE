@@ -8,7 +8,7 @@ Name				Link		Member		Cross-section		Dimensions			Points-list		Weights-list
 "Knuckle upper"			0		0		"rectangular"		"(0.6 0.1 0.2 0.1)"		"(8)"
 "Knuckle lower"			0		1		"rectangular"		"(0.6 0.1 0.2 0.1)"		"(9)"
 "Steering-link"			0		2		"rectangular"		"(0.1 0.1)"			"(10)"
-"Knuckle invis"			0		3		"nil"			"(0.1 0.1)"			"()"
-"Knuckle invis"			0		4		"nil"			"(0.1 0.1)"			"()"
-"Knuckle invis"			0		5		"nil"			"(0.1 0.1)"			"()"
+"Knuckle invis"			0		3		"nil"			
+"Knuckle invis"			0		4		"nil"			
+"Knuckle invis"			0		5		"nil"			
 

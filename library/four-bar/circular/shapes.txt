@@ -3,4 +3,4 @@ Name				Link	Member	Cross-section	Dimensions		Points-list		Weights-list
 "Coupler lower"		1		0		"circular"		"(0.02 0.02)"	"()"			"()"
 "Coupler upper"		1		2		"circular"		"(0.02 0.02)"	"()"			"()"
 "Rocker"			2		0		"circular"		"(0.02 0.02)"	"()"			"()"
-"Coupler invis"		1		1		"nil"			"(0.02 0.02)"	"()"			"()"
+"Coupler invis"		1		1		"nil"			"()"	"()"			"()"
