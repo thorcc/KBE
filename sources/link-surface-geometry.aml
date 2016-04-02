@@ -12,14 +12,14 @@
 									
                
 			   
-			   (display? :class 'flag-property-class
-                   formula  (loop for i in ^edge-combination
-                              when (or (not (the display? (:from (nth i ^members)))) 
-								  (not (the geom (:from (get-connection (nth i ^members))))))
-                              do (return nil)
-                              finally (> ^thickness 0)
-                              )
-                   )
+			  ;(display? :class 'flag-property-class
+              ;    formula  (loop for i in ^edge-combination
+              ;               when (or (not (the display? (:from (nth i ^members)))) 
+				;				  (not (the geom (:from (get-connection (nth i ^members))))))
+              ;               do (return nil)
+              ;               finally t;(> ^thickness 0)
+              ;               )
+              ;    )
                edge-combination nil
 			   
 			   ;;The source-object has to be nil when it can't be displayed. Else there will be a null geom
@@ -32,8 +32,9 @@
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)
                render 'shaded
-               color 'red
-
+			   (start-point :class 'point-object
+					coordinates (nth 0 (get-start-weight (get-connection (nth (nth 0 ^edge-combination) ^members))))
+				   )
                property-objects-list (list 
                                       (list (the superior display? self)
                                             '(automatic-apply? t)
@@ -41,15 +42,14 @@
                                       )
                )
   :subobjects (
-               (surface :class 'surface-from-three-edge-curves-class
-			       ;;; the connection is a nurb-curve-object
-                   edge-1-object (get-connection (nth (nth 0 ^edge-combination) ^members))
-                   edge-2-object (get-connection (nth (nth 1 ^edge-combination) ^members))
-                   edge-3-object (get-connection (nth (nth 2 ^edge-combination) ^members))
+               (surface :class 'surface-from-uv-curves-class				
+					u-curves-objects-list (list ^start-point 
+							(get-connection (nth (nth 2 ^edge-combination) ^members)))					
+					v-curves-objects-list (list (get-connection (nth (nth 0 ^edge-combination) ^members)) 
+							(get-connection (nth (nth 1 ^edge-combination) ^members))) 
                    )
-               )
+			   )
   )
-
 ;-------------------------------------------------------------------------------------------------------------
 ; END surface-model definitions
 ;------------------------------------------------------------------------------------------------------------- 

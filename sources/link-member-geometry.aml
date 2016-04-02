@@ -85,7 +85,7 @@
                         )
                rational? t
                homogeneous? t
-               degree 2
+               ;degree 2
                
                line-config (line-pose (the superior))
                inter_points (inter_section (the superior) ^line-config )
@@ -144,7 +144,9 @@
                )
   )
  
-
+(define-method get-start-weight connection-model ()
+	!start-weight
+)
 ;-----------------------------------------------------------------
 ; Finds the middle point between p1 and p2, given the direction d1
 ;-----------------------------------------------------------------
