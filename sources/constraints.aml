@@ -5,7 +5,6 @@
 (define-class master-joint-model
   :inherit-from (series-object frame-data-model)
   :properties (
-               id 					(default nil)
 			   link-incidence 		(default nil)
 			   max-element-size 	(default 0.04)
 			   min-element-size 	(default 0.01)

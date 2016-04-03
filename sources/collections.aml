@@ -70,7 +70,6 @@
 													  )
 													  (remove nil (list link1 link2))
 												)
-						   id 					(+ ^index 1)
                            )
 						   
                property-objects-list (list
