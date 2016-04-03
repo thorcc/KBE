@@ -1,8 +1,8 @@
 ;-------------------------------------------------------------------------------------------------------------
-; Class: section-model
+; Class: cross-section-model
 ; Superclass used for querying class-names
 ;-------------------------------------------------------------------------------------------------------------
-(define-class section-model
+(define-class cross-section-model
   :inherit-from(tagging-object position-object)
   :properties (
                ;;; must be set on init from parent object
@@ -13,22 +13,22 @@
                )
   )
   
-;(define-method get-width section-model ()
-;  !width
-;  )
-;
-;(define-method get-height section-model ()
-;  !height
-;  )
+(define-method get-width cross-section-model ()
+  !width
+)
+
+(define-method get-height cross-section-model ()
+  !height
+)
 ;-------------------------------------------------------------------------------------------------------------
-; END section-model
+; END cross-section-model
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: circular-section
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class circular-section
-  :inherit-from (imprint-class section-model)
+  :inherit-from (imprint-class cross-section-model)
   :properties (
                target-object ^disc
                tool-object-list (list ^p1)
@@ -56,7 +56,7 @@
 ; Class: circular-tube-section
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class circular-tube-section
-  :inherit-from (imprint-class section-model)
+  :inherit-from (imprint-class cross-section-model)
   :properties (
                target-object ^diff-object
                tool-object-list (list ^p1 ^p2)
@@ -96,12 +96,12 @@
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: rectangle-section
+; Class: rectangular-section
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class rectangle-section
-  :inherit-from (imprint-class section-model )
+(define-class rectangular-section
+  :inherit-from (imprint-class cross-section-model )
   :properties (
-;;;                inherit from section-model
+;;;                inherit from cross-section-model
                width (default 0.04)
                height (default 0.01)
                
@@ -116,23 +116,23 @@
                    )
                )
   )
-(define-method get-width rectangle-section ()
+(define-method get-width rectangular-section ()
   !width
   )
-(define-method get-height rectangle-section ()
+(define-method get-height rectangular-section ()
   !height
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END rectangle-section
+; END rectangular-section
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: rectangle-tube-section
+; Class: rectangular-tube-section
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class rectangle-tube-section
-  :inherit-from (section-model difference-object)
+(define-class rectangular-tube-section
+  :inherit-from (cross-section-model difference-object)
   :properties (
-;;;                inherit from section-model
+;;;                inherit from cross-section-model
                width (default 0.04)
                height (default 0.01)
                
@@ -151,24 +151,24 @@
                    )
                )
   )
-(define-method get-width rectangle-tube-section ()
+(define-method get-width rectangular-tube-section ()
   !width
   )
   
-(define-method get-height rectangle-tube-section ()
+(define-method get-height rectangular-tube-section ()
   !height
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END rectangle-tube-section
+; END rectangular-tube-section
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: line-section definitions
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class line-section
-  :inherit-from (line-object section-model)
+  :inherit-from (line-object cross-section-model)
   :properties (
-;;;                inherit from section-model
+;;;                inherit from cross-section-model
                height (default 0.04)
                point1 (list 0 (- (/ ^height 2)) 0)
                point2 (list 0 (/ ^height 2) 0)
@@ -190,9 +190,9 @@
 ; Class: I-beam-section
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class I-beam-section
-  :inherit-from (union-object section-model)
+  :inherit-from (union-object cross-section-model)
   :properties (
-;;;                inherit from section-model
+;;;                inherit from cross-section-model
                width (default 0.04)
                height (default 0.04)
                
@@ -237,9 +237,9 @@
 ; Class: H-beam-section
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class H-beam-section
-  :inherit-from (union-object section-model)
+  :inherit-from (union-object cross-section-model)
   :properties (
-;;;                inherit from section-model
+;;;                inherit from cross-section-model
                width (default 0.04)
                height (default 0.04)
                
@@ -281,10 +281,10 @@
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: hexagon-section
+; Class: hexagonal-section
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class hexagon-section
-  :inherit-from (imprint-class section-model)
+(define-class hexagonal-section
+  :inherit-from (imprint-class cross-section-model)
   :properties (
                target-object ^poly
                tool-object-list (list ^p1)
@@ -307,12 +307,12 @@
                )
   )
 
-(define-method get-width hexagon-section ()
+(define-method get-width hexagonal-section ()
   (* 2 !R)
   )
-(define-method get-height hexagon-section ()
+(define-method get-height hexagonal-section ()
   (* !R (sqrt 3))
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END hexagon-section definitions
+; END hexagonal-section definitions
 ;-------------------------------------------------------------------------------------------------------------

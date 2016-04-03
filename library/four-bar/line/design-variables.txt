@@ -1,3 +1,0 @@
-"crank-height"		"(0 1 0)"
-"rocker-height"		"(0 1 0)"
-"crank-rocker-distance"	"(1 0 0)"
