@@ -97,16 +97,21 @@
 		(:draw-joints
 			(loop for constraint in (get-constraints (the))
 				do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? nil)		
+				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+						(object-name constraint))) :show-system-error? nil)
 					(let (
 							(male (the male-joint-element (:from constraint)))
 							(female (the female-joint-element (:from constraint)))
 						)
 						(progn
-							(change-value (the display? (:from (the joint-center-node (:from male)))) nil)
-							(change-value (the display? (:from (the joint-center-node (:from female)))) nil)
-							(change-value (the display? (:from (the mating-surface-nodes (:from male)))) nil)
-							(change-value (the display? (:from (the mating-surface-nodes (:from female)))) nil)
+							(if male (progn 
+								(change-value (the display? (:from (the joint-center-node (:from male)))) nil)
+								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) nil)
+								))
+							(if female (progn
+								(change-value (the display? (:from (the joint-center-node (:from female)))) nil)
+								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) nil)
+								))
 						)
 					)
 				(draw constraint))
@@ -115,16 +120,21 @@
 		(:draw-joints-mesh
 			(loop for constraint in (get-constraints (the))
 				do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string (object-name constraint))) :show-system-error? t)		
+				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+						(object-name constraint))) :show-system-error? t)
 					(let (
 							(male (the male-joint-element (:from constraint)))
 							(female (the female-joint-element (:from constraint)))
 						)
 						(progn
-							(change-value (the display? (:from (the joint-center-node (:from male)))) t)
-							(change-value (the display? (:from (the joint-center-node (:from female)))) t)
-							(change-value (the display? (:from (the mating-surface-nodes (:from male)))) t)
-							(change-value (the display? (:from (the mating-surface-nodes (:from female)))) t)
+							(if male (progn 
+								(change-value (the display? (:from (the joint-center-node (:from male)))) t)
+								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) t)
+								))
+							(if female (progn
+								(change-value (the display? (:from (the joint-center-node (:from female)))) t)
+								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) t)
+								))
 						)
 					)
 				(draw constraint))
@@ -643,7 +653,7 @@
                link-ref-list (children ^links :class 'link-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list
-										if (and (is-link-drawable? link) (are-all-members-displayed? link))
+										if (are-all-members-displayed? link)
 											collect link)
 											
 			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
@@ -776,6 +786,21 @@
 		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
 	   )
 	)
+)
+
+(define-method get-all-joint-elements main-mechanism-class ()
+	(remove nil
+		(loop for constraint in (get-constraints !constraints) 
+			append (list (get-male-element constraint) (get-female-element constraint))
+		)
+	)
+)
+
+;-----------------------------------------------------------------------------
+; Assigns a unique ID (starting from 1) to each joint element in the mechanism
+;-----------------------------------------------------------------------------
+(define-method get-joint-ID main-mechanism-class (joint-element)
+	(1+ (position joint-element (get-all-joint-elements (the))))
 )
 
 (define-method get-constraint main-mechanism-class (constraint-number)

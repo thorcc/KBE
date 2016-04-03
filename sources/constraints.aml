@@ -38,12 +38,11 @@
 			   dimensions (calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
-					label "Max width"
+					label "Joint width"
 					formula (nth 0 ^dimensions)
-					;available? ^formula
 					)
                (max-height :class 'editable-data-property-class
-					label "Max height"
+					label "Joint height"
 					formula (nth 1 ^dimensions)
 					)
                
@@ -117,7 +116,7 @@
 					load-point 		^^origin
 					magnitude 		^^magnitude
 					load-direction 	^^load-direction
-					loadID			(1+ (get-male-triad-id-from-master-joint-model (the superior superior)))
+					;loadID			(get-joint-element-id (nth 0 ^^joint-elements))
 					mechanism-size	(calculate-mechanism-size (the superior superior superior superior)) ;;Bad code. The reference is to the main-mechanism-class
 					translation		^^max-height
 					)
@@ -128,10 +127,6 @@
 				(list
 					;(the superior toggle-mesh self)
 					'("Draw joint" (button1-parameters :draw-joint)
-                                        ui-work-area-action-button-class)
-					'("Draw male element" (button1-parameters :draw-male)
-                                        ui-work-area-action-button-class)
-					'("Draw female element" (button1-parameters :draw-female)
                                         ui-work-area-action-button-class)
 					""
 					'("Undraw" (button1-parameters :undraw)
@@ -197,8 +192,12 @@
 	!female-joint-element
 )
  
+(define-method get-male-element master-joint-model ()
+	!male-joint-element
+)
+ 
 (define-method get-joint-direction-vector master-joint-model () 
-	(the male-joint-element direction) 
+	!direction
 )
 
 (define-method get-main-frame-coords master-joint-model (&optional params)
@@ -220,12 +219,6 @@
 (define-method get-link-incidence master-joint-model ()
 	!link-incidence
 )
-;------------------------------------------------------------------------------------
-; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
-;------------------------------------------------------------------------------------
-(define-method get-male-triad-id-from-master-joint-model master-joint-model ()
-	(1- (* 2 !id))
-)
   
 (define-method get-constraint-incidence master-joint-model (link)
   (let (
@@ -243,12 +236,6 @@
 	(case params
 		(:draw-joint
 			(draw self)
-		)
-		(:draw-male
-			(draw (the male-joint-element))
-		)
-		(:draw-female
-			(draw (the female-joint-element))
 		)
 		(:undraw
 			(undraw self)
@@ -314,8 +301,16 @@
                (sub-point-ref :class 'sub-point-data-model
                    )
 			   
-			   ;;Property used for writing to FEDEM
+			   ;;Property used for writing to FEDEM. Could probably be deleted after incident link fix.
 			   is-incident-link-drawable? 	(is-link-drawable? ^incident-link)
+			   
+			   
+			    property-objects-list (list 
+										'("Draw" (button1-parameters :draw)
+                                        ui-work-area-action-button-class)
+										'("Undraw" (button1-parameters :undraw)
+                                        ui-work-area-action-button-class)
+										)
                )
   :subobjects (
                 (main-frame :class 'frame-data-model
@@ -389,17 +384,21 @@
 		(the main-frame origin)
 	)
 )
-;-----------------------------------------------------------------------------
-; Used in (write-fmm-model-file) to generate unique IDs for each joint element
-;-----------------------------------------------------------------------------
-(define-method get-joint-element-id joint-element-model ()
-	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint
-)
 
 (define-method get-constraint-incidence joint-element-model (link-index)
  (when (member link-index ^link-incidence) (the self))
  )
 
+(define-method work-area-button1-action joint-element-model (params)
+	(case params
+		(:draw
+			(draw self)
+		)
+		(:undraw
+			(undraw self)
+		)
+	)
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END joint-element-model definitions
 ;-------------------------------------------------------------------------------------------------------------

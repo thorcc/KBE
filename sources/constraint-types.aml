@@ -50,9 +50,9 @@
 ; END open-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
-;-------------------------------------------------------------------------------------------------------------
+;------------------------------------------------------------------
 ; Method finding the translational value for an open female element
-;------------------------------------------------------------------------------------------------------------- 
+;------------------------------------------------------------------
 (define-method get-translational-z-value open-female-element ()
 	(let (
 		  (displayed-member
@@ -290,7 +290,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-pin-hole)
-				   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+				   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -378,7 +378,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )       
@@ -438,7 +438,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -510,7 +510,7 @@
 	:subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
-						   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+						   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						   color 'green
 						   display? nil
 						)
@@ -639,7 +639,7 @@
   :subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
-						mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+						mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						color 'green
 						display? nil
 					)
