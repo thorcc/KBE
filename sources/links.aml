@@ -124,8 +124,9 @@
 										"Link sewn with incident joint element"
 										(list (the superior cross-section-type self) 
 										'(automatic-apply? t))
-										'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
+										'("Set all cross-sections" (button1-parameters :set-c)
 										ui-work-area-action-button-class)
+										""
 										
 										'("Draw" (button1-parameters :draw-sewn-geometry)
 										ui-work-area-action-button-class)
@@ -133,6 +134,10 @@
 										ui-work-area-action-button-class)
 										'("Undraw" (button1-parameters :undraw-sewn)
 										ui-work-area-action-button-class)
+										""
+										
+										;'("Add/remove surface" (button1-parameters :set-surface)
+										;ui-work-area-action-button-class)
 										)
 			   )
   :subobjects (
@@ -143,6 +148,10 @@
                    )
                )
   )
+  
+(define-method get-surface link-geometry-class (index)
+	(nth index !surfaces-ref-list)
+)
   
 (define-method has-line-cross-section link-geometry-class ()
 	(loop for shape in !shapes-on-link do
@@ -177,8 +186,7 @@
 	(:set-c
 		(loop for m in (the members-ref-list (:from self)) do
 				(change-value (the cross-section-type self (:from m)) !cross-section-type)
-			)
-		
+			)	
 	)
 	;;; Sewn geometry refers to the union of a member and a joint
     (:draw-sewn-geometry
@@ -194,8 +202,24 @@
 			(draw (the superior link-mesh-model))
 		)
 	 )
+	(:set-surface
+		;(change-value (the display? (:from (nth 0 (the surfaces-ref-list)))) (if (the display? (:from (nth 0 (the surfaces-ref-list)))) nil t))
+		
+		;(change-value (the display? (:from (get-surface (the) 0))) (if (the display? (:from (get-surface (the) 0))) nil t))
+		
+		(let (
+			  (display-value? (the display? (:from (nth 0 (the surfaces-ref-list)))))
+			)
+			(if display-value? 
+				(change-value (the display? (:from (get-surface (the) 0))) nil)
+				(change-value (the display? (:from (get-surface (the) 0))) t)
+			)
+			;(change-value (the display? (:from (nth 0 (the surfaces-ref-list)))) display-value)
+			;(setf display-value (the display? (:from (nth 0 (the surfaces-ref-list)))))
+		)
+	 )
     )
-  )  
+  )
 ;-------------------------------------------------------------------------------------------------------------
 ; END link-geometry-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
