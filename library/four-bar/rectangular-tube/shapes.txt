@@ -1,0 +1,6 @@
+Name				Link	Member	Cross-section			Dimensions		Points-list		Weights-list
+"Crank"				0		0		"rectangular-tube"		"(0.04 0.04)"	"()"			"()"
+"Coupler lower"		1		0		"rectangular-tube"		"(0.04 0.04)"	"()"			"()"
+"Coupler upper"		1		2		"rectangular-tube"		"(0.04 0.04)"	"()"			"()"
+"Rocker"			2		0		"rectangular-tube"		"(0.04 0.04)"	"()"			"()"
+"Coupler invis"		1		1		"nil"					"()"			"()"			"()"
