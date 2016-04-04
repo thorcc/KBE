@@ -965,4 +965,4 @@
 ; Sets faceting value, which is how fine the geometry is rendered
 ; ps: effects only the visual representation - not mesh
 ;----------------------------------------------------------------
-(set-faceting 0.04)
+;(set-faceting 0.04)
