@@ -277,6 +277,10 @@
 (define-method get-mesh-model-object link-model-class ()
  	!link-mesh-model
 )
+
+(define-method get-export-surface link-model-class ()
+	(the export-surface? (:from !analysis))
+)
  
 ;-----------------------------------------------------------------
 ; Returns all possible connections with all incident joints
