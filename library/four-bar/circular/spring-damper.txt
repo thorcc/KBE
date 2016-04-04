@@ -1,0 +1,3 @@
+Type		Point-from	Point-to	Ground-point
+"Spring"	4		5		5
+"Damper"	1		2		nil
