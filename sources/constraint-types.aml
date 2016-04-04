@@ -1,38 +1,38 @@
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-constraint-class
-; An open constraint is a joint with no geometry
-; Used for leaving the end of a link open
+; Class: free-constraint-class
+; An free constraint is a joint with no geometry
+; Used for leaving the end of a link free
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class open-constraint-class
+(define-class free-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END open-constraint-class definitions
+; END free-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-male-element
-; Male element of an open constraint type. As this element is open, it has no geometry
+; Class: free-male-element
+; Male element of an free constraint type. As this element is free, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class open-male-element
+(define-class free-male-element
   :inherit-from (joint-element-model)
   :properties (
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
-; END open-male-element definitions
+; END free-male-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: open-female-element
-; Female element of an open constraint type. As this element is open, it has no geometry
+; Class: free-female-element
+; Female element of an free constraint type. As this element is free, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class open-female-element
+(define-class free-female-element
   :inherit-from (joint-element-model)
   :properties (
-			   ;; An open female joint could initially be placed at the wrong place, 
+			   ;; An free female joint could initially be placed at the wrong place, 
 			   ;; depending on the topology of the mechanism. Its sub-frame should
 			   ;; then be placed accordingly. The local z coordinate is translated,
 			   ;; as that's the direction from the main-frame to the sub-frame.
@@ -46,9 +46,9 @@
   )
 
 ;-------------------------------------------------------------------------
-; Method finding the translational value for an open/fixed female element
-; Finds the member where the open joint is, then gets the other joint
-; on that member and moves the open joint's sub-frame to match the other's
+; Method finding the translational value for an free/fixed female element
+; Finds the member where the free joint is, then gets the other joint
+; on that member and moves the free joint's sub-frame to match the other's
 ;-------------------------------------------------------------------------
 (define-method get-translational-z-value joint-element-model ()
 	(let (
@@ -64,7 +64,7 @@
 	)
 )
 ;-------------------------------------------------------------------------------------------------------------
-; END open-female-element definitions
+; END free-female-element definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
@@ -96,7 +96,7 @@
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: fixed-female-element
-; Female element of an open constraint type
+; Female element of an free constraint type
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class fixed-female-element
   :inherit-from (joint-element-model)

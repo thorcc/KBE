@@ -170,6 +170,10 @@
                            )
                )
   )
+
+(define-method get-points point-collection ()
+	(children (the) :class 'point-data-model)
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END point-collection definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -362,21 +366,20 @@
 (define-class spring-damper-collection
 	:inherit-from (series-object collection-class)
 	:properties (
-				 constraints-list	nil
+				 points-list		nil
 				 collection-type 	'spring-damper
-				 ;series-prefix 		'spring-damper
-				 sd-list 			(read-from-file !superior) ;;Called on the collection-class
+				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
-				 class-expression	'(read-from-string (concatenate (nth 0 (nth !index !sd-list)) "-model-class")) ;;Either a spring-model-class or a damper-model-class
+				 class-expression	'(read-from-string (format nil "~a-model-class"
+										(nth 0 (nth !index !sd-list)))) 
 				 init-form '(
-							 label 				(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-constraint	(nth (nth 0 (nth 1 (nth ^index ^sd-list))) ^constraints-list)
-							 to-constraint		(if (= -1 (nth 1 (nth 1 (nth ^index ^sd-list))))
-													nil
-													(nth (nth 1 (nth 1 (nth ^index ^sd-list))) 
-														^constraints-list))
-							 ground-coords		(nth 2 (nth ^index ^sd-list)) ;;These exists if not connected
-																			  ;;to a constraint
+							 label 			(format nil "~a" (nth 0 (nth ^index ^sd-list)))
+							 from-point		(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
+							 to-point		(nth (nth 2 (nth ^index ^sd-list)) ^points-list)
+							 ground-point	(if (nth 3 (nth ^index ^sd-list))
+												(nth (nth 3 (nth ^index ^sd-list)) ^points-list)
+												nil
+											)
 							 )
 				 )
 )
@@ -391,6 +394,91 @@
 ;-------------------------------------------------------------------------------------------------------------
 ; END spring-damper-collection definitions
 ;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: load-collection
+; Class to add loads as subobjects (load-model)
+;-------------------------------------------------------------------------------------------------------------
+(define-class load-collection
+	:inherit-from (object)
+	:properties (
+				 mech-size nil
+				 (type :class 'option-property-class
+					mode 			'radio
+					options-list	(list 'force 'torque)
+					formula 		'torque
+					label 			"Load type"
+					)
+				 (point :class 'editable-data-property-class
+					formula (default '(0 0 0))
+					label "Load point"
+					)
+				 (magn :class 'var-unit-data-property-class
+					current-load (case ^^type
+									('force 'N)
+									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
+								  )
+					value-in 	1
+					unit-in 	^current-load
+					unit 		^current-load
+					label 		"Magntitude"
+					)
+			     (direction :class 'editable-data-property-class
+					formula 	(default '(1 0 0))
+					label 		"Load direction vector"
+					)
+				 (load-name :class 'editable-data-property-class
+					formula (concatenate "Load-" (write-to-string (1+ (length (children (the superior))))))
+					label 	"Load name"
+					)
+				 
+				 (load-case :class 'load-model
+					load-type ^^type
+					load-point ^^point
+					magnitude ^^magn
+					load-direction ^^direction
+					)
+				 				 
+				 init-form '(
+							load-type 		^type
+							load-point 		^point
+							magnitude 		^magn
+							load-direction 	^direction
+							mechanism-size	^mech-size
+							)
+				
+				 property-objects-list (list
+										(list (the superior type self)
+											'(automatic-apply? t))
+										(list (the superior point self)
+											'(automatic-apply? t))
+										(list (the superior magn self)
+											'(automatic-apply? t))
+										(list (the superior direction self)
+											'(automatic-apply? t))
+										(list (the superior load-name self)
+											'(automatic-apply? t))
+										'("Apply load" (button1-parameters :apply-load)
+											ui-work-area-action-button-class)
+					)
+				 )
+)
+
+(define-method work-area-button1-action load-collection (params)
+	(case params
+		(:apply-load
+			(if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
+					!type !magn !direction) :width 200 :done-label "Yes" :cancel-label "No"))
+				(progn
+					(add-subobject-to-data-model-node (the) (read-from-string !load-name) 'load-model 
+						:init-form !init-form
+					)
+					(draw self :draw-subobjects? t)
+				)
+			)
+		)
+	)
+)
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: folder-collection
@@ -536,7 +624,7 @@
 		(loop for line = (read-line stream  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (nth 0 ls) (read-from-string (nth 1 ls)) (read-from-string (nth 2 ls)))
+			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls)  (nth 2 ls) (nth 3 ls))
 			collect data
 			)
 		)
@@ -665,8 +753,8 @@
 										if (are-all-members-displayed? link)
 											collect link)
 											
-			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
-											  if (not (string-equal "open" (get-constraint-type constraint)))
+			   non-free-constraints-list (loop for constraint in (get-constraints ^constraints) do
+											  if (not (string-equal "free" (get-constraint-type constraint)))
 												  collect constraint)
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
@@ -758,7 +846,10 @@
                (design-variables :class 'design-variables-collection
 					)
                (spring-dampers :class 'spring-damper-collection
-					constraints-list (get-constraints ^^constraints)
+					points-list (get-points ^^points)
+					)
+			   (loads :class 'load-collection
+					mech-size (calculate-mechanism-size ^superior)
 					)
 			   (mesh-database :class 'meshdb-class
                    )
