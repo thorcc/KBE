@@ -36,9 +36,9 @@
 			   mesh-object ^link-mesh
                geometry-model-object (default nil)
 
-			   non-open-constraints-list  (get-non-open-constraints-incident-on-link-list ^link-model)
+			   non-free-constraints-list  (get-non-free-constraints-incident-on-link-list ^link-model)
 			   
-			   joint-center-node-list	(loop for c in ^non-open-constraints-list
+			   joint-center-node-list	(loop for c in ^non-free-constraints-list
 											collect (the joint-center-node (:from c))
 											)				
                
@@ -119,8 +119,8 @@
   )
   
 (define-method get-rbe2-constraints-list link-mesh-class ()
-	(when !non-open-constraints-list
-		!non-open-constraints-list)
+	(when !non-free-constraints-list
+		!non-free-constraints-list)
 	)
 
 (define-method get-link-mesh-db link-mesh-class ()
