@@ -1,0 +1,5 @@
+Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+0		"cord0"						0.7071	-0.7071	0.0
+1		"cord1"						0.866	0.5		0.0
+2		"cord2"						0.75	-0.433	0.5
+3		"cord3"						0.813797	0.296198	0.5
