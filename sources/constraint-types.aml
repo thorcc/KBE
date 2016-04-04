@@ -8,8 +8,6 @@
   :properties (
                )
   )
-
-  
 ;-------------------------------------------------------------------------------------------------------------
 ; END open-constraint-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
@@ -46,14 +44,13 @@
                    )
                )
   )
-;-------------------------------------------------------------------------------------------------------------
-; END open-female-element definitions
-;------------------------------------------------------------------------------------------------------------- 
 
-;------------------------------------------------------------------
-; Method finding the translational value for an open female element
-;------------------------------------------------------------------
-(define-method get-translational-z-value open-female-element ()
+;-------------------------------------------------------------------------
+; Method finding the translational value for an open/fixed female element
+; Finds the member where the open joint is, then gets the other joint
+; on that member and moves the open joint's sub-frame to match the other's
+;-------------------------------------------------------------------------
+(define-method get-translational-z-value joint-element-model ()
 	(let (
 		  (displayed-member
 			(loop for member in !members-connected-to-joint-element
@@ -66,6 +63,55 @@
 		  )
 	)
 )
+;-------------------------------------------------------------------------------------------------------------
+; END open-female-element definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: fixed-constraint-class
+; A fixed constraint is a joint with no geometry. Fixed constraints has no geometry and indicates that the end
+; of the incident link is held fixed
+;------------------------------------------------------------------------------------------------------------- 
+(define-class fixed-constraint-class
+	:inherit-from (object)
+	:properties (
+				 )
+)
+;-------------------------------------------------------------------------------------------------------------
+; END fixed-constraint-class definitions
+;------------------------------------------------------------------------------------------------------------- 
+ 
+;-------------------------------------------------------------------------------------------------------------
+; Class: fixed-male-element
+; Male element of an fixed constraint type
+;------------------------------------------------------------------------------------------------------------- 
+(define-class fixed-male-element
+  :inherit-from (joint-element-model)
+  :properties (
+               )
+  )
+;-------------------------------------------------------------------------------------------------------------
+; END fixed-male-element definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: fixed-female-element
+; Female element of an open constraint type
+;------------------------------------------------------------------------------------------------------------- 
+(define-class fixed-female-element
+  :inherit-from (joint-element-model)
+  :properties (
+               z-translation (get-translational-z-value (the superior))
+			   (sub-point-ref :class 'sub-point-data-model
+                   orientation (list
+								(translate (list 0 0 ^z-translation))
+                                )
+                   )
+               )
+  )
+;-------------------------------------------------------------------------------------------------------------
+; END fixed-female-element definitions
+;-------------------------------------------------------------------------------------------------------------  
  
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: rigid-constraint-class
@@ -290,7 +336,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-pin-hole)
-				   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+				   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -378,7 +424,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )       
@@ -438,7 +484,7 @@
   :subobjects (
                (mating-surface-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
 				   display? nil
                    )
@@ -510,7 +556,7 @@
 	:subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
-						   mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+						   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						   color 'green
 						   display? nil
 						)
@@ -639,7 +685,7 @@
   :subobjects (
 					(mating-surface-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
-						mesh-object (get-surface-mesh (get-mesh-model-object (get-link-ref ^superior)))
+						mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						color 'green
 						display? nil
 					)

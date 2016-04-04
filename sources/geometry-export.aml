@@ -15,7 +15,7 @@
 		  (baseID 			2)
 		  (linkID			0)
 		  (conID 			0)
-		  (triads-written	0)
+		  (triads-written	1)
 		  )
 		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) (concatenate "model" ".fmm") )
 							  :direction :output
@@ -48,15 +48,15 @@
 					(format stream "}~3%")
 					
 					(let (
-						  (number-of-nodes 	(length (get-tet-mesh-entities-list (the link-mesh-model (:from link)))))
+						  (number-of-nodes 	(length (get-tet-mesh-entities-list (get-mesh-model-object link))))
 						  (counter 			0)
 						  )
-						;; For each non-open joint element on a link, we need to write a triad connected to the 
-						;; joint element's RBE2 FE node.
+						;; For each non-open joint element on a link, we need to write a triad connected to
+						;; the joint element's RBE2 FE node.
 						(loop for joint-element in (get-non-open-constraints-incident-on-link-list link) do
 							(setf baseID (1+ baseID))
 							(setf counter (1+ counter))
-							(write-triad-to-fmm stream baseID (get-joint-element-id joint-element) 
+							(write-triad-to-fmm stream baseID (get-joint-ID (the) joint-element)
 								(get-main-frame-coords joint-element) linkID (+ number-of-nodes counter))
 							(setf triads-written (1+ triads-written))
 						)
@@ -65,58 +65,62 @@
 				(loop for constraint in !non-open-constraints-list do
 					(setf baseID (1+ baseID))
 					(setf conID (1+ conID))
-					(let (
-						  (triadID 				(get-male-triad-id-from-master-joint-model constraint))
-						  (is-male-drawable? 	(the male-joint-element is-incident-link-drawable? (:from constraint)))
-						  (is-female-drawable?	(the female-joint-element is-incident-link-drawable? (:from constraint)))
+					(let* (
+						  (male-element		(get-male-element constraint))
+						  (female-element	(get-female-element constraint))
 						  )
-						 ;;Case 1: male element has a drawable link, female does not. 
+						 ;;Case 1: male element exists, female does not. 
+						 ;;Have to write a ground triad to connect to the male element
 						 ;;Master triad is the ground, slave triad is the male element
-						 (if (and is-male-drawable? (not is-female-drawable?))
+						 (if (and male-element (not female-element))
 							(progn 
-								(write-joint-type-to-fmm stream constraint baseID conID (1+ triadID) triadID)
+								(write-joint-type-to-fmm stream constraint baseID conID triads-written
+									(get-joint-ID (the) male-element))
 								(setf baseID (1+ baseID))
-								(write-triad-to-fmm stream baseID (get-joint-element-id (the male-joint-element (:from constraint)))
-									(get-main-frame-coords (the female-joint-element (:from constraint))) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+								(write-triad-to-fmm stream baseID triads-written
+									(get-main-frame-coords male-element) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
 								(setf triads-written (1+ triads-written))
 							)
-							;;Case 2: female element has a drawable link, male does not
+							;;Case 2: female element exists, male does not
+							;;Have to write a ground triad to connect to the female element
 							;;Master triad is the ground, slave triad is the female element
-							(if (and is-female-drawable? (not is-male-drawable?))
+							(if (and female-element (not male-element))
 								(progn
-									(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+									(write-joint-type-to-fmm stream constraint baseID conID triads-written
+										(get-joint-ID (the) female-element))
 									(setf baseID (1+ baseID))
-									(write-triad-to-fmm stream baseID (get-joint-element-id (the male-joint-element (:from constraint)))
-										(get-main-frame-coords (the male-joint-element (:from constraint))) -1 -1)
+									(write-triad-to-fmm stream baseID triads-written
+										(get-main-frame-coords female-element) -1 -1)
 									(setf triads-written (1+ triads-written))
 								)
-								;;Case 3: both elements have drawable links
-								;;Master triad is the male element, slave triad is the female element
+								;;Case 3: both elements exists
+								;;Master triad is the female element, slave triad is the male element (ofc)
 								;;No extra ground triad has to be created
-								(write-joint-type-to-fmm stream constraint baseID conID triadID (1+ triadID))
+								(write-joint-type-to-fmm stream constraint baseID conID 
+									(get-joint-ID (the) female-element)	(get-joint-ID (the) male-element))
 							)
 						)
 					)
 				)
-				(loop for spring in (get-springs !spring-dampers) do 
-					(setf baseID (1+ baseID))
-					(let (
-						   ;; If the joint element is open, we have to create an RBE connected to the link, and create a free joint in fedem
-						   (triad1-ID (get-joint-element-id (get-female-element (the from-constraint (:from spring)))))
-						   (triad2-ID (if (the to-constraint (:from spring))
-										(get-joint-element-id (get-female-element (the to-constraint (:from spring))))
-										(progn 
-											;;A ground triad has to made if one part of the spring is not connected to a constraint:
-											(write-triad-to-fmm stream baseID (1+ triads-written) (the ground-coords (:from spring)) -1 -1) 
-											(setf triads-written (1+ triads-written))
-											triads-written ;; This is the triad2-iD
-										)
-									  ))
-						  )
-						 (write-spring-properties-to-fmm stream baseID (1+ (the index (:from spring))) 
-							triad1-ID triad2-ID)
-					)
-				)
+				;(loop for spring in (get-springs !spring-dampers) do 
+				;	(setf baseID (1+ baseID))
+				;	(let (
+				;		   ;; If the joint element is open, we have to create an RBE connected to the link, and create a free joint in fedem
+				;		   (triad1-ID (get-joint-element-id (get-female-element (the from-constraint (:from spring)))))
+				;		   (triad2-ID (if (the to-constraint (:from spring))
+				;						(get-joint-element-id (get-female-element (the to-constraint (:from spring))))
+				;						(progn 
+				;							;;A ground triad has to made if one part of the spring is not connected to a constraint:
+				;							(write-triad-to-fmm stream baseID (1+ triads-written) (the ground-coords (:from spring)) -1 -1) 
+				;							(setf triads-written (1+ triads-written))
+				;							triads-written ;; This is the triad2-iD
+				;						)
+				;					  ))
+				;		  )
+				;		 (write-spring-properties-to-fmm stream baseID (1+ (the index (:from spring))) 
+				;			triad1-ID triad2-ID)
+				;	)
+				;)
 				(setf baseID (1+ baseID))
 				(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
 				(format stream "END {FEDEMMODELFILE}")

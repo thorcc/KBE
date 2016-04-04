@@ -5,7 +5,6 @@
 (define-class master-joint-model
   :inherit-from (series-object frame-data-model)
   :properties (
-               id 					(default nil)
 			   link-incidence 		(default nil)
 			   max-element-size 	(default 0.04)
 			   min-element-size 	(default 0.01)
@@ -116,7 +115,7 @@
 					load-point 		^^origin
 					magnitude 		^^magnitude
 					load-direction 	^^load-direction
-					loadID			(1+ (get-male-triad-id-from-master-joint-model (the superior superior)))
+					;loadID			(get-joint-element-id (nth 0 ^^joint-elements))
 					mechanism-size	(calculate-mechanism-size (the superior superior superior superior)) ;;Bad code. The reference is to the main-mechanism-class
 					translation		^^max-height
 					)
@@ -192,6 +191,10 @@
 	!female-joint-element
 )
  
+(define-method get-male-element master-joint-model ()
+	!male-joint-element
+)
+ 
 (define-method get-joint-direction-vector master-joint-model () 
 	!direction
 )
@@ -214,12 +217,6 @@
  
 (define-method get-link-incidence master-joint-model ()
 	!link-incidence
-)
-;------------------------------------------------------------------------------------
-; Used in (write-fmm-model-file) to connect master/slave triads to the joint elements
-;------------------------------------------------------------------------------------
-(define-method get-male-triad-id-from-master-joint-model master-joint-model ()
-	(1- (* 2 !id))
 )
   
 (define-method get-constraint-incidence master-joint-model (link)
@@ -303,7 +300,7 @@
                (sub-point-ref :class 'sub-point-data-model
                    )
 			   
-			   ;;Property used for writing to FEDEM
+			   ;;Property used for writing to FEDEM. Could probably be deleted after incident link fix.
 			   is-incident-link-drawable? 	(is-link-drawable? ^incident-link)
 			   
 			   
@@ -385,13 +382,6 @@
 		(nth params (the main-frame origin))
 		(the main-frame origin)
 	)
-)
-
-;-----------------------------------------------------------------------------
-; Used in (write-fmm-model-file) to generate unique IDs for each joint element
-;-----------------------------------------------------------------------------
-(define-method get-joint-element-id joint-element-model ()
-	(1- (+ (* 2 !id) !gender_int)) ;; This value will be valid as long as there are two parts of a joint
 )
 
 (define-method get-constraint-incidence joint-element-model (link-index)

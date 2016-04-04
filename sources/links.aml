@@ -273,7 +273,7 @@
 (define-method are-all-members-displayed? link-model-class ()
  	(> (length (the visible-members-ref-list (:from !link-geometry))) 0)
 )
- 
+
 (define-method get-mesh-model-object link-model-class ()
  	!link-mesh-model
 )

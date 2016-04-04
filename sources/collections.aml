@@ -70,7 +70,6 @@
 													  )
 													  (remove nil (list link1 link2))
 												)
-						   id 					(+ ^index 1)
                            )
 						   
                property-objects-list (list
@@ -663,7 +662,7 @@
                link-ref-list (children ^links :class 'link-model-class)
 			   
 			   final-link-ref-list (loop for link in ^link-ref-list
-										if (and (is-link-drawable? link) (are-all-members-displayed? link))
+										if (are-all-members-displayed? link)
 											collect link)
 											
 			   non-open-constraints-list (loop for constraint in (get-constraints ^constraints) do
@@ -796,6 +795,21 @@
 		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
 	   )
 	)
+)
+
+(define-method get-all-joint-elements main-mechanism-class ()
+	(remove nil
+		(loop for constraint in (get-constraints !constraints) 
+			append (list (get-male-element constraint) (get-female-element constraint))
+		)
+	)
+)
+
+;-----------------------------------------------------------------------------
+; Assigns a unique ID (starting from 1) to each joint element in the mechanism
+;-----------------------------------------------------------------------------
+(define-method get-joint-ID main-mechanism-class (joint-element)
+	(1+ (position joint-element (get-all-joint-elements (the))))
 )
 
 (define-method get-constraint main-mechanism-class (constraint-number)
