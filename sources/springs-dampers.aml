@@ -2,21 +2,18 @@
 	:inherit-from (line-object)
 	:properties (
 				 ;; 'nil' properties are set on instantiation
-				 label 				nil
-				 from-constraint	nil
-				 to-constraint		nil
-				 ground-coords		nil
+				 label 			nil
+				 from-point		nil
+				 to-point		nil
+				 ground-point	nil ;;If not nil, this is the same point as one of the above
 				 
-				 type				'damper
+				 type			'damper
 				 
-				 point1				(get-main-frame-coords ^from-constraint)
-				 point2				(if ^to-constraint
-										(get-main-frame-coords ^to-constraint)
-										^ground-coords
-									)
+				 point1			(get-coordinates ^from-point)
+				 point2			(get-coordinates ^to-point)
 				 
-				 line-width 		6
-				 color				'magenta
+				 line-width 	6
+				 color			'magenta
 				)
 )
  
@@ -24,20 +21,17 @@
 	:inherit-from (line-object)
 	:properties (
 				 ;; 'nil' properties are set on instantiation
-				 label 				nil
-				 from-constraint	nil
-				 to-constraint		nil
-				 ground-coords		nil
+				label 			nil
+				 from-point		nil
+				 to-point		nil
+				 ground-point	nil
 				 
-				 type 				'spring
+				 type			'spring
 				 
-				 point1				(get-main-frame-coords ^from-constraint)
-				 point2				(if ^to-constraint
-										(get-main-frame-coords ^to-constraint)
-										^ground-coords
-									)
+				 point1			(get-coordinates ^from-point)
+				 point2			(get-coordinates ^to-point)
 				 
-				 line-width			6
-				 color				'purple
+				 line-width 	6
+				 color			'purple
 				)
 )

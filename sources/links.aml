@@ -254,10 +254,10 @@
                )
   )
   
-(define-method get-non-open-constraints-incident-on-link-list link-model-class ()
+(define-method get-non-free-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
 		(loop for joint-element in !constraints-incident-on-link-list do
-			if (not (string-equal "open" (get-constraint-type joint-element)))
+			if (not (string-equal "free" (get-constraint-type joint-element)))
 				collect joint-element
 		)
 	)

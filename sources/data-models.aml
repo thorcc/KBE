@@ -23,14 +23,17 @@
 			   id nil
 			   
 			   after-create ()
-			   
-               property-objects-list (list 
-                                      (list (the superior coordinates self) 
-                                            '(apply-formula? t)) 
-                                      )
+				
+				 property-objects-list (list
+										(list (the superior coordinates self) 
+                                            '(apply-formula? t))
+					)
                )
   )
 
+(define-method get-coordinates point-data-model ()
+	!coordinates
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END point-data-model definitions
 ;-------------------------------------------------------------------------------------------------------------

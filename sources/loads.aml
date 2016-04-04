@@ -13,7 +13,7 @@
 				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^load-direction) (/ ^mechanism-size 6))) ;;This defines the line length, controlled by the size of the mechanism
 				 total-vector 	(subtract-points ^end-point ^load-point) ;; Just to get the scalar with the vector
 				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
-				 translation	(default nil)
+				 translation	(/ ^mechanism-size 40)
 				 
 				 ;;Visual geometry
 				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^load-direction))
