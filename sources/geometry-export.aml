@@ -7,6 +7,13 @@
 	)
 )
 
+;-----------------------------------------------------------------
+; Writes one link to a nastran .bdf file, stored in :nastran-data
+;----------------------------------------------------------------- 
+(define-method write-nastran-bdf-file main-mechanism-class (link)
+	(the analysis nastran-interface run-nastran@ (:from link))
+)
+
 ;----------------------------------------------------------------------
 ; Writes a fedem fmm file, stored in library\"mechanism-type"\"version"
 ;----------------------------------------------------------------------
@@ -37,18 +44,28 @@
 					(format stream "ID = ~d;~%" linkID)
 					(format stream "LINE_COLOR = 1 1 1;~%")
 					(format stream "MASS_PROP_DAMP = 0;~%")
-					(format stream "ORIGINAL_FE_FILE = ~a;~%" (concatenate "\""
-						(logical-path :nastran-data)
-						(the analysis nastran-interface model-name (:from link)) "\\"
-						(the analysis nastran-interface nastran-file-name (:from link)) "\"")
-					)
+					(format stream "ORIGINAL_FE_FILE = ~a;~%" 
+						(let (
+							(file-path (concatenate "\""
+								(logical-path :nastran-data)
+								(the analysis nastran-interface model-name (:from link)) "\\"
+								(the analysis nastran-interface nastran-file-name (:from link)) "\""))
+							)
+							(if (probe-file file-path)
+								file-path
+								(progn 
+									(write-nastran-bdf-file (the) link)
+									file-path
+								)
+							)
+						))
 					(format stream "POLYS_ON_POINTS_OFF = true;~%")
 					(format stream "STIF_PROP_DAMP = 0;~%")
 					(format stream "USE_MASS_CALCULATION = true;~%")
 					(format stream "}~3%")
 					
 					(let (
-						  (number-of-nodes 	(length (get-tet-mesh-entities-list (get-mesh-model-object link))))
+						  (number-of-nodes 	(length (get-mesh-entities-list (get-mesh-model-object link))))
 						  (counter 			0)
 						  )
 						;; For each non-open joint element on a link, we need to write a triad connected to
