@@ -16,11 +16,13 @@
                materials-list 					(list (the material-name (:from ^material-selection)))
                property-set-objects-list 		(list ^link-2D-material-properties ^link-3D-material-properties)
                
-               element-set-2d-objects-list 		(list ^link-analysis-surface-elements)
-               element-set-3d-objects-list 		(list ^link-analysis-solid-elements)
-
+			   element-set-2d-objects-list 		(if (^export-surface?) (list ^link-analysis-surface-elements) nil)
+			   element-set-3d-objects-list 		(if (^export-surface?) nil (list ^link-analysis-solid-elements))
+				
+			   export-surface? 					t 
+				
                mesh-object 						(the link-mesh (:from ^mesh-model-object))
-               node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)) )
+               node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)))
 			   
 			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
 			   

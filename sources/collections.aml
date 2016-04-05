@@ -810,10 +810,11 @@
 											""
 											'("Undraw" (button1-parameters :undraw button3-parameters :unset)
 											ui-work-area-action-button-class)
-											'("Export to FEDEM" (button1-parameters :bdf-export)
+											""
+											'("Create .bdf-files" (button1-parameters :create-bdf)
 											ui-work-area-action-button-class)
-											(list (the superior dv self)
-												'(automatic-apply? t))
+											'("Export to FEDEM" (button1-parameters :export-fedem)
+											ui-work-area-action-button-class)												
                                      )
                
                ;;Property storing folders from library
@@ -940,20 +941,20 @@
 		(:undraw
 			(undraw self)
 		)
-		(:bdf-export
-			(if !loads-list 
-				(progn 
-					(write-nastran-bdf-files (the))
-					(write-fmm-model-file (the))
+		(:create-bdf
+			(if (equal "2D" (pop-up-message (format nil "Export to .bdf")
+				:width 200 :done-label "2D" :cancel-label "3D")) ;; The pop-up-message returns the selected label
+				(loop for link in !final-link-ref-list do
+					(change-value (the analysis export-surface? (:from link)) t)
 				)
-				(if (equal "Yes" (pop-up-message (format nil "No loads have been added. Continue writing to FEDEM?")
-					:width 200 :done-label "Yes" :cancel-label "No")) ;; The pop-up-message returns the selected label
-					(progn 
-						(write-nastran-bdf-files (the))
-						(write-fmm-model-file (the))
-					)
+				(loop for link in !final-link-ref-list do
+					(change-value (the analysis export-surface? (:from link)) nil)
 				)
 			)
+			(write-nastran-bdf-files (the))
+		)
+		(:export-fedem
+			(write-fmm-model-file (the))
 		)
 	)
 )

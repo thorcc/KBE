@@ -43,7 +43,10 @@
 												)				
                
 			   (node-set :class 'analysis-node-set-class
-                   query-objects-list (append (list (the nodes-query (:from ^^tet-mesh))) ^rbe2-independent-node-list)
+                   query-objects-list (append (if (get-export-surface ^link-model) 
+										(list (the nodes-query (:from ^^link-mesh)))
+										(list (the nodes-query (:from ^^tet-mesh))))
+										^rbe2-independent-node-list)
                    ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
@@ -105,10 +108,12 @@
 		)
 	)
   
-(define-method get-tet-mesh-entities-list link-mesh-class ()
-	(when !tet-mesh
-		(the tet-mesh nodes-query mesh-entities-list))
+(define-method get-mesh-entities-list link-mesh-class ()
+	(if (get-export-surface !link-model)
+		(the link-mesh nodes-query mesh-entities-list)
+		(the tet-mesh nodes-query mesh-entities-list)
 	)
+)
 
 (define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
   (when (the elements-query (:from !tet-mesh :error nil :relation nil))
