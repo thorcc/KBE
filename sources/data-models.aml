@@ -21,8 +21,7 @@
 			   line-group (default nil)
 			   is-fixed? (default nil)
 			   id nil
-			   color 'green
-			   line-width 2
+			   
 			   after-create ()
 				
 				 property-objects-list (list
@@ -108,7 +107,17 @@
                                       )
                )
   )
+ 
+(define-method get-coordinates frame-data-model ()
+	!origin
+)
   
+;----------------------------------------
+; Should only be called on a spline-frame
+;----------------------------------------
+(define-method get-direction-along-member frame-data-model ()
+	!vector-i
+)  
 ;-------------------------------------------------------------------------------------------------------------
 ; END frame-data-model definitions
 ;-------------------------------------------------------------------------------------------------------------

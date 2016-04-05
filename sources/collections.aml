@@ -104,12 +104,12 @@
 						)
 						(progn
 							(if male (progn 
-								(change-value (the display? (:from (the joint-center-node (:from male)))) nil)
-								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) nil)
+								(change-value (the display? (:from (the rbe2-independent-node (:from male)))) nil)
+								(change-value (the display? (:from (the rbe2-dependent-nodes (:from male)))) nil)
 								))
 							(if female (progn
-								(change-value (the display? (:from (the joint-center-node (:from female)))) nil)
-								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) nil)
+								(change-value (the display? (:from (the rbe2-independent-node (:from female)))) nil)
+								(change-value (the display? (:from (the rbe2-dependent-nodes (:from female)))) nil)
 								))
 						)
 					)
@@ -127,12 +127,12 @@
 						)
 						(progn
 							(if male (progn 
-								(change-value (the display? (:from (the joint-center-node (:from male)))) t)
-								(change-value (the display? (:from (the mating-surface-nodes (:from male)))) t)
+								(change-value (the display? (:from (the rbe2-independent-node (:from male)))) t)
+								(change-value (the display? (:from (the rbe2-dependent-nodes (:from male)))) t)
 								))
 							(if female (progn
-								(change-value (the display? (:from (the joint-center-node (:from female)))) t)
-								(change-value (the display? (:from (the mating-surface-nodes (:from female)))) t)
+								(change-value (the display? (:from (the rbe2-independent-node (:from female)))) t)
+								(change-value (the display? (:from (the rbe2-dependent-nodes (:from female)))) t)
 								))
 						)
 					)

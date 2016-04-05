@@ -29,6 +29,34 @@
 ; Class: free-female-element
 ; Female element of an free constraint type. As this element is free, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
+(define-class free-male-element
+  :inherit-from (joint-element-model)
+  :properties (
+               )
+  :subobjects (
+			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
+				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
+					plane-normal-vector				(get-direction-along-member 
+														(get-spline-frame-at-joint-element
+															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
+					quantity						nil ;;Get all nodes in the plane
+					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					color 							'green
+					line-width						3
+					)
+			   )
+  )
+;-------------------------------------------------------------------------------------------------------------
+; END free-male-element definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: free-female-element
+; Female element of an free constraint type. As this element is free, it has no geometry
+;------------------------------------------------------------------------------------------------------------- 
 (define-class free-female-element
   :inherit-from (joint-element-model)
   :properties (
@@ -43,6 +71,21 @@
                                 )
                    )
                )
+  :subobjects (
+			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
+				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
+					plane-normal-vector				(get-direction-along-member 
+														(get-spline-frame-at-joint-element
+															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
+					quantity						nil ;;Get all nodes in the plane
+					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					color 							'green
+					line-width						3
+					)
+			   )
   )
 
 ;-------------------------------------------------------------------------
@@ -89,6 +132,21 @@
   :inherit-from (joint-element-model)
   :properties (
                )
+  :subobjects (
+			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
+				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
+					plane-normal-vector				(get-direction-along-member 
+														(get-spline-frame-at-joint-element
+															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
+					quantity						nil ;;Get all nodes in the plane
+					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					color 							'green
+					line-width						3
+					)
+			   )
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END fixed-male-element definitions
@@ -108,6 +166,21 @@
                                 )
                    )
                )
+  :subobjects (
+			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
+				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
+					plane-normal-vector				(get-direction-along-member 
+														(get-spline-frame-at-joint-element
+															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
+					quantity						nil ;;Get all nodes in the plane
+					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					color 							'green
+					line-width						3
+					)
+			   )
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END fixed-female-element definitions
@@ -277,7 +350,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-query-nodes-from-interface-class
+               (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
 					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
 					interface-object 				(the point-ref (:from ^^main-frame-object))
 					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
@@ -334,7 +407,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-pin-hole)
 				   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -422,7 +495,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
                    mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -482,7 +555,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
                    mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -554,7 +627,7 @@
 		   
 				 )
 	:subobjects (
-					(mating-surface-nodes :class 'mesh-nodes-query-class
+					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
 						   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						   color 'green
@@ -683,7 +756,7 @@
 					)
 				)
   :subobjects (
-					(mating-surface-nodes :class 'mesh-nodes-query-class
+					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
 						mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						color 'green

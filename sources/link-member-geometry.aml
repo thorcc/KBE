@@ -144,6 +144,14 @@
                )
   )
  
+(define-method get-spline-frame_start connection-model ()
+	!spline-frame_start
+)
+
+(define-method get-spline-frame_end connection-model ()
+	!spline-frame_end
+) 
+ 
 (define-method get-start-weight connection-model ()
 	!start-weight
 )
@@ -394,12 +402,19 @@
 (define-method get-connection member-solid-model ()
 	!connection
 )
-  
+ 
+(define-method is-displayed? member-solid-model ()
+	!display?
+) 
+ 
 (define-method get-joints-on-member member-solid-model ()
 	(when !joints-on-member
 		!joints-on-member)
 )
 
+;-----------------------------------------------------------------------------------------------------
+; Returns the smallest dimension of a member times a mesh scaling factor defined in member-solid-model
+;-----------------------------------------------------------------------------------------------------
 (define-method calculate-mesh-size member-solid-model ()
 	(* (min !width !height !width-end !height-end) !mesh-size-factor)
 )
@@ -411,18 +426,31 @@
 	(let (
 		  (pos (position joint-element (get-joints-on-member (the))))
 		  (width (if pos 
-					(if (= pos 0)
-						(get-width !cross-section_D)
-						(get-width !cross-section_A))
-					0)) ;;A joint not on the member might be sent as input
-						;;In that case, return 0
+					(get-width (get-cross-section-at-joint-element (the) joint-element))
+					0));;A joint not on the member might be sent as input
+					   ;;In that case, return 0 
 		  (height (if pos
-					(if (= pos 0)
-						(get-height !cross-section_D)
-						(get-height !cross-section_A))
+					(get-height (get-cross-section-at-joint-element (the) joint-element))
 					0))
 		  )
 		 (list width height)
+	)
+)
+
+;----------------------------------------------------
+; Returns the member cross-section at a joint element
+;---------------------------------------------------- 
+(define-method get-cross-section-at-joint-element member-solid-model (joint-element)
+	(if (= 0 (position joint-element (get-joints-on-member (the))))
+		!cross-section_D
+		!cross-section_A
+	)
+)
+
+(define-method get-spline-frame-at-joint-element member-solid-model (joint-element)
+	(if (= 0 (position joint-element (get-joints-on-member (the))))
+		(get-spline-frame_start !connection)
+		(get-spline-frame_end !connection)
 	)
 )
 

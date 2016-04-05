@@ -13,8 +13,8 @@
 				 series-prefix 		'rbe2
 				 quantity 			(length ^constraints-list)
 				 init-form '(
-							 independent-node-query-object 		(the joint-center-node (:from (nth ^index ^constraints-list)))
-							 dependent-nodes-query-object 		(the mating-surface-nodes (:from (nth ^index ^constraints-list)))
+							 independent-node-query-object 		(the rbe2-independent-node (:from (nth ^index ^constraints-list)))
+							 dependent-nodes-query-object 		(the rbe2-dependent-nodes (:from (nth ^index ^constraints-list)))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
 							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
                              id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
@@ -38,13 +38,15 @@
 
 			   non-free-constraints-list  (get-non-free-constraints-incident-on-link-list ^link-model)
 			   
-			   joint-center-node-list	(loop for c in ^non-free-constraints-list
-											collect (the joint-center-node (:from c))
-											)				
+			   rbe2-independent-node-list	(loop for c in ^non-free-constraints-list
+												collect (the rbe2-independent-node (:from c))
+												)				
                
 			   (node-set :class 'analysis-node-set-class
-                   query-objects-list (append (if (get-export-surface ^link-model) (list (the nodes-query (:from ^^link-mesh))) 
-				   (list (the nodes-query (:from ^^tet-mesh)))) ^joint-center-node-list)
+                   query-objects-list (append (if (get-export-surface ^link-model) 
+										(list (the nodes-query (:from ^^link-mesh)))
+										(list (the nodes-query (:from ^^tet-mesh))))
+										^rbe2-independent-node-list)
                    ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
@@ -76,7 +78,7 @@
                                        )
                    mesh-object ^^tet-mesh
                    )
-			   (mating-surface-nodes :class 'mesh-nodes-query-class
+			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
                    mesh-object ^^link-mesh
                    )

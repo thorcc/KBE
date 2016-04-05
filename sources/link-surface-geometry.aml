@@ -22,7 +22,7 @@
               ;    )
 			  (display? :class 'flag-property-class
 						formula (when ^surface t)
-			  )
+				)
                edge-combination nil
 			   
 			   ;;The source-object has to be nil when it can't be displayed. Else there will be a null geom
