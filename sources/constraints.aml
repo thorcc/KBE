@@ -245,13 +245,8 @@
                gender_int 			(case ^gender ('male 0) ('female 1) )
                link-incidence 		(nth ^gender_int (get-link-incidence ^master-joint-object))
 			   
-			   link-mesh-model-object (when (the link-mesh-model (:from ^incident-link))
-										(the link-mesh-model (:from ^incident-link)))
-               
-               ;members-connected-to-joint-element (loop for member in (the members-ref-list (:from (the link-geometry (:from ^incident-link)) ))
-				;   when (position !superior (the connection-between-constraints (:from member)))
-               ;                                     collect member
-               ;                                     )
+			   link-mesh-model-object (get-mesh-model-object ^incident-link)
+			   
 			   members-connected-to-joint-element (loop for member in (get-members (get-link-geometry ^incident-link))
                                                     when (position !superior (get-joints-on-member member))
                                                     collect member
@@ -298,9 +293,10 @@
                (sub-frame :class 'sub-frame-data-model
                    )
 			   (rbe2-independent-node :class 'mesh-node-class
-                   coordinates (get-rbe2-independent-node-coordinates ^superior)
-                   mesh-object (get-surface-mesh (get-mesh-model-object ^^incident-link))
-				   display? t
+                   coordinates 	(get-rbe2-independent-node-coordinates ^superior)
+                   mesh-object	(get-surface-mesh (get-mesh-model-object ^^incident-link))
+				   color		'red
+				   display? 	t
                    )
                )
 )
@@ -345,6 +341,13 @@
 	(if params
 		(nth params (the main-frame origin))
 		(the main-frame origin)
+	)
+)
+
+(define-method get-displayed-members-connected-to-joint-element joint-element-model ()
+	(loop for member in !members-connected-to-joint-element
+		if (is-displayed? member)
+			collect member
 	)
 )
 

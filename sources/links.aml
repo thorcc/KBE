@@ -266,6 +266,7 @@
 (define-method get-link-geometry link-model-class ()
 	!link-geometry
 )
+
 (define-method is-link-drawable? link-model-class ()
  	(> (length (the drawable-members-ref-list (:from !link-geometry))) 0)
 )
