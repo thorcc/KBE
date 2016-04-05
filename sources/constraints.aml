@@ -37,33 +37,12 @@
 			   dimensions (calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
-					label "Joint width"
+				   label "Joint width"
 					formula (nth 0 ^dimensions)
 					)
                (max-height :class 'editable-data-property-class
 					label "Joint height"
 					formula (nth 1 ^dimensions)
-					)
-               
-			   (load-type :class 'option-property-class
-					mode 			'radio
-					options-list	(list 'force 'torque)
-					formula 		'torque
-					label 			"Load type"
-					)
-			   (magnitude :class 'var-unit-data-property-class
-					current-load (case ^^load-type
-									('force 'N)
-									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
-								  )
-					value-in 	1
-					unit-in 	^current-load
-					unit 		^current-load
-					label 		"Magntitude"
-					)
-			   (load-direction :class 'editable-data-property-class
-					formula 	(default ^direction)
-					label 		"Load direction vector"
 					)
 			   
 			   ;;not in use from >>>>
@@ -80,22 +59,22 @@
 							)
 					)
 			   
-			   meshing-list (list (the display? (:from (the mating-surface-nodes (:from ^male-joint-element))))
-								  (the display? (:from (the mating-surface-nodes (:from ^female-joint-element))))
-								  (the display? (:from (the joint-center-node (:from ^male-joint-element))))
-								  (the display? (:from (the joint-center-node (:from ^female-joint-element))))
+			   meshing-list (list (the display? (:from (the rbe2-dependent-nodes (:from ^male-joint-element))))
+								  (the display? (:from (the rbe2-dependent-nodes (:from ^female-joint-element))))
+								  (the display? (:from (the rbe2-independent-node (:from ^male-joint-element))))
+								  (the display? (:from (the rbe2-independent-node (:from ^female-joint-element))))
 								  )
 			   
 			   (toggle-mesh :class 'flag-property-class
-					label "Toggle mating-surface-nodes mesh"
+					label "Toggle rbe2-dependent-nodes mesh"
 					formula (loop for disp in ^meshing-list
 								do
 									(if (equal disp t) (change-value disp nil) (change-value disp  t))
 								)
-					;progn (change-value (the display? (:from (the mating-surface-nodes (:from ^male-joint-element)))) t)
-					;				(change-value (the display? (:from (the mating-surface-nodes (:from ^female-joint-element)))) t)
-					;				(change-value (the display? (:from (the joint-center-node (:from ^male-joint-element)))) t)
-					;				(change-value (the display? (:from (the joint-center-node (:from ^female-joint-element)))) t)
+					;progn (change-value (the display? (:from (the rbe2-dependent-nodes (:from ^male-joint-element)))) t)
+					;				(change-value (the display? (:from (the rbe2-dependent-nodes (:from ^female-joint-element)))) t)
+					;				(change-value (the display? (:from (the rbe2-independent-node (:from ^male-joint-element)))) t)
+					;				(change-value (the display? (:from (the rbe2-independent-node (:from ^female-joint-element)))) t)
 					;				)
 					)
 			   ;;Not in use to <<<<
@@ -109,16 +88,6 @@
 						   incident-link 		(nth !index (remove nil ^incident-links))
 						   label				(concatenate (nth !index ^gender-list) "-joint-element")
 						   )
-			  
-			   (load-case :class 'load-model
-					load-type 		^^load-type
-					load-point 		^^origin
-					magnitude 		^^magnitude
-					load-direction 	^^load-direction
-					;loadID			(get-joint-element-id (nth 0 ^^joint-elements))
-					mechanism-size	(calculate-mechanism-size (the superior superior superior superior)) ;;Bad code. The reference is to the main-mechanism-class
-					translation		^^max-height
-					)
 					
 			   ;;Only display properties for non-free constraints
 			   property-objects-list (if (is-free-constraint (the superior)) 
@@ -136,16 +105,7 @@
 					(the superior max-width self)
 					(the superior max-height self)
 					""
-					"Load case"
-					(list (the superior load-type self)
-						'(automatic-apply? t))
-					(list (the superior magnitude self)
-						'(automatic-apply? t))
-					(list (the superior load-direction self)
-						'(automatic-apply? t))
-					'("Apply load" (button1-parameters :apply-load)
-                                        ui-work-area-action-button-class)
-					)	
+					)
 				)
 			   )
   )
@@ -318,12 +278,12 @@
 						direction (let (
 										(first-sweep (nth 0 ^members-connected-to-joint-element))
 										(x-dir  (subtract-vectors
-												(the coordinates (:from (the point-ref (:from (nth 0 
-													(get-joints-on-member first-sweep)
-													)))))
-												(the coordinates (:from (the point-ref (:from (nth 1 
-													(get-joints-on-member first-sweep)
-													))))))
+													(the coordinates (:from (the point-ref (:from (nth 0 
+														(get-joints-on-member first-sweep)
+														)))))
+													(the coordinates (:from (the point-ref (:from (nth 1 
+														(get-joints-on-member first-sweep)
+														))))))
 											)
 										(x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
 									   )
@@ -337,13 +297,13 @@
 				;;; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
                (sub-frame :class 'sub-frame-data-model
                    )
-			   (joint-center-node :class 'mesh-node-class
-                   coordinates (the origin (:from ^main-frame))
+			   (rbe2-independent-node :class 'mesh-node-class
+                   coordinates (get-rbe2-independent-node-coordinates ^superior)
                    mesh-object (get-surface-mesh (get-mesh-model-object ^^incident-link))
-				   display? nil
+				   display? t
                    )
                )
-  )
+)
 
 (define-method get-constraint-type joint-element-model ()
 	!constraint-type
@@ -364,6 +324,10 @@
 (define-method get-main-frame joint-element-model ()
 	!main-frame
 )
+
+(define-method get-sub-frame joint-element-model ()
+	!sub-frame
+)
  
 (define-method is-free-constraint joint-element-model ()
 	(equal "free" !constraint-type)
@@ -381,6 +345,14 @@
 	(if params
 		(nth params (the main-frame origin))
 		(the main-frame origin)
+	)
+)
+
+(define-method get-rbe2-independent-node-coordinates joint-element-model ()
+	(if (or (equal "free" (get-constraint-type !master-joint-object))
+			(equal "fixed" (get-constraint-type !master-joint-object)))
+		(get-coordinates (get-sub-frame (the)))
+		(get-coordinates (get-main-frame (the)))
 	)
 )
 

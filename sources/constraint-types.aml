@@ -277,7 +277,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-query-nodes-from-interface-class
+               (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
 					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
 					interface-object 				(the point-ref (:from ^^main-frame-object))
 					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
@@ -334,7 +334,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-pin-hole)
 				   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -422,7 +422,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-ball)
                    mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -482,7 +482,7 @@
                    )
                )
   :subobjects (
-               (mating-surface-nodes :class 'mesh-nodes-query-class
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list ^^imprinted-hole)
                    mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
                    color 'green
@@ -554,7 +554,7 @@
 		   
 				 )
 	:subobjects (
-					(mating-surface-nodes :class 'mesh-nodes-query-class
+					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
 						   tagged-object-list (list ^^imprinted-pin-hole)
 						   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						   color 'green
@@ -683,7 +683,7 @@
 					)
 				)
   :subobjects (
-					(mating-surface-nodes :class 'mesh-nodes-query-class
+					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
 						tagged-object-list (list ^^imprinted-pin)
 						mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
 						color 'green
