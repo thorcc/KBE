@@ -1,0 +1,3 @@
+Index	Name				X-pos	Y-pos	Z-pos	Design-variables
+0		"Beam start"		0.0		0.0		0.0		
+1		"Beam end"			0.0		0.15	0.0		

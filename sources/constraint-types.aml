@@ -14,19 +14,6 @@
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: free-male-element
-; Male element of an free constraint type. As this element is free, it has no geometry
-;------------------------------------------------------------------------------------------------------------- 
-(define-class free-male-element
-  :inherit-from (joint-element-model)
-  :properties (
-               )
-  )
-;-------------------------------------------------------------------------------------------------------------
-; END free-male-element definitions
-;------------------------------------------------------------------------------------------------------------- 
-
-;-------------------------------------------------------------------------------------------------------------
-; Class: free-female-element
 ; Female element of an free constraint type. As this element is free, it has no geometry
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class free-male-element
@@ -116,7 +103,7 @@
 ; of the incident link is held fixed
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class fixed-constraint-class
-	:inherit-from (object)
+	:inherit-from (master-joint-model)
 	:properties (
 				 )
 )

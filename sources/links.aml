@@ -247,6 +247,7 @@
                    geometry-model-object	^link-geometry
                    mesh-database 			^^mesh-database
 				   link-model 				^superior
+				   joint-elements			^^constraints-incident-on-link-list
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object ^^link-mesh-model
@@ -267,8 +268,8 @@
 	!link-geometry
 )
 
-(define-method is-link-drawable? link-model-class ()
- 	(> (length (the drawable-members-ref-list (:from !link-geometry))) 0)
+(define-method get-joint-elements-on-link link-model-class ()
+	!constraints-incident-on-link-list
 )
  
 (define-method are-all-members-displayed? link-model-class ()

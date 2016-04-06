@@ -14,10 +14,13 @@
                load-case-objects-list 			(list ^load-case-1)
                material-catalog-object 			^material-catalog
                materials-list 					(list (the material-name (:from ^material-selection)))
-               property-set-objects-list 		(list ^link-2D-material-properties ^link-3D-material-properties)
+               property-set-objects-list 		(if ^export-surface?
+													(list ^link-2D-material-properties)
+													(list ^link-3D-material-properties)
+													)
                
-			   element-set-2d-objects-list 		(if (^export-surface?) (list ^link-analysis-surface-elements) nil)
-			   element-set-3d-objects-list 		(if (^export-surface?) nil (list ^link-analysis-solid-elements))
+			   element-set-2d-objects-list 		(if ^export-surface? (list ^link-analysis-surface-elements) nil)
+			   element-set-3d-objects-list 		(if ^export-surface? nil (list ^link-analysis-solid-elements))
 				
 			   export-surface? 					t 
 				
