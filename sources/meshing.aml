@@ -64,8 +64,8 @@
                ;; Link mesh query
 			   (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
                    tagged-object-list (append
-									   (the union-list (:from ^^geometry-model-object))
-                                       (the visible-members-ref-list (:from  ^^geometry-model-object))
+									   ;(the union-list (:from ^^geometry-model-object))
+                                       ;(the visible-members-ref-list (:from  ^^geometry-model-object))
                                        (the object-list (:from ^^geometry-model-object))
 									   )
                    color 'cyan
