@@ -310,6 +310,13 @@
 	)
 )
 
+(define-method get-sub-frame-coords joint-element-model (&optional params)
+	(if params
+		(nth params (the sub-frame origin))
+		(the sub-frame origin)
+	)
+)
+
 (define-method get-displayed-members-connected-to-joint-element joint-element-model ()
 	(loop for member in !members-connected-to-joint-element
 		if (is-displayed? member)
