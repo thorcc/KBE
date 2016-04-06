@@ -53,17 +53,17 @@
                )
   :subobjects (
 			   (link-mesh :class 'paver-mesh-class
-					object-to-mesh ^^geometry-model-object
-					mesh-database-object ^^mesh-database
-					element-shape :tri
+					object-to-mesh 			^^geometry-model-object
+					mesh-database-object	^^mesh-database
+					element-shape 			:tri
 					)
 			   (tet-mesh :class 'tet-mesh-class
-					mesh-database-object ^^mesh-database
-					object-to-mesh (the superior superior link-mesh surface-elements-query)
+					mesh-database-object	^^mesh-database
+					object-to-mesh 			(the superior superior link-mesh surface-elements-query)
 					)
 			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (get-rbe2-dependent-nodes-list ^^geometry-model-object)
-                   mesh-object ^^link-mesh
+                   tagged-object-list	(get-rbe2-dependent-nodes-list ^^geometry-model-object)
+                   mesh-object 			^^link-mesh
                    )
                (fixed-nodes :class 'mesh-nodes-query-class
                    tagged-object-list (list
@@ -76,7 +76,8 @@
                    mesh-object ^^link-mesh
                    )
 			   (rbe2-list :class 'RBE2-collection
-				   link-mesh ^superior)
+				   link-mesh ^superior
+				   )
                )
   )
 
@@ -95,6 +96,12 @@
 	(if (get-export-surface !link-model)
 		(the link-mesh nodes-query mesh-entities-list)
 		(the tet-mesh nodes-query mesh-entities-list)
+	)
+)
+
+(define-method get-link-surface-mesh-elements-query-objects-list link-mesh-class ()
+	(when (the surface-elements-query (:from !link-mesh :error nil :relation nil))
+		(list (the surface-elements-query (:from !link-mesh)))
 	)
 )
 

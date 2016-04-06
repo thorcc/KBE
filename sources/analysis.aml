@@ -53,7 +53,7 @@
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
                    query-objects-list (list
-                                       (the link-mesh surface-elements-query (:from ^^mesh-model-object))
+                                       (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
                                        )
                    property-set-object ^^link-2D-material-properties
 				   )

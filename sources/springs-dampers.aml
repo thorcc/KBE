@@ -1,37 +1,57 @@
-(define-class damper-model-class 
-	:inherit-from (line-object)
+(define-class general-spring-damper-class 
+	:inherit-from (series-object line-object)
 	:properties (
 				 ;; 'nil' properties are set on instantiation
-				 label 			nil
-				 from-point		nil
-				 to-point		nil
-				 ground-point	nil ;;If not nil, this is the same point as one of the above
+				 label 					nil
+				 from-point				nil
+				 to-point				nil
+				 ground-point			nil ;;If not nil, this is the same point as one of the above
+				 surface-mesh-queries	nil
+				 mesh-db				nil
 				 
+				 point1					(get-coordinates ^from-point)
+				 point2					(get-coordinates ^to-point)
+				 line-width 			4
+				 
+				 ;;If the spring/damper is supposed to be connected to the ground and not to the mechanism,
+				 ;;a separate node has to be created instead of finding the closest node in the mesh
+				 quantity				(if ^ground-point 1 2)
+				 class-expression 		'mesh-query-nodes-with-label-class
+				 
+				 init-form	'(
+							  label 						(format nil "closest-mesh-node-~d" (1+ ^index))
+							  mesh-database-object 			^^mesh-db
+							  interface-object 				(if (= 0 ^index) ^from-point ^to-point)
+						      subset-mesh-query-object-list	^^surface-mesh-queries
+							  tolerance 					1.0e3
+							  quantity						1
+							  color							'green
+							  line-width					5
+							 )
+				 )
+)
+
+(define-class damper-model-class 
+	:inherit-from (general-spring-damper-class)
+	:properties (
 				 type			'damper
-				 
-				 point1			(get-coordinates ^from-point)
-				 point2			(get-coordinates ^to-point)
-				 
-				 line-width 	6
 				 color			'red
 				)
 )
  
 (define-class spring-model-class
-	:inherit-from (line-object)
+	:inherit-from (general-spring-damper-class)
 	:properties (
-				 ;; 'nil' properties are set on instantiation
-				label 			nil
-				 from-point		nil
-				 to-point		nil
-				 ground-point	nil
-				 
 				 type			'spring
-				 
-				 point1			(get-coordinates ^from-point)
-				 point2			(get-coordinates ^to-point)
-				 
-				 line-width 	6
 				 color			'purple
 				)
+)
+
+;
+;
+(define-class mesh-query-nodes-with-label-class
+	:inherit-from (mesh-query-nodes-from-interface-class)
+	:properties (
+				 label nil
+				 )
 )
