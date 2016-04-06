@@ -315,6 +315,12 @@
   (nth (position link-index !link-list) ^link-ref-list)
   )
   
+(define-method get-all-surface-meshes-list link-collection ()
+	(loop for link in (get-links (the))
+		append (get-link-surface-mesh-elements-query-objects-list (get-mesh-model-object link))
+	)
+)
+  
 ;--------------------------------------------------------------------
 ; Button actions for drawing/undrawing links (with and without mesh),
 ; setting cross-section-type and setting dimensions  
@@ -367,19 +373,23 @@
 	:inherit-from (series-object collection-class)
 	:properties (
 				 points-list		nil
+				 links				nil
+				 mesh-database		nil
 				 collection-type 	'spring-damper
 				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
 				 class-expression	'(read-from-string (format nil "~a-model-class"
 										(nth 0 (nth !index !sd-list)))) 
 				 init-form '(
-							 label 			(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-point		(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
-							 to-point		(nth (nth 2 (nth ^index ^sd-list)) ^points-list)
-							 ground-point	(if (nth 3 (nth ^index ^sd-list))
-												(nth (nth 3 (nth ^index ^sd-list)) ^points-list)
-												nil
-											)
+							 label 					(format nil "~a" (nth 0 (nth ^index ^sd-list)))
+							 from-point				(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
+							 to-point				(nth (nth 2 (nth ^index ^sd-list)) ^points-list)
+							 ground-point			(if (nth 3 (nth ^index ^sd-list))
+														(nth (nth 3 (nth ^index ^sd-list)) ^points-list)
+														nil
+													)
+							 surface-mesh-queries	(get-all-surface-meshes-list ^links)
+							 mesh-db				^mesh-database
 							 )
 				 )
 )
@@ -847,7 +857,9 @@
                (design-variables :class 'design-variables-collection
 					)
                (spring-dampers :class 'spring-damper-collection
-					points-list (get-points ^^points)
+					points-list 	(get-points ^^points)
+					links 			^^links
+					mesh-database	^^mesh-database
 					)
 			   (loads :class 'load-collection
 					mech-size (calculate-mechanism-size ^superior)
