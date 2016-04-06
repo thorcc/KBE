@@ -290,6 +290,10 @@
 (define-method get-rbe2-independent-node joint-element-model ()
 	!rbe2-independent-node
 )
+
+(define-method get-rbe2-dependent-nodes joint-element-model ()
+	!rbe2-dependent-nodes
+)
  
 (define-method is-free-constraint joint-element-model ()
 	(equal "free" !constraint-type)

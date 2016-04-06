@@ -60,10 +60,7 @@
 			   
                members-ref-list						(children ^sweeps :class 'member-solid-model)
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
-			   mating-surface-list 					(append (loop for c in ^incident-constraints
-														collect (the rbe2-dependent-nodes (:from c))
-														))
-			   
+
                union-list 							(loop for constraint in ^incident-constraints
 														append (get-joint-union-list constraint)
 														)
@@ -164,6 +161,12 @@
 
 (define-method get-members link-geometry-class ()
 	!members-ref-list
+)
+
+(define-method get-rbe2-dependent-nodes-list link-geometry-class ()
+	(loop for c in !incident-constraints
+		collect (get-rbe2-dependent-nodes c)
+		)
 )
 
 ;----------------------------------------------------------

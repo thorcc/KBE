@@ -31,8 +31,8 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-               link-model 					nil
-               geometry-model-object 		nil
+               link-model 					nil ;;link-model-class
+               geometry-model-object 		nil ;;link-geometry-class
 			   mesh-database 				nil ;;meshdb-class
 			   joint-elements 				nil
 			   
@@ -61,25 +61,8 @@
 					mesh-database-object ^^mesh-database
 					object-to-mesh (the superior superior link-mesh surface-elements-query)
 					)
-               ;; Link mesh query
-			   (link-mesh-surface-elements :class 'mesh-elements-2d-query-class
-                   tagged-object-list (append
-									   ;(the union-list (:from ^^geometry-model-object))
-                                       ;(the visible-members-ref-list (:from  ^^geometry-model-object))
-                                       (the object-list (:from ^^geometry-model-object))
-									   )
-                   color 'cyan
-                   mesh-object ^^link-mesh
-                   )
-               (link-mesh-solid-elements :class 'mesh-elements-3d-query-class
-                   tagged-object-list (append
-                                       (the union-list (:from ^^geometry-model-object))
-                                       (the visible-members-ref-list (:from  ^^geometry-model-object))
-                                       )
-                   mesh-object ^^tet-mesh
-                   )
 			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (the mating-surface-list (:from ^^geometry-model-object))
+                   tagged-object-list (get-rbe2-dependent-nodes-list ^^geometry-model-object)
                    mesh-object ^^link-mesh
                    )
                (fixed-nodes :class 'mesh-nodes-query-class
