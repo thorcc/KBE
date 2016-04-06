@@ -70,7 +70,7 @@
 						  )
 						;; For each non-free joint element on a link, we need to write a triad connected to
 						;; the joint element's RBE2 FE node.
-						(loop for joint-element in (get-non-free-constraints-incident-on-link-list link) do
+						(loop for joint-element in (get-joint-elements-on-link link) do
 							(setf baseID (1+ baseID))
 							(setf counter (1+ counter))
 							(write-triad-to-fmm stream baseID (get-joint-ID (the) joint-element)
@@ -79,7 +79,7 @@
 						)
 					)
 				)
-				(loop for constraint in !non-free-constraints-list do
+				(loop for constraint in !constraints-ref-list do
 					(setf baseID (1+ baseID))
 					(setf conID (1+ conID))
 					(let* (
@@ -237,7 +237,7 @@
 						(* (nth 0 unit-vector) sin-rot-angle))
 						
 					(+ cos-rot-angle (* (expt (nth 2 unit-vector) 2) (- 1 cos-rot-angle))))
-							
+				
 				(format stream "HAS_Z_TRANS_DOF = false;~%")
 				(format stream "ID = ~a;~%" conID)
 				(format stream "LOCATION3D_DATA = CART_X_Y_Z  EUL_Z_Y_X;~%")

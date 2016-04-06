@@ -7,7 +7,6 @@
 	:properties (
 				 link-mesh 			nil ;;link-mesh-class
 				 constraints-list 	(get-rbe2-constraints-list ^link-mesh)
-				 link-mesh-db 		(get-link-mesh-db ^link-mesh)
 				 
 				 class-expression 	'analysis-rigid-body-element-type-1-class
 				 series-prefix 		'rbe2
@@ -32,33 +31,34 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-               link-model 	nil
-			   mesh-object ^link-mesh
-               geometry-model-object (default nil)
-
-			   non-free-constraints-list  (get-non-free-constraints-incident-on-link-list ^link-model)
+               link-model 					nil
+               geometry-model-object 		nil
+			   mesh-database 				nil ;;meshdb-class
+			   joint-elements 				nil
 			   
-			   rbe2-independent-node-list	(loop for c in ^non-free-constraints-list
-												collect (the rbe2-independent-node (:from c))
-												)				
+			   mesh-object 					^link-mesh
+			   
+			   non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
+			   
+			   rbe2-independent-node-list	(loop for element in ^joint-elements
+												collect (get-rbe2-independent-node element)
+												)
                
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
-										(list (the nodes-query (:from ^^link-mesh)))
-										(list (the nodes-query (:from ^^tet-mesh))))
-										^rbe2-independent-node-list)
+												(list (the nodes-query (:from ^^link-mesh)))
+												(list (the nodes-query (:from ^^tet-mesh))))
+											^rbe2-independent-node-list)
                    ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
-               (mesh-db :class 'mesh-database-class
-					)
 			   (link-mesh :class 'paver-mesh-class
 					object-to-mesh ^^geometry-model-object
-					mesh-database-object ^^mesh-db
+					mesh-database-object ^^mesh-database
 					element-shape :tri
 					)
 			   (tet-mesh :class 'tet-mesh-class
-					mesh-database-object ^^mesh-db
+					mesh-database-object ^^mesh-database
 					object-to-mesh (the superior superior link-mesh surface-elements-query)
 					)
                ;; Link mesh query
@@ -103,7 +103,7 @@
   
 (define-method get-mesh-model-subobject link-mesh-class (subobject-type)
 	(case subobject-type
-		(mesh-db !mesh-db)
+		(mesh-db !mesh-database)
 		(2d-elements (the link-mesh elements-query))
 		)
 	)
@@ -121,13 +121,8 @@
   )
   
 (define-method get-rbe2-constraints-list link-mesh-class ()
-	(when !non-free-constraints-list
-		!non-free-constraints-list)
-	)
-
-(define-method get-link-mesh-db link-mesh-class ()
-	!mesh-db
-	)
+	!joint-elements
+)
 
 ;---------------------------------------------------------------
 ;Returns the smallest number. If both are nil then return 10e10, 

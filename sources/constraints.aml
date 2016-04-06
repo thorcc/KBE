@@ -45,40 +45,6 @@
 					formula (nth 1 ^dimensions)
 					)
 			   
-			   ;;not in use from >>>>
-			   (constraint-type-selection :class 'option-property-class
-					label "Constraint Type"
-					mode 'menu
-					options-list (class-direct-defined-subclasses 'master-joint-model)
-					labels-list (loop for option in !options-list
-                                 collect (remove "-constraint-class" (write-to-string option))
-                                 )
-					formula (progn 
-								;(change-value ^constraint-type (remove "-constraint-class" (write-to-string (nth (position ^constraint-type !labels-list) !options-list))))
-								(change-class ^male-joint-element (read-from-string (concatenate ^constraint-type "-male-element")))
-							)
-					)
-			   
-			   meshing-list (list (the display? (:from (the rbe2-dependent-nodes (:from ^male-joint-element))))
-								  (the display? (:from (the rbe2-dependent-nodes (:from ^female-joint-element))))
-								  (the display? (:from (the rbe2-independent-node (:from ^male-joint-element))))
-								  (the display? (:from (the rbe2-independent-node (:from ^female-joint-element))))
-								  )
-			   
-			   (toggle-mesh :class 'flag-property-class
-					label "Toggle rbe2-dependent-nodes mesh"
-					formula (loop for disp in ^meshing-list
-								do
-									(if (equal disp t) (change-value disp nil) (change-value disp  t))
-								)
-					;progn (change-value (the display? (:from (the rbe2-dependent-nodes (:from ^male-joint-element)))) t)
-					;				(change-value (the display? (:from (the rbe2-dependent-nodes (:from ^female-joint-element)))) t)
-					;				(change-value (the display? (:from (the rbe2-independent-node (:from ^male-joint-element)))) t)
-					;				(change-value (the display? (:from (the rbe2-independent-node (:from ^female-joint-element)))) t)
-					;				)
-					)
-			   ;;Not in use to <<<<
-			   
 			   quantity			(length ^gender-list)
 			   class-expression '(read-from-string (concatenate !constraint-type "-" (nth !index ^gender-list) "-element"))
 			  
@@ -255,10 +221,6 @@
                (sub-point-ref :class 'sub-point-data-model
                    )
 			   
-			   ;;Property used for writing to FEDEM. Could probably be deleted after incident link fix.
-			   is-incident-link-drawable? 	(is-link-drawable? ^incident-link)
-			   
-			   
 			    property-objects-list (list 
 										'("Draw" (button1-parameters :draw)
                                         ui-work-area-action-button-class)
@@ -323,6 +285,10 @@
 
 (define-method get-sub-frame joint-element-model ()
 	!sub-frame
+)
+
+(define-method get-rbe2-independent-node joint-element-model ()
+	!rbe2-independent-node
 )
  
 (define-method is-free-constraint joint-element-model ()
