@@ -52,9 +52,7 @@
 				    material-name (write-to-string (the material-name (:from ^material-selection)))
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
-                   query-objects-list (list
-                                       (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
-                                       )
+                   query-objects-list (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object ^^link-2D-material-properties
 				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class

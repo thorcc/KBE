@@ -142,6 +142,7 @@
 				(setf baseID (1+ baseID))
 				(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
 				(format stream "END {FEDEMMODELFILE}")
+				(message-box "Success!" (format nil "Writing to fmm successful!") :mode :ok)
 			)
 		)
 	)
