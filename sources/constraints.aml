@@ -200,10 +200,10 @@
 			   constraint-type		(get-constraint-type ^master-joint-object)
 			   direction			(get-direction ^master-joint-object)
 			   max-element-size 	(when (and ^max-width ^max-height)
-										(/ (min ^max-width ^max-height) 4)
+										(/ (min ^max-width ^max-height) 8)
 										)
 			   min-element-size 	(when (and ^max-width ^max-height)
-										(/ (min ^max-width ^max-height) 8)
+										(/ (min ^max-width ^max-height) 16)
 										)
 			   
                display? 			t
