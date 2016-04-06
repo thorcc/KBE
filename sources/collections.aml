@@ -382,8 +382,8 @@
 										(nth 0 (nth !index !sd-list)))) 
 				 init-form '(
 							 label 					(format nil "~a" (nth 0 (nth ^index ^sd-list)))
-							 from-point				(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
-							 to-point				(nth (nth 2 (nth ^index ^sd-list)) ^points-list)
+							 start-point-data-model	(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
+							 end-point-data-model	(nth (nth 2 (nth ^index ^sd-list)) ^points-list)
 							 ground-point			(if (nth 3 (nth ^index ^sd-list))
 														(nth (nth 3 (nth ^index ^sd-list)) ^points-list)
 														nil
