@@ -418,67 +418,26 @@
 ; Class to add loads as subobjects (load-model)
 ;-------------------------------------------------------------------------------------------------------------
 (define-class load-collection
-	:inherit-from (object)
+	:inherit-from (series-object collection-class)
 	:properties (
-				 mech-size nil
-				 (type :class 'option-property-class
-					mode 			'radio
-					options-list	(list 'force 'torque)
-					formula 		'torque
-					label 			"Load type"
-					)
-				 (point :class 'editable-data-property-class
-					formula (default '(0 0 0))
-					label "Load point"
-					)
-				 (magn :class 'var-unit-data-property-class
-					current-load (case ^^type
-									('force 'N)
-									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
-								  )
-					value-in 	1
-					unit-in 	^current-load
-					unit 		^current-load
-					label 		"Magntitude"
-					)
-			     (direction :class 'editable-data-property-class
-					formula 	(default '(1 0 0))
-					label 		"Load direction vector"
-					)
-				 (load-name :class 'editable-data-property-class
-					formula (concatenate "Load-" (write-to-string (1+ (length (children (the superior))))))
-					label 	"Load name"
-					)
+				 mech-size 			(default nil)
+				 points-list 		(default nil)
+				 links-list 		(default nil)
 				 
-				 (load-case :class 'load-model
-					load-type ^^type
-					load-point ^^point
-					magnitude ^^magn
-					load-direction ^^direction
-					)
-				 				 
+				 collection-type	'loads
+				 loads-list 		(cdr (read-from-file !superior)) ;;Called on the collecion-class
+				 quantity 			(length ^loads-list)
+				 class-expression	'load-model
+				 series-prefix		'load
+				 
 				 init-form '(
-							load-type 		^type
-							load-point 		^point
-							magnitude 		^magn
-							load-direction 	^direction
+							type 			(nth 0 (nth ^index ^loads-list))
+							load-point 		(get-coordinates (nth (nth 1 (nth ^index ^loads-list)) ^points-list))
+							direction 		(nth 2 (nth ^index ^loads-list))
+							magnitude 		(nth 3 (nth ^index ^loads-list))
+							loaded-link 	(nth 4 (nth ^index ^loads-list))
 							mechanism-size	^mech-size
 							)
-				
-				 property-objects-list (list
-										(list (the superior type self)
-											'(automatic-apply? t))
-										(list (the superior point self)
-											'(automatic-apply? t))
-										(list (the superior magn self)
-											'(automatic-apply? t))
-										(list (the superior direction self)
-											'(automatic-apply? t))
-										(list (the superior load-name self)
-											'(automatic-apply? t))
-										'("Apply load" (button1-parameters :apply-load)
-											ui-work-area-action-button-class)
-					)
 				 )
 )
 
@@ -643,6 +602,21 @@
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
 			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)))
+			collect data
+			)
+		)
+)
+
+;------------------------------------------------------------------
+; Reads each line of the loads file and adds this to a list
+;------------------------------------------------------------------
+(defun read-loads-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
+			until (equal line :eof)
+			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (read-from-string (nth 2 ls))
+				(nth 3 ls) (nth 4 ls))
 			collect data
 			)
 		)
@@ -869,7 +843,9 @@
 					links-list 		(get-links ^^links)
 					)
 			   (loads :class 'load-collection
-					mech-size (calculate-mechanism-size ^superior)
+					mech-size 	(calculate-mechanism-size ^superior)
+					points-list (get-points ^^points)
+					links-list	(get-links ^^links)
 					)
                )
   )

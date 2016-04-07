@@ -58,7 +58,8 @@
 									file-path
 								)
 							)
-						))
+						)
+					)
 					(format stream "POLYS_ON_POINTS_OFF = true;~%")
 					(format stream "STIF_PROP_DAMP = 0;~%")
 					(format stream "USE_MASS_CALCULATION = true;~%")
@@ -475,11 +476,11 @@
 			)
 			
 			;;Loads
-			(loop for i from 0 to (1- (length loads-list)) do
-				(setf baseID (1+ baseID))
-				(write-loads-to-fmm stream baseID (1+ i) (the loadID (:from (nth i loads-list)))
-					(the load-type (:from (nth i loads-list))) (the load-direction (:from (nth i loads-list))))
-			)
+			;(loop for i from 0 to (1- (length loads-list)) do
+			;	(setf baseID (1+ baseID))
+			;	(write-loads-to-fmm stream baseID (1+ i) (the loadID (:from (nth i loads-list)))
+			;		(the load-type (:from (nth i loads-list))) (the load-direction (:from (nth i loads-list))))
+			;)
 			
 			;;Function definitions
 			(setf baseID (1+ baseID))
