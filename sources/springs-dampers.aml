@@ -30,9 +30,12 @@
 							  interface-object 				(if (= 0 ^index)
 																^start-point-data-model 
 																^end-point-data-model)
-						      subset-mesh-query-object-list	(get-link-mesh-node-query-objects-list
+						      subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
 																(get-mesh-model-object 
 																	(nth ^index ^incident-links)))
+																(get-rbe2-independent-node-list 
+																	(get-mesh-model-object 
+																		(nth ^index ^incident-links))))
 							  tolerance 					1.0e3
 							  quantity						1
 							  color							'green

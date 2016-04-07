@@ -83,8 +83,10 @@
 (define-class load-model
 	:inherit-from (load-geometry-class)
 	:properties (
-				 loaded-link	(default nil)
-				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
+				 loaded-link		(default nil) ;;link-model-class
+				 mechanism-size		(default nil) ;;Greatest distance within the mechanism
+				 load-point-object	(default nil) ;;point-data-model
+				 mesh-model-object	(get-mesh-model-object ^loaded-link)
 				 
 				 (type :class 'option-property-class
 					mode 			'radio
@@ -93,7 +95,7 @@
 					label 			"Load type"
 					)
 				 (load-point :class 'editable-data-property-class
-					formula	(default '(0 0 0))
+					formula	(get-coordinates ^^load-point-object)
 					label 	"Load point"
 					)
 			     (direction :class 'editable-data-property-class
@@ -121,7 +123,49 @@
 										(list (the superior direction self)
 											'(automatic-apply? t))
 					)
+				 
+				 
 				)
+	:subobjects (
+				 (loaded-node :class 'mesh-query-nodes-with-label-class 
+					label							"loaded-node"
+					owner-link						^^loaded-link
+					mesh-database-object 			(get-mesh-database ^^loaded-link)
+					interface-object 				^^load-point-object
+					subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
+														^^mesh-model-object)
+														(get-rbe2-independent-node-list 
+															^^mesh-model-object))
+					tolerance						1.0e3
+					quantity						1
+					color							'green
+					line-width						5
+					)
+				)
+)
+
+(define-method get-load-point load-model ()
+	!load-point
+)
+
+(define-method get-load-type load-model ()
+	!type
+)
+
+(define-method get-magnitude load-model ()
+	!magnitude
+)
+
+(define-method get-direction load-model ()
+	!direction
+)
+
+(define-method get-loaded-node load-model ()
+	!loaded-node
+)
+
+(define-method get-load-ID load-model ()
+	(1+ !index)
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END load-model definitions
