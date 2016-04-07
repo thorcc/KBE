@@ -1,34 +1,37 @@
 ;-------------------------------------------------------------------------------------------------------------
-; Class: load-model
-; Holds load parameters as well as the visual geometry for the modeling view
-;------------------------------------------------------------------------------------------------------------- 
-(define-class load-model
+; Class: load-geometry-class
+; Creates the geometry for a load
+;-------------------------------------------------------------------------------------------------------------
+(define-class load-geometry-class
 	:inherit-from (union-object)
 	:properties (
-				 load-type 		(default nil)
-				 magnitude 		(default nil)
-				 load-direction	(default nil)
-				 loadID			(default nil)
-				 load-point		(default nil)
-				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^load-direction) (/ ^mechanism-size 6))) ;;This defines the line length, controlled by the size of the mechanism
-				 total-vector 	(subtract-points ^end-point ^load-point) ;; Just to get the scalar with the vector
-				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
+				 load-point		nil
+				 mechanism-size	nil
+				 type 			nil
+				 direction		nil
+				 
+				 ;;This defines the line length, controlled by the size of the mechanism
+				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^direction)
+									(/ ^mechanism-size 6))) 
+				 total-vector 	(subtract-points ^end-point ^load-point)
 				 translation	(/ ^mechanism-size 40)
 				 
-				 ;;Visual geometry
-				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^load-direction))
+				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^direction))
 				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
-				 mirror-line 				(compute-plane-normal ^load-point ^end-point ^random-direction-normal)
 				 arrow-vector1 				(add-points 
-														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
-														(multiply-vector-by-scalar ^random-direction-normal (/ ^mechanism-size 70)) ;; How far the arrow points move from the line 
-														)
+												(add-points ^load-point (multiply-vector-by-scalar 
+													^total-vector 0.2)) ;;small portion of the total line
+												(multiply-vector-by-scalar ^random-direction-normal 
+													(/ ^mechanism-size 70)) ;; How far the arrow points move from the line 
+											)
 				 arrow-vector2 				(add-points 
-														(add-points ^load-point (multiply-vector-by-scalar ^total-vector 0.2)) ;; This is the small portion of the total line
-														(multiply-vector-by-scalar ^negative-random (/ ^mechanism-size 70)) 
-														)
+												(add-points ^load-point (multiply-vector-by-scalar 
+													^total-vector 0.2)) ;; This is the small portion of the total line
+												(multiply-vector-by-scalar ^negative-random 
+													(/ ^mechanism-size 70)) 
+											)
 				 
-				 object-list (case ^load-type
+				 object-list (case ^type
 							  ('force (list ^line ^arrow1 ^arrow2 ))
 							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
 							  ) 
@@ -59,14 +62,65 @@
 										(multiply-vector-by-scalar ^total-vector 0.1)
 										))
 					)
-				 color (case ^load-type
+				 color (case ^type
 						('force 'orange)
 						('torque 'red)
 						)
 				 orientation (list (translate 
-									(multiply-vector-by-scalar (normalize ^load-direction) (* -1 ^translation))
+									(multiply-vector-by-scalar (normalize ^direction) (* -1 ^translation))
 									))
 				 line-width 1
+				)
+)
+;-------------------------------------------------------------------------------------------------------------
+; END load-geometry-class
+;-------------------------------------------------------------------------------------------------------------
+
+;-------------------------------------------------------------------------------------------------------------
+; Class: load-model
+; Holds load parameters
+;------------------------------------------------------------------------------------------------------------- 
+(define-class load-model
+	:inherit-from (load-geometry-class)
+	:properties (
+				 loaded-link	(default nil)
+				 mechanism-size	(default nil) ;;Greatest distance within the mechanism
+				 
+				 (type :class 'option-property-class
+					mode 			'radio
+					options-list	(list 'force 'torque)
+					formula 		(default 'torque)
+					label 			"Load type"
+					)
+				 (load-point :class 'editable-data-property-class
+					formula	(default '(0 0 0))
+					label 	"Load point"
+					)
+			     (direction :class 'editable-data-property-class
+					formula 	(default '(0 0 1))
+					label 		"Load direction vector"
+					)
+				 (magnitude :class 'var-unit-data-property-class
+					current-load (case ^^type
+									('force 'N)
+									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
+								  )
+					value-in 	1
+					unit-in 	^current-load
+					unit 		^current-load
+					label 		"Magntitude"
+					)
+				 
+				 property-objects-list (list
+										(list (the superior type self)
+											'(automatic-apply? t))
+										(list (the superior load-point self)
+											'(automatic-apply? t))
+										(list (the superior magnitude self)
+											'(automatic-apply? t))
+										(list (the superior direction self)
+											'(automatic-apply? t))
+					)
 				)
 )
 ;-------------------------------------------------------------------------------------------------------------
