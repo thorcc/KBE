@@ -120,42 +120,43 @@
 						)
 					)
 				)
-				(loop for spring in (get-springs !spring-dampers) do 
+				(loop for spring-damper in (children !spring-dampers) do 
 					(let (
 							(counter 0)
-							(nodeIDs nil)
+							;(nodeIDs nil)
 						)
 						(progn 
-							(loop for mesh-node in (children spring) do
+							(loop for mesh-node in (children spring-damper) do
 								(setf counter (1+ counter))
 								(setf baseID (1+ baseID))
 								(write-triad-to-fmm stream baseID triads-written (get-coordinates-for-node-id
 									(get-mesh-database (get-owner-link mesh-node)) (get-node-position mesh-node))
 									(1+ (the index (:from (get-owner-link mesh-node)))) 
-									(progn 
-										(setf nodeIDs (append nodeIDs (list (get-node-position mesh-node))))
-										(first (last nodeIDs))
-									)
+									(get-node-position mesh-node)
 								)
 								(setf triads-written (1+ triads-written))
 							)
-							(if (= 1 (length nodeIDs))
-								;; Case 1: Spring only has one subobject. This means that the spring is 
+							(if (= 1 counter)
+								;; Happens if spring/damper only has one subobject. This means that it is 
 								;; supposed to be connected to the ground. Have to create this ground triad
 								(progn 
 									(setf baseID (1+ baseID))
-									(write-triad-to-fmm stream baseID triads-written (get-end-point spring) -1 -1)
-									(setf baseID (1+ baseID))
-									(write-spring-properties-to-fmm stream baseID 
-										(1+ (the index (:from spring))) (1- triads-written) triads-written)
+									(write-triad-to-fmm stream baseID triads-written 
+										(get-end-point spring-damper) -1 -1)
 									(setf triads-written (1+ triads-written))
 								)
-								;; Case 2: Both ends of the spring are connected to a link.
-								;; Only write spring properties
-								(progn 
-									(setf baseID (1+ baseID))
+							)
+							(setf baseID (1+ baseID))
+							(case (get-type spring-damper)
+								('spring 
 									(write-spring-properties-to-fmm stream baseID 
-										(1+ (the index (:from spring))) (1- triads-written) triads-written)
+										(1+ (the index (:from spring-damper))) 
+										(- triads-written 2) (1- triads-written))
+								)
+								('damper
+									(write-damper-properties-to-fmm stream baseID 
+										(1+ (the index (:from spring-damper))) 
+										(- triads-written 2) (1- triads-written))
 								)
 							)
 						)
@@ -404,6 +405,14 @@
 	(format stream "INIT_STIFFNESS = 750000;~%")
 	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%" triad1 triad2)
 	(format stream "USE_INIT_DEFLECTION = true;~%}~2%")
+)
+
+(defun write-damper-properties-to-fmm (stream baseID ID triad1 triad2)
+	(format stream "AXIAL_DAMPER~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = ~d;~%" ID)
+	(format stream "INIT_DAMPING = 3000;~%")
+	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%}~2%" triad1 triad2)
 )
 
 (defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
