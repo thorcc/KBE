@@ -397,7 +397,7 @@
 														)
 														(remove nil (list link1 link2))
 													)
-							 ;surface-mesh-queries	(get-all-surface-meshes-list ^links)
+							 stiffness-damping		(nth 4 (nth ^index ^sd-list))
 							 )
 				 )
 )
@@ -589,7 +589,8 @@
 		(loop for line = (read-line stream  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)))
+			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) 
+				(read-from-string (nth 3 ls)) (nth 4 ls))
 			collect data
 			)
 		)
