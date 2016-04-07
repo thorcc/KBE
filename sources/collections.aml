@@ -373,8 +373,7 @@
 	:inherit-from (series-object collection-class)
 	:properties (
 				 points-list		nil
-				 links				nil
-				 mesh-database		nil
+				 links-list			nil
 				 collection-type 	'spring-damper
 				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
@@ -388,8 +387,17 @@
 														(nth (nth 3 (nth ^index ^sd-list)) ^points-list)
 														nil
 													)
-							 surface-mesh-queries	(get-all-surface-meshes-list ^links)
-							 mesh-db				^mesh-database
+							 incident-links			(let (
+														(link1 (if (first (nth 3 (nth ^index ^sd-list)))
+															(nth (first (nth 3 (nth ^index ^sd-list))) ^links-list)
+															))
+														(link2 (if (second (nth 3 (nth ^index ^sd-list)))
+															(nth (second (nth 3 (nth ^index ^sd-list))) ^links-list)
+															))
+														)
+														(remove nil (list link1 link2))
+													)
+							 ;surface-mesh-queries	(get-all-surface-meshes-list ^links)
 							 )
 				 )
 )
@@ -634,7 +642,7 @@
 		(loop for line = (read-line stream  nil :eof)
 			until (equal line :eof)
 			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls)  (nth 2 ls) (nth 3 ls))
+			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)))
 			collect data
 			)
 		)
@@ -769,7 +777,7 @@
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
 			   
-			   ;; mechanism-selection is a list of folder-info-models
+			   ;; mechanism-selection contains a list of folder-info-models to choose from
                (mechanism-selection :class 'option-property-class
                    labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
                                 when (the path (:from subfolder))
@@ -858,14 +866,11 @@
 					)
                (spring-dampers :class 'spring-damper-collection
 					points-list 	(get-points ^^points)
-					links 			^^links
-					mesh-database	^^mesh-database
+					links-list 		(get-links ^^links)
 					)
 			   (loads :class 'load-collection
 					mech-size (calculate-mechanism-size ^superior)
 					)
-			   (mesh-database :class 'meshdb-class
-                   )
                )
   )
 ;-------------------------------------------------------------------

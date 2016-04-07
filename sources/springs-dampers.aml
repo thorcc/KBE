@@ -5,35 +5,36 @@
 				 label 					nil
 				 start-point-data-model	nil
 				 end-point-data-model	nil
-				 ground-point			nil ;;If not nil, this is the same point as one of the above
-				 surface-mesh-queries	nil
-				 mesh-db				nil
+				 incident-links			nil
 				 
 				 start-point			(get-coordinates ^start-point-data-model)
 				 end-point				(get-coordinates ^end-point-data-model)
 				 
-				 ;point1					(get-coordinates ^from-point)
-				 ;point2					(get-coordinates ^to-point)
-				 ;line-width 			4
-				 
 				 ;;If the spring/damper is supposed to be connected to the ground and not to the mechanism,
 				 ;;a separate node has to be created instead of finding the closest node in the mesh
-				 quantity				(if ^ground-point 1 2)
+				 quantity				(length ^incident-links)
 				 class-expression 		'mesh-query-nodes-with-label-class
 				 
 				 init-form	'(
 							  label 						(format nil "closest-mesh-node-~d" (1+ ^index))
-							  mesh-database-object 			^^mesh-db
-							  interface-object 				(if (= 0 ^index) 
+							  owner-link					(nth ^index ^incident-links)
+							  mesh-database-object 			(get-mesh-database (nth ^index ^incident-links))
+							  interface-object 				(if (= 0 ^index)
 																^start-point-data-model 
 																^end-point-data-model)
-						      subset-mesh-query-object-list	^^surface-mesh-queries
+						      subset-mesh-query-object-list	(get-link-mesh-node-query-objects-list
+																(get-mesh-model-object 
+																	(nth ^index ^incident-links)))
 							  tolerance 					1.0e3
 							  quantity						1
 							  color							'green
 							  line-width					5
 							 )
 				 )
+)
+
+(define-method get-end-point general-spring-damper-class ()
+	!end-point
 )
 
 (define-class damper-geometry-class
@@ -183,8 +184,17 @@
 (define-class mesh-query-nodes-with-label-class
 	:inherit-from (mesh-query-nodes-from-interface-class)
 	:properties (
-				 label nil
+				 label			nil
+				 owner-link 	nil
+				 posish 		(get-node-position-in-query-nodes-list (the superior))
 				 )
 )
 
+(define-method get-owner-link mesh-query-nodes-with-label-class ()
+	!owner-link
+)
+
+(define-method get-node-position mesh-query-nodes-with-label-class ()
+	(first !mesh-entities-list)
+)
 
