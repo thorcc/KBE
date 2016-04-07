@@ -163,8 +163,28 @@
 						)
 					)
 				)
-				(setf baseID (1+ baseID))
-				(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
+				
+				;; Loads
+				(loop for load in (get-loads !loads) do
+					(setf baseID (1+ baseID))
+					(let (
+							(loaded-node (get-loaded-node load))
+						)
+						(progn
+							(write-triad-to-fmm stream baseID triads-written (get-coordinates-for-node-id
+								(get-mesh-database (get-owner-link loaded-node)) (get-node-position loaded-node))
+								(1+ (the index (:from (get-owner-link loaded-node)))) 
+								(get-node-position loaded-node)
+							)
+							(setf baseID (1+ baseID))
+							(write-loads-to-fmm stream baseID (get-load-ID load) triads-written (get-load-type load)
+								(get-magnitude load) (get-direction load))
+							(setf triads-written (1+ triads-written))
+						)
+					)
+				)
+				;(write-control-system-properties-to-fmm !mechanism-type stream baseID)
+				;(write-analysis-properties-to-fmm !mechanism-type stream baseID !loads-list)
 				(format stream "END {FEDEMMODELFILE}")
 				(message-box "Success!" (format nil "Writing to fmm successful!") :mode :ok)
 			)
@@ -417,176 +437,112 @@
 )
 
 (defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
-	(format stream "ANALYSIS~%{~%")
-	(format stream "ID = 1;~%")
-	(format stream "BASE_ID = ~d;~%" baseID)
-	(format stream "START_TIME = 0;~%")
 	(if (equal "four-bar" mechanism-type)
 		;;If true:
 		(progn 
-			(format stream "END_TIME = 2.5;~%")
-			(format stream "TIME_INCR = 0.01;~%")
-			(format stream "STATIC_EQL_TOLERANCE = 0.001;~%")
-			(format stream "VELOCITY_PROP_TOLERANCE = 0;~%")
-			(format stream "INITIAL_EQL_ITERATIONS = false;~%")
-			(format stream "USE_NEWMARK_DAMPING = true;~%")
-			(format stream "USE_MASS_CORRECTION = false;~%")
-			(format stream "MIN_TIME_INCREMNT = 0.001;~%")
-			(format stream "SOLVE_EIGENVALUES = false;~%")
-			(format stream "EIGENVALUE_SOLUTION_TIME_INTERVAL = 0.1;~%")
-			(format stream "IGNORE_TOLERANCE = false;~%")
-			(format stream "FORCE_NUM_IT = 5;~%")
-			(format stream "MINIMUM_NUM_IT = 1;~%")
-			(format stream "MAX_NUM_IT = 15;~%")
-			(format stream "MIN_MATRIX_UPDATE = 5;~%")
-			(format stream "STEP_REDUCTION_FACTOR = 1;~%")
-			(format stream "EQ_OPTIONS= 0;~%")
-			(format stream "RESTART_OPTIONS = 0;~%")
-			(format stream "RESULT_OPTIONS = 0;~%")
-			(format stream "EIGENVALUE_OPTIONS = 0;~%")
-			(format stream "STRESS_START_TIME = 0;~%")
-			(format stream "STRESS_STOP_TIME = 1;~%")
-			(format stream "STRESS_TIME_INCR = 0.1;~%")
-			(format stream "STRESS_DEFORMATIONS_ONLY = false;~%}~3%")
-			
-			;;Engines
-			(let (
-				  (descr (list "\"Torque\"" "\"Reference\"" "\"Joint Velocity\""))
-				  (sensor (list "3 FcSIMPLE_SENSOR" "1 FcSIMPLE_SENSOR" "2 FcSIMPLE_SENSOR"))
-				  (math-func (list "1 FcfSCALE" "1 FcfLIM_RAMP" "1 FcfSCALE"))
-				  (entity (list -1 -1 6))
-				  (dof (list -1 -1 5))
-				  )
-				 (loop for i from 0 to 2 do
-					(setf baseID (1+ baseID))
-					(write-engines-to-fmm stream baseID (1+ i) (nth i descr) (nth i sensor) 
-						(nth i math-func) (nth i entity) (nth i dof))
-				 )
-			)
-			
-			;;Sensors
-			(let (
-				  (descr (list "\"Time sensor\"" "\"\"" "\"Control output sensor\""))
-				  (measured (list "1 FcTIME" "1 FcREV_JOINT" "1 FccOUTPUT"))
-				  )
-				 (loop for i from 0 to 2 do
-					(setf baseID (1+ baseID))
-					(write-sensors-to-fmm stream baseID (1+ i) (nth i descr) (nth i measured))
-				 )
-			)
-			
-			;;Loads
-			;(loop for i from 0 to (1- (length loads-list)) do
-			;	(setf baseID (1+ baseID))
-			;	(write-loads-to-fmm stream baseID (1+ i) (the loadID (:from (nth i loads-list)))
-			;		(the load-type (:from (nth i loads-list))) (the load-direction (:from (nth i loads-list))))
+			;;Graphs
+			;(let (
+			;	  (descr (list "Motor torque" "x-acceleration " "Motor velocity" "Tip placement"))
+			;	  (title (list "Motor torque [Nm]" "x-acceleration [m/sec2]" "Motor velocity [rad/sec]" "Tip Placement"))
+			;	  )
+			;	 (loop for i from 0 to 3 do
+			;		(setf baseID (1+ baseID))
+			;		(write-graph-definitions-to-fmm stream baseID (nth i descr) (1+ i) (nth i title))
+			;	 )
 			;)
 			
-			;;Function definitions
-			(setf baseID (1+ baseID))
-			(format stream "FUNC_SCALE~%{~%")
-			(format stream "BASE_ID = ~d;~%" baseID)
-			(format stream "ID = 1;~%")
-			(format stream "SCALE = 1;~%}~2%")
-			
-			(setf baseID (1+ baseID))
-			(format stream "FUNC_LIM_RAMP~%{~%")
-			(format stream "BASE_ID = ~d;~%" baseID)
-			(format stream "ID = 1;~%")
-			(format stream "AMPLITUDE_DISPLACEMENT = 0;~%")
-			(format stream "SLOPE_OF_RAMP = 12.5664;~%")
-			(format stream "DELAY_OF_RAMP = 0;~%")
-			(format stream "END_OF_RAMP = 0.5;~%}~3%")
-			
-			;;Control lines
-			(let (
-				  (ownerStart	(list "1 FccINPUT" "2 FccINPUT" "1 FccCOMPARATOR" "1 FccAMPLIFIER"))
-				  (ownerEnd 	(list "1 FccCOMPARATOR 1" "1 FccCOMPARATOR 2" "1 FccAMPLIFIER 1" "1 FccOUTPUT 1"))
-				  (ful 			(list 2 1 2 2))
-				  (controlNo 	(list 1 2 4 3))
-				  )
-				 (loop for i from 0 to 3 do
-					(setf baseID (1+ baseID))
-					(write-control-lines-to-fmm stream baseID (1+ i) 
-						(nth i ownerStart) (nth i ownerEnd) (nth i ful) (nth i controlNo))
-				 )
-			)
-			
-			;;Control i/o
-			(let (
-				  (name (list "CONTROL_INPUT" "CONTROL_INPUT" "CONTROL_OUTPUT" "CONTROL_AMPLIFIER" "CONTROL_COMPARATOR"))
-				  (IDs (list 1 2 1 1 1))
-				  (engine (list "2 FcENGINE" "3 FcENGINE" "0 0" "0 0" "0 0"))
-				  (position (list "-3.5 1 0" "-3.5 0 0" "2.5 0.5 0" "0.5 0.5 0" "-1.5 0.5 0"))
-				  )
-				 (loop for i from 0 to 4 do
-					(setf baseID (1+ baseID))
-					(write-control-io-to-fmm stream (nth i name) baseID (nth i IDs)
-						(nth i engine) (nth i position) (if (= i 3) 1))
-				 )
-			)
-			
-			;;Graphs
-			(let (
-				  (descr (list "Motor torque" "x-acceleration " "Motor velocity" "Tip placement"))
-				  (title (list "Motor torque [Nm]" "x-acceleration [m/sec2]" "Motor velocity [rad/sec]" "Tip Placement"))
-				  )
-				 (loop for i from 0 to 3 do
-					(setf baseID (1+ baseID))
-					(write-graph-definitions-to-fmm stream baseID (nth i descr) (1+ i) (nth i title))
-				 )
-			)
-			
 			;;Curves. Need to set triad ids??
-			(let (
-				  (descr (list "\"Set 0\"" "\"Set 0\"" "\"Set 0\"" "\"Tip placement\""))
-				  (x-result (list "<\"SCALAR\",\"Physical time\">" "<\"SCALAR\",\"Physical time\">" 
-					  "<\"SCALAR\",\"Physical time\">" "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
-				  (x-oper (list "\"None\"" "\"None\"" "\"None\"" "\"Position X\""))
-				  (y-result (list "<\"Torque\",40,1,\"SCALAR\",\"Moment value\">" "<\"Triad\",10,9,\"VEC3\",\"Acceleration\">"
-					  "<\"Revolute joint\",21,1,\"SCALAR\",\"Rz joint variables\",\"Angular velocity\">" 
-					  "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
-				  (y-object (list "1 FcLOAD" "9 FcTRIAD" "1 FcREV_JOINT" "1 FcTRIAD"))
-				  (y-oper (list "\"None\"" "\"X\"" "\"None\"" "\"Position Y\""))
-				  (legend "\"Triad [1], Position Y vs Triad [1], Position X\"")
-				  (x-object "1 FcTRIAD")
-				  )
-				 (loop for i from 0 to 3 do
-					(setf baseID (1+ baseID))
-					(write-curve-sets-to-fmm stream baseID (nth i descr) (1+ i) (1+ i) (nth i x-result) (nth i x-oper) 
-						(nth i y-result) (nth i y-object) (nth i y-oper) (if (= i 3) legend) (if (= i 3) x-object))
-				 )
-			)
+			;(let (
+			;	  (descr (list "\"Set 0\"" "\"Set 0\"" "\"Set 0\"" "\"Tip placement\""))
+			;	  (x-result (list "<\"SCALAR\",\"Physical time\">" "<\"SCALAR\",\"Physical time\">" 
+			;		  "<\"SCALAR\",\"Physical time\">" "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
+			;	  (x-oper (list "\"None\"" "\"None\"" "\"None\"" "\"Position X\""))
+			;	  (y-result (list "<\"Torque\",40,1,\"SCALAR\",\"Moment value\">" "<\"Triad\",10,9,\"VEC3\",\"Acceleration\">"
+			;		  "<\"Revolute joint\",21,1,\"SCALAR\",\"Rz joint variables\",\"Angular velocity\">" 
+			;		  "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
+			;	  (y-object (list "1 FcLOAD" "9 FcTRIAD" "1 FcREV_JOINT" "1 FcTRIAD"))
+			;	  (y-oper (list "\"None\"" "\"X\"" "\"None\"" "\"Position Y\""))
+			;	  (legend "\"Triad [1], Position Y vs Triad [1], Position X\"")
+			;	  (x-object "1 FcTRIAD")
+			;	  )
+			;	 (loop for i from 0 to 3 do
+			;		(setf baseID (1+ baseID))
+			;		(write-curve-sets-to-fmm stream baseID (nth i descr) (1+ i) (1+ i) (nth i x-result) (nth i x-oper) 
+			;			(nth i y-result) (nth i y-object) (nth i y-oper) (if (= i 3) legend) (if (= i 3) x-object))
+			;	 )
+			;)
 		)
-		;;If false:
-		(progn
-			(format stream "END_TIME = 1;~%")
-			(format stream "TIME_INCR = 0.01;~%")
-			(format stream "MAXIMUM_NUM_IT = 50;~%")
-			(format stream "MINIMUM_NUM_IT = 1;~%")
-			(format stream "MIN_MATRIX_UPDATES = 5;~%")
-			(format stream "MIN_TIME_INCREMENT = 1e-006;~%")
-			(format stream "MAX_SEQUENTIAL_NO_MATRIX_UPDATES = 5;~%")
-			(format stream "NUM_EIGENMODES = 10;~%")
-			(format stream "STATIC_EQL_TOLERANCE = 1e-006;~%")
-			(format stream "STEP_REDUCTION_FACTOR = 1;~%")
-			(format stream "TOL_DISPLACEMENT_NORM = 1e-006 ALL_OF;~%")
-			(format stream "TOL_DISPLACEMENT_ROT = 3e-004 IGNORE;~%")
-			(format stream "TOL_DISPLACEMENT_TRA = 1e-004 IGNORE;~%")
-			(format stream "TOL_ENERGY_MAX = 0.0001 IGNORE;~%")
-			(format stream "TOL_ENERGY_SUM = 1e-006 ALL_OF;~%")
-			(format stream "TOL_RESIDUAL_NORM = 1 IGNORE;~%")
-			(format stream "TOL_RESIDUAL_ROT = 1 IGNORE;~%")
-			(format stream "TOL_RESIDUAL_TRA = 1 IGNORE;~%")
-			(format stream "TOL_VELOCITY_NORM = 1e-006 ALL_OF;~%")
-			(format stream "TOL_MATRIX_UPDATE_FACTOR = 100;~%")
-			(format stream "USE_FIXED_MATRIX_UPDATES = false;~%")
-			(format stream "USE_DYN_STRESS_STIFFENING = true;~%")
-			(format stream "USE_EIG_STRESS_STIFFENING = true;~%")
-			(format stream "USE_EQU_STRESS_STIFFENING = false;~%")
-			(format stream "USE_MASS_CORRECTION = true;~%")
-			(format stream "AUTO_RBM_ANIMATION = true;~%}~2%")
-		) ;;If false end
+	)
+)
+
+(defun write-control-system-properties-to-fmm (stream baseID)
+	;;EnginesX
+	(let (
+		  (descr (list "\"Torque\"" "\"Reference\"" "\"Joint Velocity\""))
+		  (sensor (list "3 FcSIMPLE_SENSOR" "1 FcSIMPLE_SENSOR" "2 FcSIMPLE_SENSOR"))
+		  (math-func (list "1 FcfSCALE" "1 FcfLIM_RAMP" "1 FcfSCALE"))
+		  (entity (list -1 -1 6))
+		  (dof (list -1 -1 5))
+		  )
+		 (loop for i from 0 to 2 do
+			(setf baseID (1+ baseID))
+			(write-engines-to-fmm stream baseID (1+ i) (nth i descr) (nth i sensor) 
+				(nth i math-func) (nth i entity) (nth i dof))
+		 )
+	)
+	
+	;;SensorsX
+	(let (
+		  (descr (list "\"Time sensor\"" "\"\"" "\"Control output sensor\""))
+		  (measured (list "1 FcTIME" "1 FcREV_JOINT" "1 FccOUTPUT"))
+		  )
+		 (loop for i from 0 to 2 do
+			(setf baseID (1+ baseID))
+			(write-sensors-to-fmm stream baseID (1+ i) (nth i descr) (nth i measured))
+		 )
+	)
+	;;Function definitionsX
+	(setf baseID (1+ baseID))
+	(format stream "FUNC_SCALE~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = 1;~%")
+	(format stream "SCALE = 1;~%}~2%")
+	
+	(setf baseID (1+ baseID))
+	(format stream "FUNC_LIM_RAMP~%{~%")
+	(format stream "BASE_ID = ~d;~%" baseID)
+	(format stream "ID = 1;~%")
+	(format stream "AMPLITUDE_DISPLACEMENT = 0;~%")
+	(format stream "SLOPE_OF_RAMP = 12.5664;~%")
+	(format stream "DELAY_OF_RAMP = 0;~%")
+	(format stream "END_OF_RAMP = 0.5;~%}~3%")
+	
+	;;Control linesX
+	(let (
+		  (ownerStart	(list "1 FccINPUT" "2 FccINPUT" "1 FccCOMPARATOR" "1 FccAMPLIFIER"))
+		  (ownerEnd 	(list "1 FccCOMPARATOR 1" "1 FccCOMPARATOR 2" "1 FccAMPLIFIER 1" "1 FccOUTPUT 1"))
+		  (ful 			(list 2 1 2 2))
+		  (controlNo 	(list 1 2 4 3))
+		  )
+		 (loop for i from 0 to 3 do
+			(setf baseID (1+ baseID))
+			(write-control-lines-to-fmm stream baseID (1+ i) 
+				(nth i ownerStart) (nth i ownerEnd) (nth i ful) (nth i controlNo))
+		 )
+	)
+	
+	;;Control i/oX
+	(let (
+		  (name (list "CONTROL_INPUT" "CONTROL_INPUT" "CONTROL_OUTPUT" "CONTROL_AMPLIFIER" "CONTROL_COMPARATOR"))
+		  (IDs (list 1 2 1 1 1))
+		  (engine (list "2 FcENGINE" "3 FcENGINE" "0 0" "0 0" "0 0"))
+		  (position (list "-3.5 1 0" "-3.5 0 0" "2.5 0.5 0" "0.5 0.5 0" "-1.5 0.5 0"))
+		  )
+		 (loop for i from 0 to 4 do
+			(setf baseID (1+ baseID))
+			(write-control-io-to-fmm stream (nth i name) baseID (nth i IDs)
+				(nth i engine) (nth i position) (if (= i 3) 1))
+		 )
 	)
 )
 
@@ -609,18 +565,18 @@
 	(format stream "MEASURED = ~a;~%}~2%" measured)
 )
 
-(defun write-loads-to-fmm (stream baseID ID owner-triad load-type direction)
+(defun write-loads-to-fmm (stream baseID ID owner-triad load-type magnitude direction)
 	(format stream "LOAD~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
-	(format stream "ID = 1;~%")
-	(format stream "ENGINE = 1 FcENGINE;~%")
+	(format stream "ID = ~d;~%" ID)
+	;(format stream "ENGINE = 1 FcENGINE;~%")
 	(format stream "OWNER_TRIAD = ~d;~%" owner-triad)
-	(format stream "LOAD_TYPE = ~d;~%" (if (equal "force" load-type) 0 1))
-	(format stream "INIT_LOAD = 0;~%") ;;;;;;;;;!!!!!!!!!!!!
-	(format stream "SCALE_LOAD = 1;~%") ;;;;;;;!!!!!!!!!!!!!!!
-	(format stream "FROM_OBJECT = -1 FcLINK;~%")
+	(format stream "LOAD_TYPE = ~d;~%" (case load-type ('force 0) ('torque 1)))
+	(format stream "INIT_LOAD = ~d;~%" magnitude)
+	;(format stream "SCALE_LOAD = 1;~%") ;;;;;;;!!!!!!!!!!!!!!!
+	;(format stream "FROM_OBJECT = -1 FcLINK;~%")
 	(format stream "FROM_POINT = 0 0 0;~%")
-	(format stream "TO_OBJECT = -1 FcLINK;~%")
+	;(format stream "TO_OBJECT = -1 FcLINK;~%")
 	(format stream "TO_POINT = ~d ~d ~d;~%}~2%" (nth 0 direction) (nth 1 direction) (nth 2 direction))
 )
 
