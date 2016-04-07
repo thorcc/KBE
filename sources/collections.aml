@@ -756,7 +756,7 @@
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: main-mechanism-class
-; Initiates the system by creating all the collections
+; Initiates the system by creating all the collections as subobjects
 ;-------------------------------------------------------------------------------------------------------------
 (define-class main-mechanism-class
   :inherit-from (object)
