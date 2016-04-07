@@ -6,6 +6,7 @@
 				 start-point-data-model	nil
 				 end-point-data-model	nil
 				 incident-links			nil
+				 type					nil
 				 
 				 start-point			(get-coordinates ^start-point-data-model)
 				 end-point				(get-coordinates ^end-point-data-model)
@@ -35,6 +36,10 @@
 
 (define-method get-end-point general-spring-damper-class ()
 	!end-point
+)
+
+(define-method get-type general-spring-damper-class ()
+	!type
 )
 
 (define-class spring-geometry-class
