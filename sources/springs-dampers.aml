@@ -37,6 +37,54 @@
 	!end-point
 )
 
+(define-class spring-geometry-class
+	:inherit-from (union-object)
+	:properties (
+		start-point (default '(0 0 0)) 
+		end-point 	(default '(1 1 1))
+		spring-direction (subtract-points ^end-point ^start-point)
+		spring-length (points-distance ^start-mid-point ^end-mid-point)
+		spring-radius (/ (points-distance ^start-point ^end-point) 10)
+		
+		start-mid-point 	(add-points ^start-point (multiply-vector-by-scalar ^spring-direction 0.25))
+		end-mid-point 		(add-points ^start-point (multiply-vector-by-scalar ^spring-direction 0.75))		
+		
+		x1-direction (normalize (arbitrary-normal-to-vector ^spring-direction))
+		x2-direction (compute-plane-normal ^start-point ^end-point (add-points ^start-mid-point ^x1-direction))
+		
+		object-list (list ^coil ^start-line ^end-line ^start-spring ^end-spring)
+		
+		(coil :class 'curve-from-points-class
+			reference-coordinate-system ^spring-coordinate-system
+			points-coordinates-list (helical-curve ^^spring-radius ^^spring-length 6 :n 100)		
+		)
+		(spring-coordinate-system :class 'coordinate-system-class
+			origin ^^start-mid-point
+			vector-i ^^x1-direction
+			vector-j ^^x2-direction
+			vector-k ^^spring-direction 			
+		)
+		(start-line :class 'line-object
+			point1	^^start-point
+			point2 	^^start-mid-point
+		)
+		
+		(end-line :class 'line-object
+			point1 	^^end-mid-point 
+			point2 	^^end-point
+		)
+		
+		(start-spring :class 'line-object
+			point1 ^^start-mid-point
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-direction  ^^spring-radius))
+		)
+		(end-spring :class 'line-object
+			point1 ^^end-mid-point
+			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-direction ^^spring-radius))
+		)
+	)	
+)
+
 (define-class damper-geometry-class
 	:inherit-from (union-object)
 	:properties (
@@ -45,14 +93,14 @@
 		damper-direction (subtract-points ^end-point ^start-point)
 		damper-width (/ (points-distance ^start-point ^end-point) 12)	;(the coordinates start-point) (the coordinates end-point)) 12)
 		
-		x1-direction					(normalize (arbitrary-normal-to-vector ^damper-direction))
+		x1-direction					(arbitrary-normal-to-vector ^damper-direction)
 		x1-negative-direction 			(multiply-vector-by-scalar ^x1-direction -1)
-		x2-direction					(compute-plane-normal ^x1-direction ^start-mid-point ^start-point)
+		x2-direction					(compute-plane-normal ^start-point ^end-point (add-points ^start-mid-point (multiply-vector-by-scalar ^x1-direction ^damper-width)))
 		x2-negative-direction 			(multiply-vector-by-scalar ^x2-direction -1)
 		
-		cross-point (multiply-vector-by-scalar (add-points ^start-point ^end-point) 0.4)
-		start-mid-point (multiply-vector-by-scalar (add-points ^start-point ^end-point) 0.25)
-		end-mid-point (multiply-vector-by-scalar (add-points ^start-point ^end-point) 0.75)
+		cross-point 		(add-points ^start-point (multiply-vector-by-scalar ^damper-direction 0.4))
+		start-mid-point 	(add-points ^start-point (multiply-vector-by-scalar ^damper-direction 0.25))
+		end-mid-point 		(add-points ^start-point (multiply-vector-by-scalar ^damper-direction 0.75))
 		
 	    object-list (list ^start-mid-line ^end-mid-line ^lower-cross-line1 ^upper-cross-line1 
 							^lower-cross-line2 ^upper-cross-line2 ^lower-box-line1 ^lower-box-line2 ^lower-box-line3 ^lower-box-line4
@@ -60,8 +108,6 @@
 							^upper-cross-box-line1 ^upper-cross-box-line2 ^upper-cross-box-line3 ^upper-cross-box-line4
 							^box-line1 ^box-line2 ^box-line3 ^box-line4						
 							)
-		line-width 1
-		color 'green
 		
 		(start-mid-line :class 'line-object
 			point1 ^^start-point
@@ -174,7 +220,7 @@
 )
  
 (define-class spring-model-class
-	:inherit-from (general-spring-damper-class)
+	:inherit-from (general-spring-damper-class spring-geometry-class)
 	:properties (
 				 type			'spring
 				 color			'purple
