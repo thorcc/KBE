@@ -23,14 +23,14 @@
   :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
 					plane-normal-vector				(get-direction-along-member 
 														(get-spline-frame-at-joint-element
 															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
@@ -61,14 +61,14 @@
   :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
 					plane-normal-vector				(get-direction-along-member 
 														(get-spline-frame-at-joint-element
 															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
@@ -122,14 +122,14 @@
   :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
 					plane-normal-vector				(get-direction-along-member 
 														(get-spline-frame-at-joint-element
 															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
@@ -156,14 +156,14 @@
   :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
 					plane-normal-vector				(get-direction-along-member 
 														(get-spline-frame-at-joint-element
 															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
@@ -338,11 +338,11 @@
                )
   :subobjects (
                (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
-					mesh-database-object			(get-mesh-model-subobject ^^link-mesh-model-object 'mesh-db)
+					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					interface-object 				(the point-ref (:from ^^main-frame-object))
 					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
 					quantity 						nil ;;Collect all nodes within the tolerance
-					subset-mesh-query-object-list	(list (get-mesh-model-subobject ^^link-mesh-model-object '2d-elements))
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
 					color 							'green
 					display							nil
 					)
