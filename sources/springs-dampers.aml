@@ -13,6 +13,7 @@
 				 start-point-data-model	nil
 				 end-point-data-model	nil
 				 incident-links			nil
+				 stiffness-damping		nil
 				 type					nil
 				 
 				 start-point			(get-coordinates ^start-point-data-model)
@@ -42,6 +43,10 @@
 							  line-width					5
 							 )
 				 )
+)
+
+(define-method get-stiffness-damping general-spring-damper-class ()
+	!stiffness-damping
 )
 
 (define-method get-end-point general-spring-damper-class ()
@@ -251,8 +256,13 @@
 	:inherit-from (general-spring-damper-class damper-geometry-class)
 	:properties (
 				 type			'damper
+				 damping 		(get-stiffness-damping !superior)
 				 color			'red
 				)
+)
+
+(define-method get-damping damper-model-class ()
+	!damping
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END damper-model-class
@@ -266,8 +276,13 @@
 	:inherit-from (general-spring-damper-class spring-geometry-class)
 	:properties (
 				 type			'spring
+				 stiffness		(get-stiffness-damping !superior)
 				 color			'purple
 				)
+)
+
+(define-method get-stiffness spring-model-class ()
+	!stiffness
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END spring-model-class

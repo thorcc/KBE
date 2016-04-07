@@ -151,12 +151,12 @@
 							(case (get-type spring-damper)
 								('spring 
 									(write-spring-properties-to-fmm stream baseID 
-										(1+ (the index (:from spring-damper))) 
+										(1+ (the index (:from spring-damper))) (get-stiffness spring-damper) 
 										(- triads-written 2) (1- triads-written))
 								)
 								('damper
 									(write-damper-properties-to-fmm stream baseID 
-										(1+ (the index (:from spring-damper))) 
+										(1+ (the index (:from spring-damper))) (get-damping spring-damper)
 										(- triads-written 2) (1- triads-written))
 								)
 							)
@@ -418,21 +418,21 @@
 
 
 
-(defun write-spring-properties-to-fmm (stream baseID ID triad1 triad2)
+(defun write-spring-properties-to-fmm (stream baseID ID stiffness triad1 triad2)
 	(format stream "AXIAL_SPRING~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
 	(format stream "INIT_LENGTH = 0;~%")
-	(format stream "INIT_STIFFNESS = 750000;~%")
+	(format stream "INIT_STIFFNESS = ~d;~%" stiffness)
 	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%" triad1 triad2)
 	(format stream "USE_INIT_DEFLECTION = true;~%}~2%")
 )
 
-(defun write-damper-properties-to-fmm (stream baseID ID triad1 triad2)
+(defun write-damper-properties-to-fmm (stream baseID ID damping triad1 triad2)
 	(format stream "AXIAL_DAMPER~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
-	(format stream "INIT_DAMPING = 3000;~%")
+	(format stream "INIT_DAMPING = ~d;~%" damping)
 	(format stream "TRIAD_CONNECTIONS = ~d ~d;~%}~2%" triad1 triad2)
 )
 
@@ -573,7 +573,7 @@
 	(format stream "OWNER_TRIAD = ~d;~%" owner-triad)
 	(format stream "LOAD_TYPE = ~d;~%" (case load-type ('force 0) ('torque 1)))
 	(format stream "INIT_LOAD = ~d;~%" magnitude)
-	;(format stream "SCALE_LOAD = 1;~%") ;;;;;;;!!!!!!!!!!!!!!!
+	;(format stream "SCALE_LOAD = 1;~%")
 	;(format stream "FROM_OBJECT = -1 FcLINK;~%")
 	(format stream "FROM_POINT = 0 0 0;~%")
 	;(format stream "TO_OBJECT = -1 FcLINK;~%")
