@@ -248,7 +248,6 @@
                    )
                (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry
-                   mesh-database 			^^mesh-database
 				   link-model 				^superior
 				   joint-elements			^^constraints-incident-on-link-list
                    )
@@ -281,6 +280,10 @@
 
 (define-method get-mesh-model-object link-model-class ()
  	!link-mesh-model
+)
+
+(define-method get-mesh-database link-model-class ()
+	(get-mesh-database !link-mesh-model)
 )
 
 (define-method get-export-surface link-model-class ()

@@ -1,28 +1,30 @@
 (define-class general-spring-damper-class 
-	:inherit-from (series-object line-object)
+	:inherit-from (series-object)
 	:properties (
 				 ;; 'nil' properties are set on instantiation
 				 label 					nil
-				 from-point				nil
-				 to-point				nil
-				 ground-point			nil ;;If not nil, this is the same point as one of the above
-				 surface-mesh-queries	nil
-				 mesh-db				nil
+				 start-point-data-model	nil
+				 end-point-data-model	nil
+				 incident-links			nil
 				 
-				 point1					(get-coordinates ^from-point)
-				 point2					(get-coordinates ^to-point)
-				 line-width 			4
+				 start-point			(get-coordinates ^start-point-data-model)
+				 end-point				(get-coordinates ^end-point-data-model)
 				 
 				 ;;If the spring/damper is supposed to be connected to the ground and not to the mechanism,
 				 ;;a separate node has to be created instead of finding the closest node in the mesh
-				 quantity				(if ^ground-point 1 2)
+				 quantity				(length ^incident-links)
 				 class-expression 		'mesh-query-nodes-with-label-class
 				 
 				 init-form	'(
 							  label 						(format nil "closest-mesh-node-~d" (1+ ^index))
-							  mesh-database-object 			^^mesh-db
-							  interface-object 				(if (= 0 ^index) ^from-point ^to-point)
-						      subset-mesh-query-object-list	^^surface-mesh-queries
+							  owner-link					(nth ^index ^incident-links)
+							  mesh-database-object 			(get-mesh-database (nth ^index ^incident-links))
+							  interface-object 				(if (= 0 ^index)
+																^start-point-data-model 
+																^end-point-data-model)
+						      subset-mesh-query-object-list	(get-link-mesh-node-query-objects-list
+																(get-mesh-model-object 
+																	(nth ^index ^incident-links)))
 							  tolerance 					1.0e3
 							  quantity						1
 							  color							'green
@@ -31,28 +33,16 @@
 				 )
 )
 
-(define-class damper-model-class 
-	:inherit-from (general-spring-damper-class)
-	:properties (
-				 type			'damper
-				 color			'red
-				)
-)
- 
-(define-class spring-model-class
-	:inherit-from (general-spring-damper-class)
-	:properties (
-				 type			'spring
-				 color			'purple
-				)
+(define-method get-end-point general-spring-damper-class ()
+	!end-point
 )
 
 (define-class damper-geometry-class
 	:inherit-from (union-object)
 	:properties (
-		start-point '(0 0 0) ;nil
-		end-point 	'(1 1 1) ;nil
-		damper-direction (get-direction ^end-point ^start-point)
+		start-point (default '(0 0 0)) 
+		end-point 	(default '(1 1 1)) 
+		damper-direction (subtract-points ^end-point ^start-point)
 		damper-width (/ (points-distance ^start-point ^end-point) 12)	;(the coordinates start-point) (the coordinates end-point)) 12)
 		
 		x1-direction					(normalize (arbitrary-normal-to-vector ^damper-direction))
@@ -175,13 +165,36 @@
 	(list (/ (+ (nth 0 p1) (nth 0 p2)) 2) (/ (+ (nth 1 p1) (nth 1 p2)) 2) (/ (+ (nth 2 p1) (nth 2 p2)) 2))
 )
 
-(defun get-direction (p1 p2)
-	(list  (- (nth 0 p1) (nth 0 p2)) (- (nth 1 p1) (nth 1 p2)) (- (nth 2 p1) (nth 2 p2)))
+(define-class damper-model-class 
+	:inherit-from (general-spring-damper-class damper-geometry-class)
+	:properties (
+				 type			'damper
+				 color			'red
+				)
+)
+ 
+(define-class spring-model-class
+	:inherit-from (general-spring-damper-class)
+	:properties (
+				 type			'spring
+				 color			'purple
+				)
 )
 
 (define-class mesh-query-nodes-with-label-class
 	:inherit-from (mesh-query-nodes-from-interface-class)
 	:properties (
-				 label nil
+				 label			nil
+				 owner-link 	nil
+				 posish 		(get-node-position-in-query-nodes-list (the superior))
 				 )
 )
+
+(define-method get-owner-link mesh-query-nodes-with-label-class ()
+	!owner-link
+)
+
+(define-method get-node-position mesh-query-nodes-with-label-class ()
+	(first !mesh-entities-list)
+)
+

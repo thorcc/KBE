@@ -7,7 +7,7 @@
   :inherit-from (analysis-model-class)
   :properties (
                mesh-model-object 				nil ;;This property is set as a link-mesh-class
-               mesh-database-object 			^^mesh-database
+               mesh-database-object 			(get-mesh-database ^mesh-model-object)
                
                z-load 							(default -100.0)
                analysis-type 					:linear-static
@@ -52,9 +52,7 @@
 				    material-name (write-to-string (the material-name (:from ^material-selection)))
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
-                   query-objects-list (list
-                                       (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
-                                       )
+                   query-objects-list (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object ^^link-2D-material-properties
 				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
@@ -85,7 +83,7 @@
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string (object-name ^^superior)) ".bdf")
                    nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) 
-				   ;; could write 'nastran-version :nx-nastran' but this shows the available versions
+				   ;; could write 'nastran-version :nx-nastran' but this also shows the available versions
                    )
                )
   )

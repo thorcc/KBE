@@ -33,7 +33,6 @@
   :properties (
                link-model 					nil ;;link-model-class
                geometry-model-object 		nil ;;link-geometry-class
-			   mesh-database 				nil ;;meshdb-class
 			   joint-elements 				nil
 			   
 			   mesh-object 					^link-mesh
@@ -43,7 +42,7 @@
 			   rbe2-independent-node-list	(loop for element in ^joint-elements
 												collect (get-rbe2-independent-node element)
 												)
-               
+               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^link-mesh)))))
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
 												(list (the nodes-query (:from ^^link-mesh)))
@@ -52,6 +51,8 @@
                    ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
+			   (mesh-database :class 'mesh-database-class
+					)
 			   (link-mesh :class 'paver-mesh-class
 					object-to-mesh 			^^geometry-model-object
 					mesh-database-object	^^mesh-database
@@ -85,18 +86,19 @@
 	!link-mesh
 )
   
-(define-method get-mesh-model-subobject link-mesh-class (subobject-type)
-	(case subobject-type
-		(mesh-db !mesh-database)
-		(2d-elements (the link-mesh elements-query))
-		)
-	)
+(define-method get-mesh-database link-mesh-class ()
+	!mesh-database
+)
   
 (define-method get-mesh-entities-list link-mesh-class ()
 	(if (get-export-surface !link-model)
 		(the link-mesh nodes-query mesh-entities-list)
 		(the tet-mesh nodes-query mesh-entities-list)
 	)
+)
+
+(define-method get-link-mesh-node-query-objects-list link-mesh-class ()
+	(list (the nodes-query (:from !link-mesh)))
 )
 
 (define-method get-link-surface-mesh-elements-query-objects-list link-mesh-class ()
@@ -114,24 +116,14 @@
 	!joint-elements
 )
 
-;---------------------------------------------------------------
-;Returns the smallest number. If both are nil then return 10e10, 
-;if one is nil, then the other.  
-;---------------------------------------------------------------
-(defun min-or-nil (p q)
-	(if (or (not p) (not q))
-		(if (and (not p) (not q))
-			10e10 		;;Random big number if both are nil, just for comparison reasons
-			(if p p q)
-		)
-		(min p q)
-	)
-)
-
 (define-method get-rigid-body-element-objects-list link-mesh-class ()
 	(when !rbe2-list 
 		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
-	)
+)
+
+(define-method get-node-position-in-query-list link-mesh-class (node-query-object)
+	(1+ (position node-query-object (the node-set query-objects-list)))
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END link-mesh-class definitions
 ;------------------------------------------------------------------------------------------------------------- 
