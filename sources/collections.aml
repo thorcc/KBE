@@ -431,30 +431,18 @@
 				 series-prefix		'load
 				 
 				 init-form '(
-							type 			(nth 0 (nth ^index ^loads-list))
-							load-point 		(get-coordinates (nth (nth 1 (nth ^index ^loads-list)) ^points-list))
-							direction 		(nth 2 (nth ^index ^loads-list))
-							magnitude 		(nth 3 (nth ^index ^loads-list))
-							loaded-link 	(nth 4 (nth ^index ^loads-list))
-							mechanism-size	^mech-size
+							type 				(nth 0 (nth ^index ^loads-list))
+							load-point-object 	(nth (nth 1 (nth ^index ^loads-list)) ^points-list)
+							direction 			(nth 2 (nth ^index ^loads-list))
+							magnitude 			(nth 3 (nth ^index ^loads-list))
+							loaded-link 		(nth (nth 4 (nth ^index ^loads-list)) ^^links-list)
+							mechanism-size		^mech-size
 							)
 				 )
 )
 
-(define-method work-area-button1-action load-collection (params)
-	(case params
-		(:apply-load
-			(if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
-					!type !magn !direction) :width 200 :done-label "Yes" :cancel-label "No"))
-				(progn
-					(add-subobject-to-data-model-node (the) (read-from-string !load-name) 'load-model 
-						:init-form !init-form
-					)
-					(draw self :draw-subobjects? t)
-				)
-			)
-		)
-	)
+(define-method get-loads load-collection ()
+	(children (the) :class 'load-model)
 )
 
 ;-------------------------------------------------------------------------------------------------------------
@@ -823,6 +811,8 @@
 									)
 			   
 			   mechanism-type (the folder (:from ^mechanism-selection))
+			   (shapes :class 'shape-collection
+                   )
                )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -834,8 +824,6 @@
                    constraints-list 	(get-constraints ^constraints)
 				   input-shapes-list	(get-input-shapes ^shapes)
 				   )
-			   (shapes :class 'shape-collection
-                   )
                (design-variables :class 'design-variables-collection
 					)
                (spring-dampers :class 'spring-damper-collection

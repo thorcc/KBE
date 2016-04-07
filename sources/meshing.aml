@@ -116,6 +116,10 @@
 	!joint-elements
 )
 
+(define-method get-rbe2-independent-node-list link-mesh-class ()
+	!rbe2-independent-node-list
+)
+
 (define-method get-rigid-body-element-objects-list link-mesh-class ()
 	(when !rbe2-list 
 		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
