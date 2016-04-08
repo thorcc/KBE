@@ -21,7 +21,8 @@
 			   line-group (default nil)
 			   is-fixed? (default nil)
 			   id nil
-			   
+			   line-width 4
+			   color 'green
 			   after-create ()
 				
 				 property-objects-list (list
