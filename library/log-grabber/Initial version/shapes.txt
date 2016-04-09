@@ -1,0 +1,10 @@
+Name			Link		Member		Cross-section	Dimensions		Points-list		Weights-list
+"lower-claw"	4			1			nil
+"upper-claw"	0			0			nil			
+"lower-claw l"	0			1			"rectangular"	"(0.04 0.02 0.1 0.03)"	"(12 11 10)"		"(1 1 1)"
+"lower-claw r"	0			2			"rectangular"	"(0.04 0.02 0.1 0.03)"	"(14 13 10)"	"(1 1 1)"
+"upper-claw"	4			2	 		"rectangular"	"(0.06 0.02 0.04 0.02)"	"(8 9)"			"(0.5 0.5)"
+"upper-claw"	4			0			"rectangular"	"(0.04 0.02 0.06 0.02)"	
+"watt-chain"	1			0			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"watt-chain"	1			1			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"default"		default		default		"rectangular"	"(0.03 0.02)"	
