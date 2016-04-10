@@ -1,2 +1,15 @@
 Name			Link		Member		Cross-section	Dimensions		Points-list		Weights-list
+"link-3"		3			1			nil	
+"link-3"		3			4			nil	
+"link-3"		3			2			nil	
+"link-4"		4			1			nil	
+"link-4"		4			4			nil	
+"link-4"		4			2			nil	
+"link-5"		5			0			"rectangular"	"(0.1 0.03)"	
+"link-3"		3			0			"rectangular"	"(0.08 0.02)"		
+"link-3"		3			3			"rectangular"	"(0.08 0.02)"	
+"link-3"		3			5			"rectangular"	"(0.08 0.02)"		
+"link-4"		4			0			"rectangular"	"(0.08 0.02)"	
+"link-4"		4			3			"rectangular"	"(0.08 0.02)"		
+"link-4"		4			5			"rectangular"	"(0.08 0.02)"			
 "default"		default		default		"rectangular"	"(0.04 0.01)"	
