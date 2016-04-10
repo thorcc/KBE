@@ -284,9 +284,19 @@
               
               ;;test for "link twist"
 			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
-					(the z-vector-ref (:from ^frame_A))
+						;;test for opposite joint directions	
+					(if (equal (nth 2 (get-z-vector-ref_A ^frame_A)) (- (nth 2 (get-z-vector-ref_D ^frame_D))))
+						(the z-vector-ref (:from ^frame_D))
+						(the z-vector-ref (:from ^frame_A))
+					)	
 					(the z-vector-ref (:from ^frame_D))
 				)
+				
+			  ;;test for opposite joint directions	
+			;	z-vector-ref_A (if (equal (nth 2 (get-z-vector-ref_A ^frame_A)) (nth 2 (get-z-vector-ref_D ^frame_D)) )
+			;		(the z-vector-ref (:from ^frame_A))
+			;		(the z-vector-ref (:from ^frame_D))
+			;	)	
 			  z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
               
               ;;cross section dimension, width 0.04 / height 0.04
@@ -314,6 +324,7 @@
                                        (the origin (:from ^frame_D))
                                        (the origin (:from ^frame_A))
                                        )
+
               profile-match-points-coords-list (list
                                                 (vertex-of-object ^cross-section_D)
                                                 (vertex-of-object ^cross-section_A)
