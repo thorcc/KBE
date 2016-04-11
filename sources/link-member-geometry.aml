@@ -509,9 +509,17 @@
 ;---------------------------------------------------
 (defun is-joint-directions-opposite (z1 z2 x1 x2)
 	(and (equal (nth 2 z1) (- (nth 2 z2)))
-		(equal (round-real (nth 0 x1) 3) (round-real (nth 0 x2) 3)))
+		(equal (round-point (ever-but-last x1) 3) (round-point (ever-but-last x2) 3)))
 )
 
+;------------------------------------------
+; Returns every element of list except last
+;------------------------------------------
+(defun ever-but-last (list)
+   (loop for l on list
+		 while (rest l)
+		 collect (first l))
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END member-solid-model definitions
 ;------------------------------------------------------------------------------------------------------------- 
