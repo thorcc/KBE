@@ -11,4 +11,4 @@ Point	Type			Link-incidence		Joint-direction		Joint-variable
 11		"revolute"		"(4 3)"				"(0 0 -1)"			"()"
 12		"revolute"		"(4 5)"				"(0 0 1)"			"()"
 12		"revolute"		"(4 5)"				"(0 0 -1)"			"()"
-14		"free"			"(5 nil)"			"(0 0 1)"			"()"
+14		"free"			"(5 nil)"			"(0 0 -1)"			"()"
