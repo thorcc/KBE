@@ -47,7 +47,7 @@
 (define-class free-female-element
   :inherit-from (joint-element-model)
   :properties (
-			   ;; An free female joint could initially be placed at the wrong place, 
+			   ;; A free female joint could initially be placed at the wrong place, 
 			   ;; depending on the topology of the mechanism. Its sub-frame should
 			   ;; then be placed accordingly. The local z coordinate is translated,
 			   ;; as that's the direction from the main-frame to the sub-frame.
