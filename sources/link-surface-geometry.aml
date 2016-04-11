@@ -12,17 +12,18 @@
 									
                
 			   
-			  ;(display? :class 'flag-property-class
-              ;    formula  (loop for i in ^edge-combination
-              ;               when (or (not (the display? (:from (nth i ^members)))) 
-				;				  (not (the geom (:from (get-connection (nth i ^members))))))
-              ;               do (return nil)
-              ;               finally t;(> ^thickness 0)
-              ;               )
-              ;    )
-			  (display? :class 'flag-property-class
-						formula (when ^surface t)
-				)
+			 (display? :class 'flag-property-class
+                 formula  (loop for i in ^edge-combination
+                            when (or (not (the display? (:from (nth i ^members)))) 
+								  (not (the geom (:from (get-connection (nth i ^members))))))
+                            do (return nil)
+                            finally (return t) ;(> ^thickness 0)
+                            )
+                 )
+				  
+			;  (display? :class 'flag-property-class
+			;			formula (when ^surface t)
+			;	)
                edge-combination nil
 			   
 			   ;;The source-object has to be nil when it can't be displayed. Else there will be a null geom
