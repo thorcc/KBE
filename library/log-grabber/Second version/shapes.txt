@@ -1,11 +1,37 @@
 Name			Link		Member		Cross-section	Dimensions					Points-list		Weights-list
 "lower-claw l"	0			0			"rectangular"	"(0.04 0.02 0.1 0.03)"		"(7 6 4)"		"(1 1 1)"
 "lower-claw r"	1			0			"rectangular"	"(0.04 0.02 0.1 0.03)"		"(9 8 5)"		"(1 1 1)"
-"watt-chain"	2			0			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"watt-chain"	2			0			nil
+"watt-chain"	2			5			nil
+"watt-chain"	2			7			nil
+"watt-chain"	2			2			nil
+"watt-chain"	2			4			nil
+"watt-chain"	2			9			nil
+"watt-chain"	2			11			nil
+"watt-chain"	2			12			nil
+"watt-chain"	2			14			nil
+"watt-chain"	3			0			nil
+"watt-chain"	3			2			nil
+"watt-chain"	3			3			nil
+"watt-chain"	3			4			nil
+"watt-chain"	3			5			nil
+"watt-chain"	4			0			nil
+"watt-chain"	4			2			nil
+"watt-chain"	4			3			nil
+"watt-chain"	4			5			nil
 "watt-chain"	2			1			"rectangular"	"(0.1 0.02 0.03 0.02)"
-"watt-chain"	3			0			"rectangular"	"(0.1 0.02 0.03 0.02)"
-"upper-claw"	6			2	 		"rectangular"	"(0.06 0.02 0.04 0.02)"		"(15 16)"			"(0.5 0.5)"
-"upper-claw"	6			0			"rectangular"	"(0.04 0.02 0.06 0.02)"	
-"lower-claw"	6			1			nil
+"watt-chain"	2			8			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"watt-chain"	2			3			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"watt-chain"	2			6			"rectangular"	"(0.1 0.02 0.03 0.02)"
+"lower-claw"	5			0			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			2			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			4			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			5			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			6			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			7			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			8			nil			"(0.06 0.02 0.04 0.02)"	
+"lower-claw"	5			9			nil			"(0.06 0.02 0.04 0.02)"	
+"upper-claw"	5			3	 		"rectangular"	"(0.06 0.02 0.04 0.02)"		"(15 16)"			"(0.5 0.5)"
+"upper-claw"	5			1			"rectangular"	"(0.06 0.02 0.04 0.02)"	
 "default"		default		default		"rectangular"	"(0.03 0.02)"	
                                         
