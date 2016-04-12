@@ -1,0 +1,26 @@
+Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+0		"link-0-c-rev"				0.0		-0.2	-0.012		
+1		"link-0-l-nurb"				-0.25	-0.2	0.0		
+2		"link-0-r-nurb"				0.25	-0.2	0.0		
+3		"link-0-l-rev"				-0.25	0.2		0.0					
+4		"link-0-r-rev"				0.25	0.2		0.0		
+5		"link-1-rev"				-0.1	0.2		0.0			
+6		"link-2-rev"				0.1		0.2		0.0			
+7		"link-5-l-rev"				-0.3	0.4		0.0			
+8		"link-5-r-rev"				0.3		0.4		0.0		
+9		"link-1-rev"				-0.1	0.2		0.0		
+10		"link-2-rev"				0.1		0.2		0.0		
+11		"link-3-middle"				-0.3	0.8		0.0			
+12		"link-4-middle"				0.3		0.8		0.0	
+13		"link-3-end"				-0.6	0.9		0.0			
+14		"link-4-end"				0.6		0.9		0.0	
+15		"link-5/6-rev"				-0.2	0.4		0.0			
+16		"link-6/7-rev"				0.2		0.4		0.0		
+17		"link-6-end"				-0.15	0.75	0.0			
+18		"link-7-end"				0.15	0.75 	0.0		
+19		"link-6-corner"				-0.5	0.7	 	-0.012			
+20		"link-7-corner"				0.5		0.7 	-0.012	
+21		"link-12-rev"				-0.4	0.9		0.0			
+22		"link-13-rev"				0.4		0.9		0.0	
+23		"link-12-end"				-0.6	0.93	0.0			
+24		"link-13-end"				0.6		0.93	0.0	

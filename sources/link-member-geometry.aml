@@ -284,9 +284,14 @@
               
               ;;test for "link twist"
 			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
-					(the z-vector-ref (:from ^frame_A))
+						;;test for opposite joint directions	
+					(if (is-joint-directions-opposite (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) 
+													(get-x-vector-ref_A ^connection) (get-x-vector-ref_D ^connection))
+						(the z-vector-ref (:from ^frame_D))
+						(the z-vector-ref (:from ^frame_A))
+					)	
 					(the z-vector-ref (:from ^frame_D))
-				)
+				)	
 			  z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
               
               ;;cross section dimension, width 0.04 / height 0.04
@@ -314,6 +319,7 @@
                                        (the origin (:from ^frame_D))
                                        (the origin (:from ^frame_A))
                                        )
+
               profile-match-points-coords-list (list
                                                 (vertex-of-object ^cross-section_D)
                                                 (vertex-of-object ^cross-section_A)
@@ -401,6 +407,9 @@
 
 (define-method get-x-vector-ref_D connection-model ()
 	(the direction (:from (the x-vector-ref (:from !spline-frame_start))))
+)
+(define-method get-x-vector-ref_A connection-model ()
+	(the direction (:from (the x-vector-ref (:from !spline-frame_end))))
 )
 
 (define-method get-cross-section_D member-solid-model ()
@@ -499,6 +508,25 @@
 ;---------------------------------------------------
 (defun is-vectors-dependent (v1 pv1 pv2)
 	(line-is-in-plane '(0 0 0) v1 '(0 0 0) (cross-product pv1 pv2))
+)
+
+;---------------------------------------------------
+; Checks whether the joint directions z1 and z2 is
+; opposite when the x-vector (sweeping direction)
+; is the same.
+;---------------------------------------------------
+(defun is-joint-directions-opposite (z1 z2 x1 x2)
+	(and (equal (nth 2 z1) (- (nth 2 z2)))
+		(equal (round-point (ever-but-last x1) 3) (round-point (ever-but-last x2) 3)))
+)
+
+;------------------------------------------
+; Returns every element of list except last
+;------------------------------------------
+(defun ever-but-last (list)
+   (loop for l on list
+		 while (rest l)
+		 collect (first l))
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END member-solid-model definitions

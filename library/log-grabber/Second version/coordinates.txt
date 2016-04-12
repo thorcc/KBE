@@ -1,0 +1,19 @@
+Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+0		"claw-lower-end-l"			0.4		-0.3	 0.1		
+1		"claw-lower-end-r"			0.4		-0.3	-0.1					
+2		"watt-rev-con"				-0.15	0.1		 0.05		
+3		"watt-rev-con"				-0.15	0.1		-0.05				
+4		"claw-lower-nurb-l"			-0.2	0.0		 0.05	
+5		"claw-lower-nurb-r"			-0.2	0.0		-0.05
+6		"claw-lower-nurb-l"			-0.15	-0.35	 0.05
+7		"claw-lower-nurb-l"			0.0		-0.3	 0.05	
+8		"claw-lower-nurb-r"			-0.15	-0.35	-0.05				
+9		"claw-lower-nurb-r"			0.0		-0.3	-0.05	
+10		"watt-rev-1"				0.07	0.3		 0.0		
+11		"watt-rev-2"				0.05	0.34	0.0			
+12		"claw-upper-con-1"			0.11	0.37	0.0	
+13		"claw-upper-con-2"			0.15	0.3		0.0	
+14		"claw-upper-end"			0.0		-0.3	0.0	
+15		"claw-upper-nurb-1"			0.3		-0.2	0.0			
+16		"claw-upper-nurb-2"			0.3		0.0		0.0	
+17		"watt-rev-con"				-0.15	0.1		 0.0	
