@@ -1,0 +1,41 @@
+(define-class general-optimization-model
+	:inherit-from (object)
+	:properties (
+				 type 			(default nil)
+				 affected-links	(default nil)
+				 init-values	(default nil)
+				 label 			(default nil)
+				 )
+)
+
+(define-method get-affected-links general-optimization-model ()
+	!affected-links
+)
+
+(define-class cross-section-optimization-model
+	:inherit-from (general-optimization-model)
+	:properties (
+				 type 				'cross-section
+				 
+				 width				(nth 0 ^init-values)
+				 height				(nth 1 ^init-values)
+				 flange-thickness	(default (* 0.1 ^width))
+				 web-thickness		(default (* 0.1 ^height))
+				 )
+)
+
+(define-method get-width cross-section-optimization-model ()
+	!width
+)
+
+(define-method get-height cross-section-optimization-model ()
+	!height
+)
+
+(define-method get-flange cross-section-optimization-model ()
+	!flange-thickness
+)
+
+(define-method get-web cross-section-optimization-model ()
+	!web-thickness
+)

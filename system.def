@@ -14,7 +14,9 @@
 (define-system :mechanism-system
   :files '(
            "data-models.aml"
+		   "springs-dampers.aml"
 		   "loads.aml"
+		   "optimizations.aml"
            "constraints.aml"
 		   "constraint-types.aml"
            "cross-sections.aml"
@@ -23,7 +25,6 @@
 		   "link-member-geometry.aml"
 		   "link-surface-geometry.aml"
            "links.aml"
-		   "springs-dampers.aml"
 		   "collections.aml"
 		   "geometry-export.aml"
            )
