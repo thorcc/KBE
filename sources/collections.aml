@@ -266,7 +266,6 @@
                (init-default-shape :class 'shape-model
                    )
                
-               ;;; 
 			   default-shape (let(
                                   (def (loop for shape in ^input-shapes-list
                                          when (equal 'default (the link-ref (:from shape)))
@@ -279,10 +278,12 @@
                shape-list (remove-duplicates (loop for kid in (the shapes-ref-list)
 								collect (list (the label (:from kid)) (the link-ref (:from kid)))
 							))
-							
-			   quantity (length ^link-list)
+						
+			   opt-object 		(default nil)
+			   
+			   quantity 		(length ^link-list)
                class-expression 'link-model-class
-               series-prefix 'link
+               series-prefix 	'link
                init-form '(
                            link-index (nth ^index ^^link-list)
                            label (let(
@@ -297,9 +298,14 @@
 									)
 							   )
 						   constraints-incident-on-link-list (loop for constraint in ^constraints-list
-                                                               for con = (get-constraint-incidence constraint (the superior))
+                                                               for con = (get-constraint-incidence constraint 
+																   (the superior))
                                                                when con collect con
                                                                )
+						   optimization-object (if ^opt-object
+													(loop for link-index in (get-affected-links ^opt-object) do
+														(if (= link-index ^index)
+															(return ^opt-object))))
                            )
                )
   )
@@ -474,49 +480,49 @@
 (define-class design-variables-collection 
 	:inherit-from (series-object collection-class)
 	:properties (
-				 collection-type 'design-variables
-				 dv-list (read-from-file !superior)
-				 quantity (length ^dv-list)
-				 series-prefix 'dv
-				 class-expression 'design-variable-class
-				 init-form '(
-							 type (nth 0 (nth ^index ^dv-list))
-							 dv-name (nth 0 (nth ^index ^dv-list))
-							 direction (nth 1 (nth ^index ^dv-list))
-							 ;; TODO: Handle the possibility of more than one group of points on a line
-							 line-name (nth 0 (remove-duplicates (remove nil 
-												(loop for point-entry in ^^point-ref-list
-													if (the dv-values (:from point-entry)) 
-														append (loop for dv in (the dv-values (:from point-entry))
-															if (and (string-equal (string dv) (string ^dv-name)) (the line-group (:from point-entry)))
-																collect (the line-group (:from point-entry))
-															)
-														)
-													)
-												))
-											
-							 points-on-line (remove nil 
-												(loop for point-entry in ^^point-ref-list
-													if (string-equal ^line-name (the line-group (:from point-entry)))
-														collect (list (the id (:from point-entry)) (the is-fixed? (:from point-entry)) )
-													)
-												)
-												
-							 affected-translation-coords-list 
-									(remove nil (loop for point-entry in ^^point-ref-list
-										if (the dv-values (:from point-entry))
-											 append (loop for dv in (the dv-values (:from point-entry))
-												if (string-equal (string dv) (string ^dv-name))
-													collect (the id (:from point-entry))
-												 )
-										)
-									)
-                             )
+				 ;collection-type 'design-variables
+				 ;dv-list (read-from-file !superior)
+				 ;quantity (length ^dv-list)
+				 ;series-prefix 'dv
+				 ;class-expression 'design-variable-class
+				 ;init-form '(
+				;			 type (nth 0 (nth ^index ^dv-list))
+				;			 dv-name (nth 0 (nth ^index ^dv-list))
+				;			 direction (nth 1 (nth ^index ^dv-list))
+				;			 ;; TODO: Handle the possibility of more than one group of points on a line
+				;			 line-name (nth 0 (remove-duplicates (remove nil 
+				;								(loop for point-entry in ^^point-ref-list
+				;									if (the dv-values (:from point-entry)) 
+				;										append (loop for dv in (the dv-values (:from point-entry))
+				;											if (and (string-equal (string dv) (string ^dv-name)) (the line-group (:from point-entry)))
+				;												collect (the line-group (:from point-entry))
+				;											)
+				;										)
+				;									)
+				;								))
+				;							
+				;			 points-on-line (remove nil 
+				;								(loop for point-entry in ^^point-ref-list
+				;									if (string-equal ^line-name (the line-group (:from point-entry)))
+				;										collect (list (the id (:from point-entry)) (the is-fixed? (:from point-entry)) )
+				;									)
+				;								)
+				;								
+				;			 affected-translation-coords-list 
+				;					(remove nil (loop for point-entry in ^^point-ref-list
+				;						if (the dv-values (:from point-entry))
+				;							 append (loop for dv in (the dv-values (:from point-entry))
+				;								if (string-equal (string dv) (string ^dv-name))
+				;									collect (the id (:from point-entry))
+				;								 )
+				;						)
+				;					)
+                 ;            )
 				 )
 	 )	 
 ;-------------------------------------------------------------------------------------------------------------
 ; END design-variables-collection definitions
-;-------------------------------------------------------------------------------------------------------------  
+;------------------------------------------------------------------------------------------------------------- 
 
 ;-----------------------------------------------------------
 ; Reads each line of the shapes file and adds this to a list
@@ -580,7 +586,7 @@
 			)
 		)
    )
-  
+   
 ;------------------------------------------------------------------
 ; Reads each line of the spring-damper file and adds this to a list
 ;------------------------------------------------------------------
@@ -652,7 +658,11 @@
 				 version-path nil				 
 				 version-name nil
 				 )
-	)
+)
+	
+(define-method get-version-path mechanism-version-info ()
+	!version-path
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END mechanism-version-info definitions
 ;-------------------------------------------------------------------------------------------------------------   
@@ -722,7 +732,7 @@
 ; Initiates the system by creating all the collections as subobjects
 ;-------------------------------------------------------------------------------------------------------------
 (define-class main-mechanism-class
-  :inherit-from (object)
+  :inherit-from (series-object)
   :properties (			   
 			   point-ref-list (children ^points :class 'point-data-model )
 					
@@ -801,9 +811,7 @@
                ;;Property storing folders from library
                (folders :class 'folder-collection
                    )
-				
-			   loads-list '() ;; When a user creates a load, it will be added here
-			   
+							   
 			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
 			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
 			   			   
@@ -814,6 +822,22 @@
 			   mechanism-type (the folder (:from ^mechanism-selection))
 			   (shapes :class 'shape-collection
                    )
+				   
+			   ;; Optimization defintions. If the optimization.txt file is empty, no optimization models
+			   ;; will be added
+			   opt-file-path 	(concatenate (get-version-path ^version-selection) "\\optimization.txt")
+			   opt-list 		(cdr (read-opt-from-file !superior))
+			   
+			   class-expression	'(read-from-string (format nil "~a-optimization-model" 
+									(nth 0 (nth !index !opt-list))))
+			   quantity 		(length ^opt-list)
+			   
+			   init-form '(
+						   affected-links	(nth 1 (nth ^index ^opt-list))
+						   init-values		(nth 2 (nth ^index ^opt-list))
+						   label			(format nil "~a-opt"  (nth 0 (nth ^index ^opt-list)))
+						   )
+			   
                )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -824,25 +848,45 @@
 			   (links :class 'link-collection
                    constraints-list 	(get-constraints ^constraints)
 				   input-shapes-list	(get-input-shapes ^shapes)
+				   opt-object			(get-opt-object (the superior superior))
 				   )
-               (design-variables :class 'design-variables-collection
-					)
                (spring-dampers :class 'spring-damper-collection
-					points-list 	(get-points ^^points)
-					links-list 		(get-links ^^links)
+					points-list (get-points ^^points)
+					links-list 	(get-links ^^links)
 					)
 			   (loads :class 'load-collection
 					mech-size 	(calculate-mechanism-size ^superior)
 					points-list (get-points ^^points)
 					links-list	(get-links ^^links)
 					)
-               )
+			   )
   )
-;-------------------------------------------------------------------
-; Adds a load-model object to the loads-list in main-mechanism-class  
-;-------------------------------------------------------------------
-(define-method add-load main-mechanism-class (load)
-	(change-value !loads-list (append !loads-list (list load)))
+
+;-----------------------------------------------------------------------------------
+; Reads optimization definitions from optimization.txt and stores the data in a list
+;-----------------------------------------------------------------------------------
+(define-method read-opt-from-file main-mechanism-class ()
+    (if (probe-file !opt-file-path)
+        (with-open-file (file !opt-file-path :direction :input)
+			(loop for line = (read-line file  nil :eof)
+				until (equal line :eof)
+				for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+				for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls))
+				collect data
+			)
+        )
+		(progn
+			(message (format nil "\"~a\" is not a valid file path." !opt-file-path) :append? t)
+			nil ;;Return value if the file does not exist
+        )
+    )
+)
+
+;-------------------------------------------------------------------------------------------
+; Returns a general-optimization-model, if there is any. Assumes max one optimization object
+;-------------------------------------------------------------------------------------------
+(define-method get-opt-object main-mechanism-class ()
+	(first (children (the) :class 'general-optimization-model))
 )
 
 ;---------------------------------------------------
@@ -856,14 +900,14 @@
 		)
 	   (loop for point in !point-ref-list do
 		 (progn
-			 (if (> (abs (nth 0 (the coordinates (:from point)))) max-x)
-				(setf max-x (abs (nth 0 (the coordinates (:from point)))))
+			 (if (> (abs (nth 0 (get-coordinates point))) max-x)
+				(setf max-x (abs (nth 0 (get-coordinates point))))
 			 )
-			 (if (> (abs (nth 1 (the coordinates (:from point)))) max-y)
-				(setf max-y (abs (nth 1 (the coordinates (:from point)))))
+			 (if (> (abs (nth 1 (get-coordinates point))) max-y)
+				(setf max-y (abs (nth 1 (get-coordinates point))))
 			 )
-			 (if (> (abs (nth 2 (the coordinates (:from point)))) max-z)
-				(setf max-z (abs (nth 2 (the coordinates (:from point)))))
+			 (if (> (abs (nth 2 (get-coordinates point))) max-z)
+				(setf max-z (abs (nth 2 (get-coordinates point))))
 			 )
 		 )
 		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
