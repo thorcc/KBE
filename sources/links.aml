@@ -25,7 +25,7 @@
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
   :properties (
-			   incident-constraints	nil
+			   incident-constraints		nil
 											
                source-object 			^difference-element ;; Used for geometry-with-split-periodic-faces-class
 			   
@@ -136,12 +136,15 @@
 										;'("Add/remove surface" (button1-parameters :set-surface)
 										;ui-work-area-action-button-class)
 										)
+										
+				optimization-object	nil
 			   )
   :subobjects (
                (surfaces :class 'surfaces-on-link-collection
 				   members-list ^^members-ref-list
                    )
                (sweeps :class 'members-on-link-collection
+				   optimization-object ^^optimization-object
                    )
                )
   )
@@ -240,11 +243,13 @@
                connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
+			   optimization-object								(default nil)
 			   has-line-cross-section?							(has-line-cross-section ^link-geometry)
 			   )
   :subobjects (
                (link-geometry :class 'link-geometry-class
 				   incident-constraints ^^constraints-incident-on-link-list
+				   optimization-object	^^optimization-object
                    )
                (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry

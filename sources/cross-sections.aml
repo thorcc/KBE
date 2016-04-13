@@ -5,11 +5,13 @@
 (define-class cross-section-model
   :inherit-from(tagging-object position-object)
   :properties (
-               ;;; must be set on init from parent object
-               max-element-size 0.004
-               tag-dimensions '(1 2)
-               tag-attributes (list ^max-element-size .1
-                                    0 0.1 0 20.0 1.0e-5)
+			   optimization-object	(default nil)
+               area 				(get-area !superior)
+			   
+			   max-element-size		0.004
+               tag-dimensions 		'(1 2)
+               tag-attributes 		(list ^max-element-size .1
+										0 0.1 0 20.0 1.0e-5)
                )
   )
   
@@ -19,6 +21,19 @@
 
 (define-method get-height cross-section-model ()
   !height
+)
+
+(define-method get-area cross-section-model ()
+	(case !type 
+		('circular 			(* pi (/ (expt !diameter 2) 4)))
+		('circular-tube		(* pi 0.25 (- (expt !outer-diameter 2) (expt !inner-diameter 2))))
+		('rectangular		(* !width !height))
+		('rectangular-tube	(- (* !width !height) (* !inner-width !inner-height)))
+		('line				nil)
+		('i-beam			(+ (* !width !flange-thickness 2) (* !height !web-thickness)))
+		('h-beam			(+ (* !height !flange-thickness 2) (* !width !web-thickness)))
+		('hexagonal			(* 2 (sqrt 3) !R))
+	)
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END cross-section-model
@@ -30,10 +45,10 @@
 (define-class circular-section
   :inherit-from (imprint-class cross-section-model)
   :properties (
-               target-object ^disc
-               tool-object-list (list ^p1)
-;;;                diameter is average or max of width/height?
-               diameter (average ^width ^height)
+               type 			'circular
+			   target-object 	^disc
+               tool-object-list	(list ^p1)
+               diameter 		(average ^width ^height)
                (disc :class 'disc-object
                    diameter ^^diameter
                    )
@@ -58,12 +73,13 @@
 (define-class circular-tube-section
   :inherit-from (imprint-class cross-section-model)
   :properties (
-               target-object ^diff-object
-               tool-object-list (list ^p1 ^p2)
+               type 			'circular-tube
+			   target-object 	^diff-object
+               tool-object-list	(list ^p1 ^p2)
                
-               outer-diameter (average ^width ^height)
-;;;                20% of diameter
-               thickness (* 0.2 ^outer-diameter)
+               outer-diameter 	(average ^width ^height)
+               thickness 		(* 0.2 ^outer-diameter)
+			   inner-diameter	(- ^outer-diameter ^thickness)
 
                (p1 :class 'point-object
                    coordinates (list (/ ^outer-diameter 2) 0 0)
@@ -81,7 +97,7 @@
                    diameter ^outer-diameter
                    )
                (inner-circular :class 'circular-section
-                   diameter (- ^outer-diameter ^thickness)
+                   diameter ^^inner-diameter
                    )
                )
   )
@@ -101,12 +117,13 @@
 (define-class rectangular-section
   :inherit-from (imprint-class cross-section-model )
   :properties (
-;;;                inherit from cross-section-model
-               width (default 0.04)
-               height (default 0.01)
+               type 			'rectangular
+			   width 			(default 0.04)
+               height 			(default 0.01)
                
-               target-object ^sheet
-               tool-object-list (list ^p1)
+               target-object 	^sheet
+               tool-object-list	(list ^p1)
+			   
                (p1 :class 'point-object
                    coordinates (list (/ ^width 2) 0 0)
                    )
@@ -132,22 +149,24 @@
 (define-class rectangular-tube-section
   :inherit-from (cross-section-model difference-object)
   :properties (
-;;;                inherit from cross-section-model
-               width (default 0.04)
-               height (default 0.01)
+               type 		'rectangular-tube
+			   
+			   width 		(default 0.04)
+               height 		(default 0.01)
+			   inner-width	(- ^^width ^thickness)
+			   inner-height	(- ^^height ^thickness)
                
-               object-list (list ^outer-rectangle ^inner-rectangle)
-;;;                20% of average of width/height?
-               thickness (* 0.2 (average ^width ^height) )
-               simplify? t
+               object-list 	(list ^outer-rectangle ^inner-rectangle)
+               thickness 	(* 0.2 (average ^width ^height) )
+               simplify? 	t
 
                (outer-rectangle :class 'sheet-object
-                   width ^^width
-                   height ^^height
+                   width 	^^width
+                   height 	^^height
                    )
                (inner-rectangle :class 'sheet-object
-                   width (- ^^width ^thickness)
-                   height (- ^^height ^thickness)
+                   width 	^^inner-width
+                   height 	^^inner-height
                    )
                )
   )
@@ -168,10 +187,11 @@
 (define-class line-section
   :inherit-from (line-object cross-section-model)
   :properties (
-;;;                inherit from cross-section-model
-               height (default 0.04)
-               point1 (list 0 (- (/ ^height 2)) 0)
-               point2 (list 0 (/ ^height 2) 0)
+               type 	'line
+			   
+			   height 	(default 0.04)
+               point1 	(list 0 (- (/ ^height 2)) 0)
+               point2 	(list 0 (/ ^height 2) 0)
                )
   )
 
@@ -192,33 +212,45 @@
 (define-class I-beam-section
   :inherit-from (union-object cross-section-model)
   :properties (
-;;;                inherit from cross-section-model
-               width (default 0.04)
-               height (default 0.04)
+               type 			'i-beam
+			   
+			   width 			(if ^optimization-object 
+									(get-width ^optimization-object)
+									(default 0.04)
+								)
+               height 			(if ^optimization-object 
+									(get-height ^optimization-object)
+									(default 0.04)
+								)
                
-               object-list (list ^top-flange ^web ^bottom-flange)
-               ;;10% of width/height
-               flange-thickness (* 0.1 ^height)
-               web-thickness (* 0.1 ^width)
-               simplify? t
+               flange-thickness	(if ^optimization-object 
+									(get-flange ^optimization-object)
+									(* 0.1 ^height)
+								)
+               web-thickness 	(if ^optimization-object 
+									(get-web ^optimization-object)
+									(* 0.1 ^width)
+								)
+               object-list 		(list ^top-flange ^web ^bottom-flange)
+               simplify? 		t
 
                (top-flange :class 'sheet-object
-                   width ^^width
-                   height ^flange-thickness
-                   orientation (list
-                                (translate (list 0 (half ^^height) 0))
-                                )
+                   width 		^^width
+                   height 		^^flange-thickness
+                   orientation	(list
+									(translate (list 0 (half ^^height) 0))
+									)
                    )
                (web :class 'sheet-object
-                   width ^web-thickness
-                   height ^^height
+                   width 	^^web-thickness
+                   height 	^^height
                    )
                (bottom-flange :class 'sheet-object
-                   width ^^width
-                   height ^flange-thickness
-                   orientation (list
-                                (translate (list 0 (- (half ^^height)) 0))
-                                )
+                   width 		^^width
+                   height 		^^flange-thickness
+                   orientation 	(list
+									(translate (list 0 (- (half ^^height)) 0))
+									)
                    )
                
                )
@@ -239,34 +271,34 @@
 (define-class H-beam-section
   :inherit-from (union-object cross-section-model)
   :properties (
-;;;                inherit from cross-section-model
-               width (default 0.04)
-               height (default 0.04)
+               type 			'h-beam
+			   
+			   width 			(default 0.04)
+               height 			(default 0.04)
                
-               object-list (list ^left-flange ^web ^right-flange)
-               ;; 10% of width/height
-               flange-thickness (* 0.1 ^width)
-               web-thickness (* 0.1 ^height)
-               simplify? t
+               object-list 		(list ^left-flange ^web ^right-flange)
+               flange-thickness	(* 0.1 ^width)
+               web-thickness 	(* 0.1 ^height)
+               simplify? 		t
 
                
                (left-flange :class 'sheet-object
-                   width ^flange-thickness
-                   height ^^height
-                   orientation (list
-                                (translate (list (half ^^width) 0 0))
-                                )
+                   width 		^^flange-thickness
+                   height 		^^height
+                   orientation 	(list
+									(translate (list (half ^^width) 0 0))
+									)
                    )
                (web :class 'sheet-object
-                   width ^^width
-                   height ^web-thickness
+                   width 	^^width
+                   height 	^^web-thickness
                    )
                (right-flange :class 'sheet-object
-                   width ^flange-thickness
-                   height ^^height
-                   orientation (list
-                                (translate (list (- (half ^^width)) 0 0))
-                                )
+                   width 		^^flange-thickness
+                   height 		^^height
+                   orientation 	(list
+									(translate (list (- (half ^^width)) 0 0))
+									)
                    )              
                )
   )
@@ -286,9 +318,11 @@
 (define-class hexagonal-section
   :inherit-from (imprint-class cross-section-model)
   :properties (
-               target-object ^poly
-               tool-object-list (list ^p1)
-               R (/ (average ^width ^height) 2)
+               type 			'hexagonal
+			   
+			   target-object 	^poly
+               tool-object-list	(list ^p1)
+               R 				(/ (average ^width ^height) 2)
                (poly :class 'polygon-object
                    vertices (list
                              (list ^R 0 0)
@@ -296,7 +330,7 @@
                              (list (- (/ ^R 2)) (- (/ (* ^R (sqrt 3)) 2)) 0)
                              (list (- ^R) 0 0)
                              (list (- (/ ^R 2)) (/ (* ^R (sqrt 3)) 2) 0)
-                             (list  (/ ^R 2)  (/ (* ^R (sqrt 3)) 2) 0)
+                             (list (/ ^R 2)  (/ (* ^R (sqrt 3)) 2) 0)
                              )
                    dimension 2
                    )

@@ -345,6 +345,8 @@
                                 )
                   )
 
+			  optimization-object	(default nil)	  
+				  
               property-objects-list (list 
                                      (list (the superior cross-section-type self) 
                                            '(automatic-apply? t)
@@ -371,20 +373,26 @@
                    )
                
                (cross-section_D :class !cross-section-type
-                   reference-object (the spline-frame_start (:from ^connection))
-                   orientation (list
-                                (rotate 90 :x-axis)
-                                (rotate 90 :z-axis)
-                                )
+                   reference-object 	(the spline-frame_start (:from ^connection))
+                   orientation 			(list
+											(rotate 90 :x-axis)
+											(rotate 90 :z-axis)
+										)
+				   optimization-object	^^optimization-object
                    )
                (cross-section_A :class !cross-section-type
-                   width ^width-end 
-                   height ^height-end
-                   reference-object (the spline-frame_end (:from ^connection))
-                   orientation (list
-                                (rotate 90 :x-axis)
-                                (rotate 90 :z-axis)
-                                )
+                   width 				(if ^optimization-object
+											(get-width ^optimization-object)
+											^width-end)
+                   height 				(if ^optimization-object
+											(get-height ^optimization-object)
+											^height-end)
+                   reference-object 	(the spline-frame_end (:from ^connection))
+                   orientation 			(list
+											(rotate 90 :x-axis)
+											(rotate 90 :z-axis)
+										)
+				   optimization-object 	^^optimization-object
                    )
                )
   )
@@ -531,12 +539,14 @@
 (define-class members-on-link-collection
   :inherit-from (series-object)
   :properties (               
-               quantity (length ^connection-between-2-constraints-combinations)
-               class-expression 'member-solid-model
-               series-prefix 'member
+			   quantity 			(length ^connection-between-2-constraints-combinations)
+               class-expression		'member-solid-model
+               series-prefix 		'member
+               optimization-object 	(default nil)
                init-form '(
-                           joints-on-member (nth ^index ^^connection-between-2-constraints-combinations)
-                           shape-ref (nth ^index ^^shapes-on-link)          
+                           joints-on-member		(nth ^index ^^connection-between-2-constraints-combinations)
+                           shape-ref 			(nth ^index ^^shapes-on-link)
+						   optimization-object	^^optimization-object ;(get-optimization-object (the superior superior))
                            )
                )
   )
