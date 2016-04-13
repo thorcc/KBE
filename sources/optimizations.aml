@@ -5,6 +5,7 @@
 				 affected-links	(default nil)
 				 init-values	(default nil)
 				 links			(default nil)
+				 current-path	(default nil) ;;Directory path to the current mechanism
 				 label 			(default nil)
 				 )
 )
@@ -24,13 +25,20 @@
 				 height				(nth 1 ^init-values)
 				 flange-thickness	(default (* 0.1 ^width))
 				 web-thickness		(default (* 0.1 ^height))
-				 area				(get-total-area !superior)
+				 
+				 area 				(probe-file-and-get-area !superior)
+				 
 				 (dummy-cs :class 'cross-section-model
 					 width 				^^width
 					 height 			^^height
 					 flange-thickness	^^flange-thickness
 					 web-thickness		^^web-thickness
 					 )
+				 
+				 iteration-results-list	nil
+				 best-result 			(get-best-result !superior)
+				 
+				 counter				0
 				 )
 )
 
@@ -63,3 +71,45 @@
 		)
 	)
 )
+
+(define-method probe-file-and-get-area cross-section-optimization-model ()
+	(while (not (probe-file (format nil "~a\\dummy.txt" !current-path)))
+		(sleep 1)
+	)
+	(progn
+		(add-iteration-result (the))
+		(get-total-area (the))
+	)
+)
+	
+(define-method add-iteration-result cross-section-optimization-model ()
+	(change-value !iteration-results-list 
+		(append !iteration-results-list 
+			(list (list (get-total-area (the)) !width !height !flange-thickness !web-thickness))
+		)
+	)
+)
+
+(define-method get-best-result cross-section-optimization-model ()
+	(let (
+			(min-area 	1.0e10)
+			(min-result	nil)
+		)
+		(progn
+			(loop for result in !iteration-results-list do
+				(if (< (nth 0 result) min-area)
+					(progn
+						(setf min-area (nth 0 result))
+						(setf min-result result)
+					)
+				)
+			)
+			min-result
+		)
+	)
+)
+	
+	
+	
+	
+	
