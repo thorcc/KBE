@@ -5,15 +5,20 @@
 (define-class shape-model
   :inherit-from (object)
   :properties (
-               label nil
-			   link-ref (default 'default)
-               sweep-index (default 'default)
-               cross-section-type (read-from-string (remove "-section" (write-to-string (default 'circular-section))))
-               solid-dimensions '(0.04 0.04)
-               point-list nil
-               weight-list nil
+               label 				nil
+			   link-ref 			(default 'default)
+               sweep-index 			(default 'default)
+               cross-section-type	(read-from-string (remove "-section" (write-to-string 
+										(default 'circular-section))))
+               solid-dimensions 	'(0.04 0.04)
+               point-list 			nil
+               weight-list 			nil
                )
   )
+  
+(define-method get-cs-type shape-model ()
+	!cross-section-type
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END shape-model definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -25,41 +30,34 @@
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
   :properties (
-			   incident-constraints		nil
+			   incident-constraints	nil
 											
-               source-object 			^difference-element ;; Used for geometry-with-split-periodic-faces-class
+               source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
 			   
-               max-element-size 		0.02
-               tag-dimensions 			'(1 2 3)
-               tag-attributes 			(list ^max-element-size .01 0 0.1 0 20.0 1.0e-5)
-               default-shape 			(let(
-											(def (loop for shape in (children ^^^shapes :class 'shape-model)
-													 when (and
-														   (equal 'default (the sweep-index (:from shape)))
-														   (equal ^link-index (the link-ref (:from shape)))
-														   )
-													 do (return shape)
-													 )
-												   )
-											  )
-										   (if def def ^^default-shape)
-										   )
-               shapes-on-link 			(let (
-											  (shape-list (make-sequence 'list (length ^constraint-connection-combination) :initial-element ^default-shape) )
-											 )
-											(loop for shape in (children ^^^shapes :class 'shape-model)
-											  when (and (equal ^link-index (the link-ref (:from shape))) (not (equal 'default (the sweep-index (:from shape)))) )
-											  do (replace shape-list (list shape) :start1 (the sweep-index (:from shape)) )
-											  finally (return shape-list)
-											  )
-											)
+               max-element-size 0.02
+               tag-dimensions 	'(1 2 3)
+               tag-attributes 	(list ^max-element-size .01 0 0.1 0 20.0 1.0e-5)
+               default-shape 	(let(
+								(def (loop for shape in (children ^^^shapes :class 'shape-model)
+										 when (and
+											   (equal 'default (the sweep-index (:from shape)))
+											   (equal ^link-index (the link-ref (:from shape)))
+											   ) do
+										 (return shape)
+										 )
+									   )
+								  )
+							   (if def def ^^default-shape)
+							   )
 
                constraint-connection-combination	(connection-combinations (length ^incident-constraints))
                
-               surfaces-ref-list 					(children ^surfaces :class 'surface-model :test '(and !geom !display?))
+               surfaces-ref-list 					(children ^surfaces :class 'surface-model 
+														:test '(and !geom !display?))
 			   
                members-ref-list						(children ^sweeps :class 'member-solid-model)
-               visible-members-ref-list 			(children ^sweeps :class 'member-solid-model :test '!display?) ;; only include sweeps which are not "turned off"
+               visible-members-ref-list 			(children ^sweeps :class 'member-solid-model 
+														:test '!display?)
 
                union-list 							(loop for constraint in ^incident-constraints
 														append (get-joint-union-list constraint)
@@ -144,17 +142,32 @@
 				   members-list ^^members-ref-list
                    )
                (sweeps :class 'members-on-link-collection
-				   optimization-object ^^optimization-object
+				   shapes-on-link		(get-shapes-on-link (the superior superior))
+				   optimization-object 	^^optimization-object
                    )
                )
   )
+  
+(define-method get-shapes-on-link link-geometry-class ()
+	(let (
+			(shape-list (make-sequence 'list (length !constraint-connection-combination) 
+				:initial-element !default-shape))
+		 )
+		(loop for shape in (children ^^shapes :class 'shape-model)
+			when (and (equal !link-index (the link-ref (:from shape))) 
+					(not (equal 'default (the sweep-index (:from shape)))) ) do
+				(replace shape-list (list shape) :start1 (the sweep-index (:from shape)))
+			finally (return shape-list)
+		)
+	)
+)
   
 (define-method get-surface link-geometry-class (index)
 	(nth index !surfaces-ref-list)
 )
   
 (define-method has-line-cross-section link-geometry-class ()
-	(loop for shape in !shapes-on-link do
+	(loop for shape in (get-shapes-on-link (the)) do
 		(if (equal 'line (the cross-section-type (:from shape))) 
 			(return t)
 		)
@@ -269,6 +282,10 @@
 				collect joint-element
 		)
 	)
+)
+
+(define-method get-shapes-on-link link-model-class ()
+	(get-shapes-on-link !link-geometry)
 )
 
 (define-method get-link-geometry link-model-class ()

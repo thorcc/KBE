@@ -835,6 +835,7 @@
 			   init-form '(
 						   affected-links	(nth 1 (nth ^index ^opt-list))
 						   init-values		(nth 2 (nth ^index ^opt-list))
+						   links 			(get-links ^^links)
 						   label			(format nil "~a-opt"  (nth 0 (nth ^index ^opt-list)))
 						   )
 			   

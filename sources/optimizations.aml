@@ -4,6 +4,7 @@
 				 type 			(default nil)
 				 affected-links	(default nil)
 				 init-values	(default nil)
+				 links			(default nil)
 				 label 			(default nil)
 				 )
 )
@@ -17,10 +18,19 @@
 	:properties (
 				 type 				'cross-section
 				 
+				 cs-types			(get-cs-types !superior)
+				 
 				 width				(nth 0 ^init-values)
 				 height				(nth 1 ^init-values)
 				 flange-thickness	(default (* 0.1 ^width))
 				 web-thickness		(default (* 0.1 ^height))
+				 area				(get-total-area !superior)
+				 (dummy-cs :class 'cross-section-model
+					 width 				^^width
+					 height 			^^height
+					 flange-thickness	^^flange-thickness
+					 web-thickness		^^web-thickness
+					 )
 				 )
 )
 
@@ -38,4 +48,18 @@
 
 (define-method get-web cross-section-optimization-model ()
 	!web-thickness
+)
+
+(define-method get-total-area cross-section-optimization-model ()
+	(loop for cs-type in !cs-types
+		sum (get-area !dummy-cs cs-type)
+	)
+)
+
+(define-method get-cs-types cross-section-optimization-model ()
+	(loop for link in !affected-links 
+		append (loop for shape in (get-shapes-on-link (nth link !links))
+			collect (get-cs-type shape)
+		)
+	)
 )

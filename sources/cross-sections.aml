@@ -23,8 +23,9 @@
   !height
 )
 
-(define-method get-area cross-section-model ()
-	(case !type 
+
+(define-method get-area cross-section-model (type)
+	(case type 
 		('circular 			(* pi (/ (expt !diameter 2) 4)))
 		('circular-tube		(* pi 0.25 (- (expt !outer-diameter 2) (expt !inner-diameter 2))))
 		('rectangular		(* !width !height))
