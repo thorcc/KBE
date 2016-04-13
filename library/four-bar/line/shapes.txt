@@ -1,10 +1,6 @@
-Name			Link	Member	Cross-section	Dimension	Points-list	Weights-list
-"Crank"			1	0	"line"		"(0.02 0.02)"	"()"		"()"
-"Lower Coupler"		2	0	"line"		"(0.02 0.02)"	"()"		"()"
-"Upper Coupler"		2	2	"line"		"(0.02 0.02)"	"()"		"()"
-"Rocker"		3	0	"line"		"(0.02 0.02)"	"()"		"()"
-"Workaround"		2	1	"nil"		"(0.02 0.02)"	"()"		"()"
-"Ground link"		0	0	"nil"		"(0.02 0.02)"	"()"		"()"
-"Ground link"		0	1	"nil"		"(0.02 0.02)"	"()"		"()"
-"Ground link"		0	2	"nil"		"(0.02 0.02)"	"()"		"()"
-
+Name				Link	Member	Cross-section	Dimensions	Points-list	Weights-list
+"Crank"				0		0		"line"		"(0.1 0.1)"	
+"Coupler lower"		1		0		"line"		"(0.1 0.1)"	
+"Coupler upper"		1		2		"line"		"(0.1 0.1)"	
+"Rocker"			2		0		"line"		"(0.1 0.1)"	
+"Coupler invis"		1		1		"nil"		

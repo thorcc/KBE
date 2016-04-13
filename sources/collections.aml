@@ -794,6 +794,7 @@
 											""
 											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
 											ui-work-area-action-button-class)
+											""
 											'("Draw mechanism with 3D mesh" (button1-parameters :draw-sewn-with-tet-mesh)
 											ui-work-area-action-button-class)
 											'("Draw mechanism with 2D mesh" (button1-parameters :draw-sewn-with-tri-mesh)
