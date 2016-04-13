@@ -12,8 +12,8 @@
                wjk (convert-vector ^frame_A '(0 0 1) :from :local :to :global)
 
                weight-points (append (the weight-list (:from ^shape-ref))
-                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref))) (length (the weight-list (:from ^shape-ref))))
-                                                    :initial-element 1)
+                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref))) 
+										 (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
                                      )
                start-point (the origin (:from ^frame_D))
                end-point (the origin (:from ^frame_A))
@@ -113,7 +113,8 @@
                    z-vector-ref ^z-vector-ref_A
                    
                    (x-vector-ref :class 'vector-data-model
-                                 direction (subtract-vectors (nth (1- (length ^points)) ^points) (nth (- (length ^points) 2) ^points))
+                                 direction (subtract-vectors (nth (1- (length ^points)) ^points) 
+									 (nth (- (length ^points) 2) ^points))
                                  )
                    )
                ;;augumented frames from SU-convention
@@ -539,14 +540,16 @@
 (define-class members-on-link-collection
   :inherit-from (series-object)
   :properties (               
+			   shapes-on-link		(default nil)
+			   
 			   quantity 			(length ^connection-between-2-constraints-combinations)
                class-expression		'member-solid-model
                series-prefix 		'member
                optimization-object 	(default nil)
                init-form '(
                            joints-on-member		(nth ^index ^^connection-between-2-constraints-combinations)
-                           shape-ref 			(nth ^index ^^shapes-on-link)
-						   optimization-object	^^optimization-object ;(get-optimization-object (the superior superior))
+                           shape-ref 			(nth ^index ^shapes-on-link)
+						   optimization-object	^^optimization-object
                            )
                )
   )
