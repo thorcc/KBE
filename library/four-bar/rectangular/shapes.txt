@@ -1,7 +1,6 @@
-Name			Link	Member	Cross-section	Dimensions	Points-list	Weights-list
-"Crank"			0	0	"rectangular"	"(0.02 0.02)"	"()"		"()"
-"Lower-Coupler"		1	0	"rectangular"	"(0.02 0.02)"	"()"		"()"
-"Upper-Coupler"		1	2	"rectangular"	"(0.02 0.02)"	"()"		"()"
-"Rocker"		2	0	"rectangular"	"(0.02 0.02)"	"()"		"()"
-"Workaround"		1	1	"nil"		"nil"		"()"		"()"
-
+Name				Link	Member	Cross-section	Dimensions	Points-list	Weights-list
+"Crank"				0		0		"rectangular"	"(0.1 0.1)"	
+"Lower-Coupler"		1		0		"rectangular"	"(0.1 0.1)"	
+"Upper-Coupler"		1		2		"rectangular"	"(0.1 0.1)"	
+"Rocker"			2		0		"rectangular"	"(0.1 0.1)"	
+"Workaround"		1		1		"nil"		
