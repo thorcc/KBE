@@ -1,2 +1,2 @@
 Optimization Type	Affected links	Init-values
-cross-section		(0 2)			(0.02 0.02)
+cross-section		(0 2)			(0.1 0.1)
