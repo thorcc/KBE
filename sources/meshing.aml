@@ -39,15 +39,16 @@
 			   
 			   ;non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
 			   
-			   rbe2-independent-node-list	(loop for element in ^joint-elements
-												collect (get-rbe2-independent-node element)
-												)
+				rbe2-independent-node-list	(loop for element in ^joint-elements
+											collect (get-rbe2-independent-node element)
+				)
                nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^link-mesh)))))
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
 												(list (the nodes-query (:from ^^link-mesh)))
 												(list (the nodes-query (:from ^^tet-mesh))))
-											^rbe2-independent-node-list)
+											^rbe2-independent-node-list
+											)
                    ) ;;Contains all the nodes used for the bdf file
                )
   :subobjects (
