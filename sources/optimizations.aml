@@ -1,3 +1,44 @@
+;-------------------------------------------------------------------------------------------------------------
+; Class: design-variable-class
+;-------------------------------------------------------------------------------------------------------------
+(define-class design-variable-class
+	:inherit-from (data-model-node-mixin)
+	:properties (
+				 (dv-value :class 'editable-data-property-class
+					label (format nil "~a initial value" (object-name ^superior))
+					)
+				 (min-value :class 'editable-data-property-class
+					 formula (* 0.5 ^dv-value)
+					 label (format nil "~a minimum value" (object-name ^superior))
+					 )
+				 (max-value :class 'editable-data-property-class
+					 formula (* 2 ^dv-value)
+					 label (format nil "~a minimum value" (object-name ^superior))
+					 )
+				 property-objects-list (list 
+										 (list (the superior dv-value self)
+												'(automatic-apply? t))
+										 (list (the superior min-value self)
+												'(automatic-apply? t))
+										 (list (the superior max-value self)
+												'(automatic-apply? t))
+										)
+				 )
+)
+	
+(define-method get-dv-value design-variable-class ()
+	!dv-value
+)
+(define-method get-min-value design-variable-class ()
+	!min-value
+)
+(define-method get-max-value design-variable-class ()
+	!max-value
+)
+;-------------------------------------------------------------------------------------------------------------
+; END design-variable-class definitions
+;------------------------------------------------------------------------------------------------------------- 
+
 (define-class general-optimization-model
 	:inherit-from (object)
 	:properties (
@@ -6,7 +47,10 @@
 				 init-values	(default nil)
 				 links			(default nil)
 				 current-path	(default nil) ;;Directory path to the current mechanism
+				 main-mech-ref	(default nil)
 				 label 			(default nil)
+				 
+				 results-file	(format nil "~a\\dummy.txt" ^current-path)
 				 )
 )
 
@@ -21,41 +65,108 @@
 				 
 				 cs-types			(get-cs-types !superior)
 				 
-				 width				(nth 0 ^init-values)
-				 height				(nth 1 ^init-values)
-				 flange-thickness	(default (* 0.1 ^width))
-				 web-thickness		(default (* 0.1 ^height))
+				 ;;Design variables
+				 (width :class 'design-variable-class
+					dv-value (nth 0 ^^init-values)
+					)
+				 (height :class 'design-variable-class
+					dv-value (nth 1 ^^init-values)
+					)
+				 (flange-thickness :class 'design-variable-class
+					dv-value (* 0.1 (get-dv-value ^^width))
+					)
+				 (web-thickness	:class 'design-variable-class
+					dv-value (* 0.1 (get-dv-value ^^height))
+					)
 				 
+				 test-val (get-dv-value ^height)
+				 
+				 ;;Objective function
 				 area 				(probe-file-and-get-area !superior)
 				 
+				 ;;Constraints
+				 
+				 results-file-path		(format nil "~a\\deformation.asc" ^current-path)
+				 results-list 			(read-results-from-file !superior)
+				 largest-deformation	(get-largest-deformation !superior)
+				 
 				 (dummy-cs :class 'cross-section-model
-					 width 				^^width
-					 height 			^^height
-					 flange-thickness	^^flange-thickness
-					 web-thickness		^^web-thickness
+					 width 				(get-dv-value ^^width)
+					 height 			(get-dv-value ^^height)
+					 flange-thickness	(get-dv-value ^^flange-thickness)
+					 web-thickness		(get-dv-value ^^web-thickness)
 					 )
 				 
-				 iteration-results-list	nil
-				 best-result 			(get-best-result !superior)
+				 iteration-results-list		nil
+				 best-iteration-result 		(get-best-result !superior)
+				 best-result-in-each-gen	nil
 				 
-				 counter				0
+				 counter					0
+				 first-run?					t
+				 
+				 parent-exploration-object 	(get-exploration-object !superior)
+				 multiga-exploration-object	(get-multiga-object ^parent-exploration-object)
+				 
+				 ;;Can only set optimization values if the exploration-object exists
+				 property-objects-list (if (not ^parent-exploration-object)
+										(list
+											'("Load AMOpt" (button1-parameters :load-amopt)
+												ui-work-area-action-button-class)
+											'("Add optmization exploration object" 
+												(button1-parameters :add-exploration-object)
+												ui-work-area-action-button-class)
+											)
+										(list
+											(list (the superior width dv-value self)
+												'(automatic-apply? t))
+											(list (the superior width min-value self)
+												'(automatic-apply? t))
+											(list (the superior width max-value self)
+												'(automatic-apply? t))
+											""
+											(list (the superior height dv-value self)
+												'(automatic-apply? t))
+											(list (the superior height min-value self)
+												'(automatic-apply? t))
+											(list (the superior height max-value self)
+												'(automatic-apply? t))
+											""
+											(list (the superior flange-thickness dv-value self)
+												'(automatic-apply? t))
+											(list (the superior flange-thickness min-value self)
+												'(automatic-apply? t))
+											(list (the superior flange-thickness max-value self)
+												'(automatic-apply? t))
+											""
+											(list (the superior web-thickness dv-value self)
+												'(automatic-apply? t))
+											(list (the superior web-thickness min-value self)
+												'(automatic-apply? t))
+											(list (the superior web-thickness max-value self)
+												'(automatic-apply? t))
+											""
+											'("Set optimization variables" 
+												(button1-parameters :init-optimization-variables)
+												ui-work-area-action-button-class)
+											)
+										)
 				 )
 )
 
 (define-method get-width cross-section-optimization-model ()
-	!width
+	(get-dv-value !width)
 )
 
 (define-method get-height cross-section-optimization-model ()
-	!height
+	(get-dv-value !height)
 )
 
 (define-method get-flange cross-section-optimization-model ()
-	!flange-thickness
+	(get-dv-value !flange-thickness)
 )
 
 (define-method get-web cross-section-optimization-model ()
-	!web-thickness
+	(get-dv-value !web-thickness)
 )
 
 (define-method get-total-area cross-section-optimization-model ()
@@ -73,19 +184,58 @@
 )
 
 (define-method probe-file-and-get-area cross-section-optimization-model ()
-	(while (not (probe-file (format nil "~a\\dummy.txt" !current-path)))
-		(sleep 1)
-	)
+	;(if (and (not (probe-file !results-file)) (not !first-run?))
+	;	(progn
+	;		(sleep 1)
+	;		(probe-file-and-get-area (the)) ;;"Recursive" call
+	;	)
+	;)
 	(progn
 		(add-iteration-result (the))
-		(get-total-area (the))
+		
+		(when (= (the population-size (:from !multiga-exploration-object)) !counter)
+			(change-value !first-run? nil)
+			
+			;;Write bdfs and fmm with the design variables yielding the lowest area
+			(change-value (the width dv-value) (nth 1 !best-iteration-result))
+			(change-value (the height dv-value) (nth 2 !best-iteration-result))
+			(change-value (the flange-thickness dv-value) (nth 2 !best-iteration-result))
+			(change-value (the web-thickness dv-value) (nth 3 !best-iteration-result))
+			(write-fmm-model-file !main-mech-ref)
+			
+			(change-value !best-result-in-each-gen 
+				(append !best-result-in-each-gen (list !best-iteration-result)))
+			(change-value !counter 0)
+			(change-value !best-iteration-result nil)
+			(delete-file !results-file)
+			;(run-program "run-fedem.bat" :windows-batch-file? t)
+			(sleep 5)
+			(with-open-file (file (logical-path !results-file) :direction :output
+				:if-exists :overwrite)
+				(format file "wiho"))
+		)
+		(change-value !counter (1+ !counter))
+		(get-total-area (the)) ;;Return value
 	)
+)
+
+;------------------------------------------------------------------------------
+; Used for retrieving the exploration-object when an AMOPT model has been added
+; to the main-mechanism-class
+;------------------------------------------------------------------------------
+(define-method get-exploration-object cross-section-optimization-model ()
+	(first (children (the) :class 'dcms-exploration-object-manager-class))
+)
+	
+(define-method get-multiga-object dcms-exploration-object-manager-class ()
+	(first (children (the) :class 'dcms-exploration-multiga-optimization-class))
 )
 	
 (define-method add-iteration-result cross-section-optimization-model ()
 	(change-value !iteration-results-list 
 		(append !iteration-results-list 
-			(list (list (get-total-area (the)) !width !height !flange-thickness !web-thickness))
+			(list (list (get-total-area (the)) (get-dv-value !width) (get-dv-value !height) 
+				(get-dv-value !flange-thickness) (get-dv-value !web-thickness)))
 		)
 	)
 )
@@ -108,6 +258,126 @@
 		)
 	)
 )
+
+(define-method read-results-from-file cross-section-optimization-model ()
+    (if (probe-file !results-file-path)
+        (with-open-file (file !results-file-path :direction :input)
+			(loop for line = (read-line file  nil :eof)
+				until (equal line :eof)  
+				for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+				if (and (numberp (nth 0 ls)) (numberp (nth 1 ls)))
+					append (list (nth 1 ls))
+			)
+        )
+		(progn
+			(message (format nil "\"~a\" is not a valid file path." !results-file-path) :append? t)
+			nil ;;Return value if the file does not exist
+        )
+    )
+)
+
+(define-method get-largest-deformation cross-section-optimization-model ()
+	(loop for deformation in !results-list
+		maximize deformation into max-deformation
+		finally (return max-deformation)
+	)
+)
+
+(define-method init-optimization-variables cross-section-optimization-model ()
+	(add-object (the continuous-variables (:from !parent-exploration-object))
+		'height
+		'dcms-design-variable-continuous-class
+		:init-form '(
+					 design-property-object (the superior superior superior height dv-value (:eval? nil))
+					 initial-value 			(the dv-value (:from ^^^height))
+					 max-value				(the max-value (:from ^^^height))
+					 min-value				(the min-value (:from ^^^height))
+					 )
+	)
+	(add-object (the continuous-variables (:from !parent-exploration-object))
+		'width
+		'dcms-design-variable-continuous-class
+		:init-form '(
+					 design-property-object (the superior superior superior width dv-value (:eval? nil))
+					 initial-value 			(the dv-value (:from ^^^width))
+					 max-value				(the max-value (:from ^^^width))
+					 min-value				(the min-value (:from ^^^width))
+					 )
+	)
+	(add-object (the continuous-variables (:from !parent-exploration-object))
+		'flange-thickness
+		'dcms-design-variable-continuous-class
+		:init-form '(
+					 design-property-object (the superior superior superior 
+												flange-thickness dv-value (:eval? nil))
+					 initial-value 			(the dv-value (:from ^^^flange-thickness))
+					 max-value				(the max-value (:from ^^^flange-thickness))
+					 min-value				(the min-value (:from ^^^flange-thickness))
+					 )
+	)
+	(add-object (the continuous-variables (:from !parent-exploration-object))
+		'web-thickness
+		'dcms-design-variable-continuous-class
+		:init-form '(
+					 design-property-object (the superior superior superior 
+												web-thickness dv-value (:eval? nil))
+					 initial-value 			(the dv-value (:from ^^^web-thickness))
+					 max-value				(the max-value (:from ^^^web-thickness))
+					 min-value				(the min-value (:from ^^^web-thickness))
+					 )
+	)
+	(add-object (the objectives (:from !parent-exploration-object))
+		'area
+		'dcms-objective-class
+		:init-form '(
+					 design-property-object	(the superior superior superior area (:eval? nil))
+					 minimize?				t
+					 )
+	)
+)
+
+(define-method add-continuous-design-variable cross-section-optimization-model (to-object design-variable)
+	(add-object to-object 
+		(object-name design-variable)
+		'dcms-design-variable-continuous-class
+		:init-form '(
+					 design-property-object (get-dv-value design-variable)
+					 max-value				(get-min-value design-variable)
+					 min-value				(get-max-value design-variable)
+					 )
+	)
+)
+	
+					
+(define-method work-area-button1-action cross-section-optimization-model (params)
+	(case params
+		(:init-optimization-variables
+			(init-optimization-variables (the))
+		)
+		(:load-amopt
+			(load-module "amopt")
+			(amopt-global-set-configuration :main-form (get-data-model-main-form))
+			(display-amopt-toolbar-form)
+		)
+		(:add-exploration-object
+			(add-object (the) 
+				'exploration-object-0000
+				'dcms-exploration-object-manager-class)
+		)
+	)
+)
+
+	
+	
+
+
+
+
+
+
+
+
+
 	
 	
 	

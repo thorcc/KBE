@@ -60,6 +60,7 @@
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
+						   degrees-of-freedom	(nth 5 (nth !index ^constraint-list))
 						   incident-links		(let (
 													  (link1 (if (first (nth 2 (nth !index ^constraint-list)))
 															(nth (first (nth 2 (nth !index ^constraint-list))) ^links-list)
@@ -163,9 +164,9 @@
                init-form '(
 						   label 		(nth 0 (nth ^index ^points-list))
                            coordinates	(list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
-						   dv-values 	(nth 4 (nth ^index ^points-list))
-						   line-group 	(nth 5 (nth ^index ^points-list))
-						   is-fixed? 	(nth 6 (nth ^index ^points-list))
+						   ;dv-values 	(nth 4 (nth ^index ^points-list))
+						   ;line-group 	(nth 5 (nth ^index ^points-list))
+						   ;is-fixed? 	(nth 6 (nth ^index ^points-list))
 						   id 			^index
                            )
                )
@@ -440,7 +441,11 @@
 							type 				(nth 0 (nth ^index ^loads-list))
 							load-point-object 	(nth (nth 1 (nth ^index ^loads-list)) ^points-list)
 							direction 			(nth 2 (nth ^index ^loads-list))
-							magnitude 			(nth 3 (nth ^index ^loads-list))
+							magnitude 			(if (numberp (nth 3 (nth ^index ^loads-list)))
+													(nth 3 (nth ^index ^loads-list))
+													nil)
+							scale-load			(unless ^magnitude (read-from-string (remove "scale" 
+													(format nil "~a" (nth 3 (nth ^index ^loads-list))))))
 							loaded-link 		(nth (nth 4 (nth ^index ^loads-list)) ^^links-list)
 							mechanism-size		^mech-size
 							)
@@ -549,7 +554,8 @@
       until (equal line :eof)
       for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
       for c-data = (list
-                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls))
+                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) 
+					(read-from-string (nth 4 ls)) (nth 5 ls)
                     )
       collect c-data
       )
@@ -667,61 +673,18 @@
 ; END mechanism-version-info definitions
 ;-------------------------------------------------------------------------------------------------------------   
 
-;-------------------------------------------------------------------------------------------------------------
-; Class: design-variable-class
-;-------------------------------------------------------------------------------------------------------------
-(define-class design-variable-class
-	:inherit-from (object)
-	:properties (
-				 dv-name nil
-				 direction nil
-				 line-name nil
-				 points-on-line nil
-				 affected-translation-coords-list nil
-				 coord-pos (position 1 ^direction)
-				 
-				 (dv-value :class 'editable-data-property-class
-					formula (nth ^coord-pos (the coordinates (:from  (nth (nth 0 ^affected-translation-coords-list) ^point-ref-list))))
-					label ^dv-name
-					)
-				 
-				 property-objects-list (list 
-										 (list (the superior dv-value self)
-												'(automatic-apply? t))
-										 '("Update design variable changes" (button1-parameters :update-dvs)
-											ui-work-area-action-button-class)
-										)
-				 )
-	)
-	
-(define-method work-area-button1-action design-variable-class (params)
-	(case params
-		(:update-dvs
-			(progn 
-				(loop for id in !affected-translation-coords-list do 
-					(setq (nth !coord-pos (the coordinates (:from (nth id ^point-ref-list)))) !dv-value)
-				)
-				(loop for id in !points-on-line do
-					;(setq (the coordinates (:from (nth id ^point-ref-list))) )
-				)
-			)
-		)
-	)
-)
-;-------------------------------------------------------------------------------------------------------------
-; END design-variable-class definitions
-;------------------------------------------------------------------------------------------------------------- 
-
 (defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
 	(if (= (nth 0 direction) 1)
 		(list 
-		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)) ) (- (nth 1 dv2) (nth 1 dv1)) ))
+		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1))) 
+			 (- (nth 1 dv2) (nth 1 dv1)) ))
 		 (nth 1 dv2)
 		 (nth 2 dv2)
 		)
 		(list
 		 (nth 0 dv2)
-		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) (- (nth 0 dv2) (nth 0 dv1)) ))
+		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) 
+			 (- (nth 0 dv2) (nth 0 dv1)) ))
 		 (nth 2 dv2)
 		)
 	)
@@ -733,7 +696,7 @@
 ;-------------------------------------------------------------------------------------------------------------
 (define-class main-mechanism-class
   :inherit-from (series-object)
-  :properties (			   
+  :properties (
 			   point-ref-list (children ^points :class 'point-data-model )
 					
 			   constraints-ref-list (children ^constraints :class 'master-joint-model)
@@ -744,9 +707,9 @@
 										if (are-all-members-displayed? link)
 											collect link)
 											
-			   non-free-constraints-list (loop for constraint in (get-constraints ^constraints) do
-											  if (not (string-equal "free" (get-constraint-type constraint)))
-												  collect constraint)
+			   ;non-free-constraints-list (loop for constraint in (get-constraints ^constraints) do
+				;							  if (not (string-equal "free" (get-constraint-type constraint)))
+				;								  collect constraint)
 			   
 			   dv-ref-list (children ^design-variables :class 'design-variable-class)
 			   
@@ -806,21 +769,15 @@
 											'("Create .bdf-files" (button1-parameters :create-bdf)
 											ui-work-area-action-button-class)
 											'("Export to FEDEM" (button1-parameters :export-fedem)
-											ui-work-area-action-button-class)												
+											ui-work-area-action-button-class)
                                      )
                
                ;;Property storing folders from library
                (folders :class 'folder-collection
                    )
-							   
-			   dv1 (the test-dv (:from (nth 1 ^point-ref-list)))
-			   dv2 (the test-dv (:from (nth 3 ^point-ref-list)))
-			   			   
-			   objective-function (when (probe-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
-									(+ (the coord-ref (:from (nth 1 ^point-ref-list))) (the coord-ref (:from (nth 3 ^point-ref-list))))
-									)
 			   
 			   mechanism-type (the folder (:from ^mechanism-selection))
+			   mechanism-version (format nil "~a-~a" ^mechanism-type (the version-name (:from ^version-selection)))
 			   (shapes :class 'shape-collection
                    )
 				   
@@ -838,10 +795,11 @@
 						   init-values		(nth 2 (nth ^index ^opt-list))
 						   links 			(get-links ^^links)
 						   current-path		(get-version-path ^^version-selection)
+						   main-mech-ref	(the superior superior)
 						   label			(format nil "~a-opt"  (nth 0 (nth ^index ^opt-list)))
 						   )
 			   
-               )
+			   )
   :subobjects (
                (constraints :class 'constraint-collection
 				   links-list (get-links ^links)
@@ -948,21 +906,24 @@
 	(case params
 		(:draw-sewn-wo-mesh
 			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+				(with-error-handler (:error-message (concatenate "Error drawing "
+					(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-geometry (:from link)) :draw-subobjects? nil)
 				)
 			)
 		)
 		(:draw-sewn-with-tet-mesh
 			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+				(with-error-handler (:error-message (concatenate "Error drawing "
+					(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
 				)
 			)
 		)
 		(:draw-sewn-with-tri-mesh
 			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "(write-to-string (object-name link))) :show-system-error? t)
+				(with-error-handler (:error-message (concatenate "Error drawing "
+					(write-to-string (object-name link))) :show-system-error? t)
 					(draw (the link-mesh-model link-mesh elements-query (:from link)))
 				)
 			)

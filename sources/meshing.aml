@@ -37,7 +37,7 @@
 			   
 			   mesh-object 					^link-mesh
 			   
-			   non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
+			   ;non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
 			   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
 											collect (get-rbe2-independent-node element)

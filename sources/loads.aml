@@ -95,7 +95,7 @@
 					label 			"Load type"
 					)
 				 (load-point :class 'editable-data-property-class
-					formula	(get-coordinates ^^load-point-object)
+					formula	(get-coordinates ^load-point-object)
 					label 	"Load point"
 					)
 			     (direction :class 'editable-data-property-class
@@ -107,19 +107,33 @@
 									('force 'N)
 									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
 								  )
-					value-in 	1
+					value-in 	(default ^magnitude)
 					unit-in 	^current-load
 					unit 		^current-load
 					label 		"Magntitude"
 					)
+				 (scale-load :class 'var-unit-data-property-class
+					current-load (case ^^type
+									('force 'N)
+									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
+								  )
+					value-in 	(default ^scale-load)
+					unit-in 	^current-load
+					unit 		^current-load
+					label 		"Scaling load"
+				 )
 				 
 				 property-objects-list (list
 										(list (the superior type self)
 											'(automatic-apply? t))
 										(list (the superior load-point self)
 											'(automatic-apply? t))
-										(list (the superior magnitude self)
-											'(automatic-apply? t))
+										(if ^magnitude
+											(list (the superior magnitude self)
+												'(automatic-apply? t))
+											(list (the superior scale-load self)
+												'(automatic-apply? t))
+										)
 										(list (the superior direction self)
 											'(automatic-apply? t))
 					)
@@ -153,7 +167,11 @@
 )
 
 (define-method get-magnitude load-model ()
-	!magnitude
+	(the magnitude value-in)
+)
+
+(define-method get-scale-load load-model ()
+	(the scale-load value-in)
 )
 
 (define-method get-direction load-model ()
