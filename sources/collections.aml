@@ -60,6 +60,7 @@
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
                            constraint-variable	(nth 4 (nth !index ^constraint-list))
+						   degrees-of-freedom	(nth 5 (nth !index ^constraint-list))
 						   incident-links		(let (
 													  (link1 (if (first (nth 2 (nth !index ^constraint-list)))
 															(nth (first (nth 2 (nth !index ^constraint-list))) ^links-list)
@@ -163,9 +164,9 @@
                init-form '(
 						   label 		(nth 0 (nth ^index ^points-list))
                            coordinates	(list (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
-						   dv-values 	(nth 4 (nth ^index ^points-list))
-						   line-group 	(nth 5 (nth ^index ^points-list))
-						   is-fixed? 	(nth 6 (nth ^index ^points-list))
+						   ;dv-values 	(nth 4 (nth ^index ^points-list))
+						   ;line-group 	(nth 5 (nth ^index ^points-list))
+						   ;is-fixed? 	(nth 6 (nth ^index ^points-list))
 						   id 			^index
                            )
                )
@@ -440,7 +441,11 @@
 							type 				(nth 0 (nth ^index ^loads-list))
 							load-point-object 	(nth (nth 1 (nth ^index ^loads-list)) ^points-list)
 							direction 			(nth 2 (nth ^index ^loads-list))
-							magnitude 			(nth 3 (nth ^index ^loads-list))
+							magnitude 			(if (numberp (nth 3 (nth ^index ^loads-list)))
+													(nth 3 (nth ^index ^loads-list))
+													nil)
+							scale-load			(unless ^magnitude (read-from-string (remove "scale" 
+													(format nil "~a" (nth 3 (nth ^index ^loads-list))))))
 							loaded-link 		(nth (nth 4 (nth ^index ^loads-list)) ^^links-list)
 							mechanism-size		^mech-size
 							)
@@ -549,7 +554,8 @@
       until (equal line :eof)
       for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
       for c-data = (list
-                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls))
+                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) 
+					(read-from-string (nth 4 ls)) (nth 5 ls)
                     )
       collect c-data
       )
@@ -771,6 +777,7 @@
                    )
 			   
 			   mechanism-type (the folder (:from ^mechanism-selection))
+			   mechanism-version (format nil "~a-~a" ^mechanism-type (the version-name (:from ^version-selection)))
 			   (shapes :class 'shape-collection
                    )
 				   

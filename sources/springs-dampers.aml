@@ -255,9 +255,9 @@
 (define-class damper-model-class 
 	:inherit-from (general-spring-damper-class damper-geometry-class)
 	:properties (
-				 type			'damper
-				 damping 		(get-stiffness-damping !superior)
-				 color			'red
+				 type		'damper
+				 damping 	(get-stiffness-damping !superior)
+				 color		'red
 				)
 )
 
@@ -275,9 +275,9 @@
 (define-class spring-model-class
 	:inherit-from (general-spring-damper-class spring-geometry-class)
 	:properties (
-				 type			'spring
-				 stiffness		(get-stiffness-damping !superior)
-				 color			'purple
+				 type		'spring
+				 stiffness	(get-stiffness-damping !superior)
+				 color		'purple
 				)
 )
 

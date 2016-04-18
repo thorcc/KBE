@@ -10,6 +10,7 @@
 			   min-element-size 	(default 0.01)
                scale-factor 		(default 1.2) ;;Scaling of the constraint dimensions
 			   constraint-variable	(default nil)
+			   degrees-of-freedom	(default nil) ;;Only applicable for free joints
 			   incident-links		(default nil) ;;Ref to the link-model-class objects
 			   
 			   gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
@@ -56,8 +57,8 @@
 						   )
 					
 			   ;;Only display properties for non-free constraints
-			   property-objects-list (if (is-free-constraint (the superior)) 
-				(list "This is a free constraint. No properties can be edited.") 
+			   property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))  
+				(list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type)) 
 				(list
 					;(the superior toggle-mesh self)
 					'("Draw joint" (button1-parameters :draw-joint)
@@ -134,6 +135,10 @@
 
 (define-method get-direction master-joint-model ()
 	!direction
+)
+
+(define-method get-degrees-of-freedom master-joint-model ()
+	!degrees-of-freedom
 )
 
 (define-method is-free-constraint master-joint-model ()

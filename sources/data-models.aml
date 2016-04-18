@@ -7,25 +7,14 @@
   :properties (
                (coordinates :class 'editable-data-property-class
                     label "Coordinates"
-					;before-change (progn (delete-file "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt")
-					;					 (sleep 1)
-					;					 (with-open-file (stream (logical-path "C:\\Users\\ander_000\\Documents\\KBE\\rasmus\\library\\four-bar\\line\\dummy.txt" )
-					;						 :direction :output
-					;						 :if-exists :overwrite)
-					;						 (format stream "wiho"))
-					;				)
                    )
-			   coord-ref (nth 1 ^coordinates)
-			   label nil
-			   dv-values nil
-			   line-group (default nil)
-			   is-fixed? (default nil)
-			   id nil
-			   line-width 4
-			   color 'green
-			   after-create ()
+			   coord-ref	(nth 1 ^coordinates)
+			   label 		nil
+			   id 			nil
+			   line-width 	4
+			   color 		'green
 				
-				 property-objects-list (list
+			   property-objects-list (list
 										(list (the superior coordinates self) 
                                             '(apply-formula? t))
 					)
