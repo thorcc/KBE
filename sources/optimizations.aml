@@ -105,6 +105,7 @@
 				 first-run?					t
 				 
 				 parent-exploration-object 	(get-exploration-object !superior)
+				 multiga-exploration-object	(get-multiga-object ^parent-exploration-object)
 				 
 				 ;;Can only set optimization values if the exploration-object exists
 				 property-objects-list (if (not ^parent-exploration-object)
@@ -192,27 +193,26 @@
 	(progn
 		(add-iteration-result (the))
 		
-		(if (= 50 !counter)
-			(progn 
-				(change-value !first-run? nil)
-				;;Write bdfs and fmm with the design variables yielding the lowest area
-				(change-value (the width dv-value) (nth 1 !best-iteration-result))
-				(change-value (the height dv-value) (nth 2 !best-iteration-result))
-				(change-value (the flange-thickness dv-value) (nth 2 !best-iteration-result))
-				(change-value (the web-thickness dv-value) (nth 3 !best-iteration-result))
-				(write-fmm-model-file !main-mech-ref)
-				
-				(change-value !best-result-in-each-gen 
-					(append !best-result-in-each-gen (list !best-iteration-result)))
-				(change-value !counter 0)
-				(change-value !best-iteration-result nil)
-				;(delete-file !results-file)
-				;(run-program "run-fedem.bat" :windows-batch-file? t)
-				(sleep 10)
-				(with-open-file (file (logical-path !results-file) :direction :output
-					:if-exists :overwrite)
-					(format file "wiho"))
-			)
+		(when (= (the population-size (:from !multiga-exploration-object)) !counter)
+			(change-value !first-run? nil)
+			
+			;;Write bdfs and fmm with the design variables yielding the lowest area
+			(change-value (the width dv-value) (nth 1 !best-iteration-result))
+			(change-value (the height dv-value) (nth 2 !best-iteration-result))
+			(change-value (the flange-thickness dv-value) (nth 2 !best-iteration-result))
+			(change-value (the web-thickness dv-value) (nth 3 !best-iteration-result))
+			(write-fmm-model-file !main-mech-ref)
+			
+			(change-value !best-result-in-each-gen 
+				(append !best-result-in-each-gen (list !best-iteration-result)))
+			(change-value !counter 0)
+			(change-value !best-iteration-result nil)
+			(delete-file !results-file)
+			;(run-program "run-fedem.bat" :windows-batch-file? t)
+			(sleep 5)
+			(with-open-file (file (logical-path !results-file) :direction :output
+				:if-exists :overwrite)
+				(format file "wiho"))
 		)
 		(change-value !counter (1+ !counter))
 		(get-total-area (the)) ;;Return value
@@ -225,6 +225,10 @@
 ;------------------------------------------------------------------------------
 (define-method get-exploration-object cross-section-optimization-model ()
 	(first (children (the) :class 'dcms-exploration-object-manager-class))
+)
+	
+(define-method get-multiga-object dcms-exploration-object-manager-class ()
+	(first (children (the) :class 'dcms-exploration-multiga-optimization-class))
 )
 	
 (define-method add-iteration-result cross-section-optimization-model ()
