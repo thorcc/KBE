@@ -48,9 +48,7 @@
 				 links			(default nil)
 				 current-path	(default nil) ;;Directory path to the current mechanism
 				 main-mech-ref	(default nil)
-				 label 			(default nil)
-				 
-				 results-file	(format nil "~a\\dummy.txt" ^current-path)
+				 label 			(default nil)				 
 				 )
 )
 
@@ -86,6 +84,7 @@
 				 
 				 ;;Constraints
 				 
+				 fedem-batch-file		(format nil "~a\\fedem-batch.bat" ^current-path)
 				 results-file-path		(format nil "~a\\deformation.asc" ^current-path)
 				 results-list 			(read-results-from-file !superior)
 				 largest-deformation	(get-largest-deformation !superior)
@@ -207,18 +206,23 @@
 				(append !best-result-in-each-gen (list !best-iteration-result)))
 			(change-value !counter 0)
 			(change-value !best-iteration-result nil)
-			(delete-file !results-file)
-			;(run-program "run-fedem.bat" :windows-batch-file? t)
-			(sleep 5)
-			(with-open-file (file (logical-path !results-file) :direction :output
-				:if-exists :overwrite)
-				(format file "wiho"))
+			(when (probe-file !results-file-path)
+				(delete-file !results-file-path)
+			)
+			(run-program !fedem-batch-file :windows-batch-file? t)
+			(wait-for-fedem-results !results-file-path)
 		)
 		(change-value !counter (1+ !counter))
 		(get-total-area (the)) ;;Return value
 	)
 )
 
+(defun wait-for-fedem-results (results-file-path)
+	(unless (probe-file results-file-path)
+		(sleep 1)
+		(wait-for-fedem-results results-file-path)
+	)
+)
 ;------------------------------------------------------------------------------
 ; Used for retrieving the exploration-object when an AMOPT model has been added
 ; to the main-mechanism-class
