@@ -1,2 +1,2 @@
 Name				Link		Member		Cross-section		Dimensions			Points-list		Weights-list
-"default"			default		default		"circular"			"(0.08 0.08)"	
+"default"			default		default		"circular"			"(0.1 0.1)"	
