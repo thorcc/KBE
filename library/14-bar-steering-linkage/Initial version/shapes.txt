@@ -2,28 +2,33 @@ Name			Link		Member		Cross-section	Dimensions		Points-list		Weights-list
 "link-3"		3			1			nil	
 "link-3"		3			4			nil	
 "link-3"		3			2			nil	
+"link-3"		3			5			nil	
 "link-4"		4			1			nil	
 "link-4"		4			4			nil	
 "link-4"		4			2			nil	
-"link-5"		5			0			"rectangular"	"(0.1 0.03)"	
-"link-3"		3			0			"rectangular"	"(0.08 0.02)"		
-"link-3"		3			3			"rectangular"	"(0.08 0.02)"	
-"link-3"		3			5			"rectangular"	"(0.08 0.02)"		
-"link-4"		4			0			"rectangular"	"(0.08 0.02)"	
-"link-4"		4			3			"rectangular"	"(0.08 0.02)"		
-"link-4"		4			5			"rectangular"	"(0.08 0.02)"	
-"link-14"		14			0			"rectangular"	"(0.08 0.02)"		
-"link-15"		15			0			"rectangular"	"(0.08 0.02)"	
-"link-16"		16			1			"rectangular"	"(0.1 0.02 0.06 0.02)"		
-"link-17"		17			1			"rectangular"	"(0.1 0.02 0.06 0.02)"		
-"link-12"		12			0			"rectangular"	"(0.04 0.01)"		"(23)"		"(1)"
-"link-13"		13			0			"rectangular"	"(0.04 0.01)"		"(24)"		"(1)"
-"link-16"		16			0			"nil"
+"link-4"		4			5			nil	
+"link-5"		5			2			nil	
+"link-5"		5			3			nil	
+"link-5"		5			5			nil	
+"link-5"		5			1			nil	
+"link-5"		5			4			nil	
+"link-5"		5			0			"rectangular"	"(1 0.3)"	
+"link-3"		3			0			"rectangular"	"(0.8 0.2)"		
+"link-3"		3			3			"rectangular"	"(0.8 0.2)"	
+"link-4"		4			0			"rectangular"	"(0.8 0.2)"	
+"link-4"		4			3			"rectangular"	"(0.8 0.2)"		
+"link-14"		14			0			"rectangular"	"(0.8 0.2)"		
+"link-15"		15			0			"rectangular"	"(0.8 0.2)"	
+"link-16"		16			1			"rectangular"	"(1 0.3 0.6 0.3)"		
+"link-17"		17			1			"rectangular"	"(1 0.3 0.6 0.3)"		
+"link-12"		12			0			"rectangular"	"(0.4 0.1)"		
+"link-13"		13			0			"rectangular"	"(0.4 0.1)"		
 "link-16"		16			2			"nil"
 "link-16"		16			3			"nil"
 "link-16"		16			5			"nil"
-"link-17"		17			0			"nil"
 "link-17"		17			2			"nil"
 "link-17"		17			3			"nil"
 "link-17"		17			5			"nil"
-"default"		default		default		"rectangular"	"(0.04 0.01)"	
+"link-17"		17			0			"nil"
+"link-16"		16			0			"nil"
+"default"		default		default		"rectangular"	"(0.4 0.1)"	
