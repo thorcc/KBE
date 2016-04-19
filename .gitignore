@@ -5,3 +5,4 @@ Mechanism-system*/
 *.fmm.bak
 *_RDB/
 nastran-data/
+*.asc
