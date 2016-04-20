@@ -6,9 +6,10 @@
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
                members 		nil
+			   mesh-size-factor (default 4) ;;4 times the thicknes of the surface
 			   tag-dimensions '(1 2 3)
-               tag-attributes (list ^^max-element-size .1
-                                    0 0.1 0 20.0 1.0e-5)
+               tag-attributes (list (calculate-mesh-size (the superior)) .1
+                                   0 0.1 0 20.0 1.0e-5)
 									
                
 			   
@@ -54,6 +55,10 @@
                    )
 			   )
   )
+  
+(define-method calculate-mesh-size surface-model ()
+	(* !thickness !mesh-size-factor)
+)  
 ;-------------------------------------------------------------------------------------------------------------
 ; END surface-model definitions
 ;------------------------------------------------------------------------------------------------------------- 
