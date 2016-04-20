@@ -15,10 +15,14 @@
                load-case-objects-list 			(list ^load-case-1)
                material-catalog-object 			^material-catalog
                materials-list 					(list (the material-name (:from ^material-selection)))
-               property-set-objects-list 		(if ^export-surface?
-													(list ^link-2D-material-properties)
-													(list ^link-3D-material-properties)
+               property-set-objects-list 		(progn 
+													(change-aluminum-properties !material-catalog)
+													(change-steel-properties !material-catalog)
+													(if ^export-surface?
+														(list ^link-2D-material-properties)
+														(list ^link-3D-material-properties)
 													)
+												)
                
 			   element-set-2d-objects-list 		(if ^export-surface? 
 													(list ^link-analysis-surface-elements) nil)
@@ -38,9 +42,10 @@
 										collect (the material-name (:from material))
 										)
 					mode 			'menu
-					formula 		(default (the material-catalog aluminum))
+					formula 		(default (the material-catalog steel))
 					label 			"Select Material"
 					)
+				
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
@@ -90,6 +95,30 @@
                    )
                )
   )
+  
+(define-method get-material-type analysis-link-model-class ()
+	!material-selection
+)
+
+(define-method change-steel-properties material-catalog-class ()
+	(change-value (the steel material-properties )
+				(list (list 'elastic-modulus 9.9E7 (list 'N (list 'length -2)) 
+					"youngs modulus") (list 'poissons-ratio 0.29 'nil "") 
+					(list 'mass-density 7850 (list 'mass (list 'length -3)) "") 
+					(list 'shear-modulus 7.7E7 (list 'N (list 'length -2)) "")
+				)
+	)
+)
+
+(define-method change-aluminum-properties material-catalog-class ()
+	(change-value (the aluminum material-properties)
+				(list (list 'elastic-modulus 6.89E7 (list 'N (list 'length -2)) 
+					"youngs modulus") (list 'poissons-ratio 0.33 'nil "") 
+					(list 'mass-density 2720 (list 'mass (list 'length -3)) "") 
+					(list 'shear-modulus 2.6E7 (list 'N (list 'length -2)) "")
+				)
+	)
+)
   
 (define-method property-classification-list analysis-link-model-class ()
   (list

@@ -66,15 +66,23 @@
 				 type 			(default nil)
 				 affected-links	(default nil)
 				 init-values	(default nil)
-				 links			(default nil)
+				 links			(default nil) ;;link-model-classes
 				 current-path	(default nil) ;;Directory path to the current mechanism
 				 main-mech-ref	(default nil)
 				 label 			(default nil)
+				 
+				 materials-list	(get-materials-list !superior)
 				 )
 )
 
 (define-method get-affected-links general-optimization-model ()
 	!affected-links
+)
+
+(define-method get-materials-list general-optimization-model ()
+	(loop for link in !links 
+		collect (get-material-type link)
+	)
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END general-optimization-model definitions
