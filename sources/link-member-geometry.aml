@@ -377,7 +377,6 @@
                    reference-object 	(the spline-frame_start (:from ^connection))
                    orientation 			(list
 											(rotate 90 :x-axis)
-											(rotate 90 :y-axis)
 											(rotate 90 :z-axis)
 										)
 				   optimization-object	^^optimization-object
@@ -392,7 +391,6 @@
                    reference-object 	(the spline-frame_end (:from ^connection))
                    orientation 			(list
 											(rotate 90 :x-axis)
-											(rotate 90 :y-axis)
 											(rotate 90 :z-axis)
 										)
 				   optimization-object 	^^optimization-object
