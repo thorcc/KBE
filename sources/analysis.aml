@@ -7,6 +7,7 @@
   :inherit-from (analysis-model-class)
   :properties (
                mesh-model-object 				nil ;;This property is set as a link-mesh-class
+			   link-model						nil ;;link-model-class
                mesh-database-object 			(get-mesh-database ^mesh-model-object)
                
                z-load 							(default -100.0)
@@ -19,10 +20,12 @@
 													(list ^link-3D-material-properties)
 													)
                
-			   element-set-2d-objects-list 		(if ^export-surface? (list ^link-analysis-surface-elements) nil)
-			   element-set-3d-objects-list 		(if ^export-surface? nil (list ^link-analysis-solid-elements))
+			   element-set-2d-objects-list 		(if ^export-surface? 
+													(list ^link-analysis-surface-elements) nil)
+			   element-set-3d-objects-list 		(if ^export-surface? 
+													nil (list ^link-analysis-solid-elements))
 				
-			   export-surface? 					t 
+			   export-surface? 					(default t)
 				
                mesh-object 						(the link-mesh (:from ^mesh-model-object))
                node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)))
@@ -30,34 +33,34 @@
 			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
 			   
 			   (material-selection :class 'option-property-class
-					options-list (children ^^material-catalog)
-					labels-list (loop for material in (children ^^material-catalog)
-									collect (the material-name (:from material))
-									)
-					mode 'menu
-					formula (nth 0 !options-list)
-					label "Select Material"
+					options-list	(children ^^material-catalog)
+					labels-list 	(loop for material in (children ^^material-catalog)
+										collect (the material-name (:from material))
+										)
+					mode 			'menu
+					formula 		(default (the material-catalog aluminum))
+					label 			"Select Material"
 					)
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
                    )
                (link-2D-material-properties :class 'analysis-property-set-2d-type-1-class
-                   material-catalog-object ^^material-catalog
-				   material-name (write-to-string (the material-name (:from ^material-selection)))
-                   thickness 0.3
+                   material-catalog-object	^^material-catalog
+				   material-name 			(write-to-string (the material-name (:from ^material-selection)))
+                   thickness				(/ (get-smallest-mesh-size ^^link-model) 2.5)
 				   )
                (link-3D-material-properties :class 'analysis-property-set-3d-type-1-class
-					material-catalog-object ^^material-catalog
-				    material-name (write-to-string (the material-name (:from ^material-selection)))
+					material-catalog-object	^^material-catalog
+				    material-name 			(write-to-string (the material-name (:from ^material-selection)))
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
-                   query-objects-list (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
-                   property-set-object ^^link-2D-material-properties
+                   query-objects-list	(get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
+                   property-set-object 	^^link-2D-material-properties
 				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
-                   query-objects-list (get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
-                   property-set-object ^^link-3D-material-properties
+                   query-objects-list	(get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
+                   property-set-object 	^^link-3D-material-properties
                    )
                
 			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class

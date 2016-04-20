@@ -179,6 +179,10 @@
 	!members-ref-list
 )
 
+(define-method get-visible-members link-geometry-class ()
+	!visible-members-ref-list
+)
+
 (define-method get-rbe2-dependent-nodes-list link-geometry-class ()
 	(loop for c in !incident-constraints
 		collect (get-rbe2-dependent-nodes c)
@@ -270,7 +274,8 @@
 				   joint-elements			^^constraints-incident-on-link-list
                    )
                (analysis :class 'analysis-link-model-class
-                   mesh-model-object ^^link-mesh-model
+                   mesh-model-object	^^link-mesh-model
+				   link-model			^superior
                    )
                )
   )
@@ -286,6 +291,13 @@
 
 (define-method get-shapes-on-link link-model-class ()
 	(get-shapes-on-link !link-geometry)
+)
+
+(define-method get-smallest-mesh-size link-model-class ()
+	(loop for member in (get-visible-members !link-geometry) do
+		minimize (calculate-mesh-size member) into min-mesh
+		finally (return min-mesh)
+	)
 )
 
 (define-method get-link-geometry link-model-class ()

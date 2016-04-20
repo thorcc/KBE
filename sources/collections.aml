@@ -899,34 +899,47 @@
 	(the mechanism-selection label)
 )
 
+(define-method draw-sewn-wo-mesh main-mechanism-class ()
+	(loop for link in !final-link-ref-list do
+		(with-error-handler (:error-message (concatenate "Error drawing "
+			(write-to-string (object-name link))) :show-system-error? t)
+			(draw (the link-geometry (:from link)) :draw-subobjects? nil)
+		)
+	)
+	t
+)
+
+(define-method draw-sewn-with-tet-mesh main-mechanism-class ()
+	(loop for link in !final-link-ref-list do
+		(with-error-handler (:error-message (concatenate "Error drawing "
+			(write-to-string (object-name link))) :show-system-error? t)
+			(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+		)
+	)
+)
+
+(define-method draw-sewn-with-tri-mesh main-mechanism-class ()
+	(loop for link in !final-link-ref-list do
+		(with-error-handler (:error-message (concatenate "Error drawing "
+			(write-to-string (object-name link))) :show-system-error? t)
+			(draw (the link-mesh-model link-mesh elements-query (:from link)))
+		)
+	)
+)
+
 ;-------------------------------------------------
 ; Creates buttons to draw and export the mechanism 
 ;-------------------------------------------------
 (define-method work-area-button1-action main-mechanism-class (params)
 	(case params
 		(:draw-sewn-wo-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "
-					(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-geometry (:from link)) :draw-subobjects? nil)
-				)
-			)
+			(draw-sewn-wo-mesh (the))
 		)
 		(:draw-sewn-with-tet-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "
-					(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-mesh-model tet-mesh elements-query (:from link)))
-				)
-			)
+			(draw-sewn-with-tet-mesh (the))
 		)
 		(:draw-sewn-with-tri-mesh
-			(loop for link in !final-link-ref-list do
-				(with-error-handler (:error-message (concatenate "Error drawing "
-					(write-to-string (object-name link))) :show-system-error? t)
-					(draw (the link-mesh-model link-mesh elements-query (:from link)))
-				)
-			)
+			(draw-sewn-with-tri-mesh (the))
 		)
 		(:undraw
 			(undraw self)
@@ -944,6 +957,7 @@
 			(write-nastran-bdf-files (the))
 		)
 		(:export-fedem
+			(write-nastran-bdf-files (the))
 			(write-fmm-model-file (the))
 		)
 	)

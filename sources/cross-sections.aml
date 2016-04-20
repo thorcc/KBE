@@ -6,7 +6,8 @@
   :inherit-from(tagging-object position-object)
   :properties (
 			   optimization-object	(default nil)
-               area 				(get-area !superior)
+			   type 				(default nil)
+               area 				(get-area !superior ^type)
 			   
 			   max-element-size		0.004
                tag-dimensions 		'(1 2)
@@ -208,12 +209,12 @@
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: I-beam-section
+; Class: H-beam-section
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class I-beam-section
+(define-class H-beam-section
   :inherit-from (union-object cross-section-model)
   :properties (
-               type 			'i-beam
+               type 			'h-beam
 			   
 			   width 			(if ^optimization-object 
 									(get-width ^optimization-object)
@@ -256,30 +257,44 @@
                
                )
   )
-(define-method get-width I-beam-section ()
-  !width
-  )
-(define-method get-height I-beam-section ()
-  (+ !flange-thickness !height)
- )
+(define-method get-width H-beam-section ()
+	(+ !width !flange-thickness)
+)
+(define-method get-height H-beam-section ()
+	!height
+)
 ;-------------------------------------------------------------------------------------------------------------
-; END I-beam-section definitions
+; END H-beam-section definitions
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
-; Class: H-beam-section
+; Class: I-beam-section
 ;------------------------------------------------------------------------------------------------------------- 
-(define-class H-beam-section
+(define-class I-beam-section
   :inherit-from (union-object cross-section-model)
   :properties (
-               type 			'h-beam
+               type 			'I-beam
 			   
-			   width 			(default 0.04)
-               height 			(default 0.04)
+			   width 			(if ^optimization-object 
+									(get-width ^optimization-object)
+									(default 0.04)
+								)
+               height 			(if ^optimization-object 
+									(get-height ^optimization-object)
+									(default 0.04)
+								)
+               flange-thickness	(if ^optimization-object 
+									(get-flange ^optimization-object)
+									(* 0.1 ^width)
+								)
+               web-thickness 	(if ^optimization-object 
+									(get-web ^optimization-object)
+									(* 0.1 ^height)
+								)
                
-               object-list 		(list ^left-flange ^web ^right-flange)
-               flange-thickness	(* 0.1 ^width)
-               web-thickness 	(* 0.1 ^height)
+			   second-moment-of-area	(calculate-second-moment-of-area-about-z-axis !superior)
+			   
+			   object-list 		(list ^left-flange ^web ^right-flange)
                simplify? 		t
 
                
@@ -300,17 +315,27 @@
                    orientation 	(list
 									(translate (list (- (half ^^width)) 0 0))
 									)
-                   )              
+                   )
                )
   )
-(define-method get-width H-beam-section ()
-  (+ !width !flange-thickness)
+(define-method get-width I-beam-section ()
+	!width
  )
-(define-method get-height H-beam-section ()
-  !height
+(define-method get-height I-beam-section ()
+	(+ !flange-thickness !height)
+ )
+ 
+ (define-method calculate-second-moment-of-area-about-z-axis I-beam-section ()
+	(+
+		(+ (/ (* !width (expt !flange-thickness 3)) 6) 
+			(* 0.5 !flange-thickness !width (expt !height 2))
+			(* (expt !flange-thickness 2) !width !height)
+			(* 0.5 (expt !flange-thickness 3) !width))
+		(/ (* !web-thickness (expt !height 3)) 12)
+	)
  )
 ;-------------------------------------------------------------------------------------------------------------
-; END H-beam-section definitions
+; END I-beam-section definitions
 ;-------------------------------------------------------------------------------------------------------------
   
 ;-------------------------------------------------------------------------------------------------------------
