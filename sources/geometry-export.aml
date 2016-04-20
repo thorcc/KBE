@@ -3,7 +3,7 @@
 ;----------------------------------------------------------------- 
 (define-method write-nastran-bdf-files main-mechanism-class ()
 	(loop for link in !final-link-ref-list do
-		(the analysis nastran-interface run-nastran@ (:from link))
+		(write-nastran-bdf-file (the) link)
 	)
 )
 
@@ -17,7 +17,7 @@
 ;----------------------------------------------------------------------
 ; Writes a fedem fmm file, stored in library\"mechanism-type"\"version"
 ;----------------------------------------------------------------------
-(define-method write-fmm-model-file main-mechanism-class ()
+(define-method write-fmm-model-file main-mechanism-class (&key from-opt?)
 	(let (
 		  (baseID 				2)
 		  (linkID				0)
@@ -25,7 +25,8 @@
 		  (triads-written		1)
 		  (triad-fe-node-list	nil)
 		  )
-		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) (concatenate "model" ".fmm") )
+		(with-open-file (stream (logical-path (the version-path (:from !version-selection)) 
+							  (concatenate "model" ".fmm") )
 							  :direction :output
 							  :if-exists :overwrite
 							  )
@@ -45,21 +46,10 @@
 					(format stream "ID = ~d;~%" linkID)
 					(format stream "LINE_COLOR = 1 1 1;~%")
 					(format stream "MASS_PROP_DAMP = 0;~%")
-					(format stream "ORIGINAL_FE_FILE = ~a;~%" 
-						(let (
-							(file-path (concatenate "\""
+					(format stream "ORIGINAL_FE_FILE = ~a;~%" (concatenate "\""
 								(logical-path :nastran-data)
 								(the analysis nastran-interface model-name (:from link)) "\\"
-								(the analysis nastran-interface nastran-file-name (:from link)) "\""))
-							)
-							(if (probe-file file-path)
-								file-path
-								(progn 
-									(write-nastran-bdf-file (the) link)
-									file-path
-								)
-							)
-						)
+								(the analysis nastran-interface nastran-file-name (:from link)) "\"")
 					)
 					(format stream "POLYS_ON_POINTS_OFF = true;~%")
 					(format stream "STIF_PROP_DAMP = 0;~%")
@@ -222,7 +212,7 @@
 									)
 									(setf triads-written (1+ triads-written))
 									(setf baseID (1+ baseID))
-									(write-loads-to-fmm stream baseID (get-load-ID load) triads-written 
+									(write-loads-to-fmm stream baseID (get-load-ID load) (1- triads-written) 
 										(get-load-type load) (get-magnitude load) (get-scale-load load) 
 										(get-direction load))
 								)
@@ -259,7 +249,10 @@
 					)
 				)
 				(format stream "END {FEDEMMODELFILE}")
-				(message-box "Success!" (format nil "Writing to fmm successful!") :mode :ok)
+				
+				(unless from-opt?
+					(message-box "Success!" (format nil "Writing to fmm successful!") :mode :ok)
+				)
 			)
 		)
 	)

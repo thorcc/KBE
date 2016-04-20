@@ -315,7 +315,7 @@
                    orientation 	(list
 									(translate (list (- (half ^^width)) 0 0))
 									)
-                   )              
+                   )
                )
   )
 (define-method get-width I-beam-section ()
