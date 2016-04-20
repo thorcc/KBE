@@ -320,6 +320,11 @@
 	(get-mesh-database !link-mesh-model)
 )
 
+
+(define-method get-material-type link-model-class ()
+	(get-material-type !analysis)
+)
+
 (define-method get-export-surface link-model-class ()
 	(the export-surface? (:from !analysis))
 )
