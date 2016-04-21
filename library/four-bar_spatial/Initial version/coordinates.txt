@@ -1,0 +1,8 @@
+Index	Name			X-pos	Y-pos	Z-pos	Design-variables
+0	"Crank-bearing"		0.0		0.0		0.0		nil					nil	t
+1	"Crank-top"			0.0		0.75	0.0		"(crank-height)"			"L1"	nil
+2	"Rocker-bearing"	1.5		0.0		0.0		"(crank-rocker-distance)"		nil	nil
+3	"Rocker-top"		1.5		1.875	0.0		"(rocker-height crank-rocker-distance)"	"L1"	nil
+4	"Coupler-end"		3.0		3.0		0.0		nil					"L1"	t
+5	"Spring-top"		3.0		3.0		-0.12
+6	"Spring-ground"		3.0		0.0		0.0
