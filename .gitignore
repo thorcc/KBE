@@ -8,3 +8,4 @@ nastran-data/
 *.asc
 *.ftl
 *.bdf
+*.stl
