@@ -13,10 +13,14 @@
 (define-method write-stl-files main-mechanism-class (path)
 	
 	(let( 
-			(corrected-path (replace-all-in-string "/" "\\" path))
+			(corrected-path (concatenate (replace-all-in-string "/" "\\" path) "/Stl-files/"))
+		)
+		
+		(if (not (probe-file corrected-path))
+			(create-directory corrected-path)
 		)
 		(loop for link in !final-link-ref-list do
-			(write-stl-file (the link-geometry (:from link)) (concatenate corrected-path "/Stl-files/" (the label (:from link)) ".stl"))
+			(write-stl-file (the link-geometry (:from link)) (concatenate corrected-path (the label (:from link)) ".stl"))
 		)
 	)
 )
