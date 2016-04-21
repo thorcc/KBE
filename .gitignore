@@ -6,3 +6,4 @@ Mechanism-system*/
 *_RDB/
 nastran-data/
 *.asc
+*.ftl
