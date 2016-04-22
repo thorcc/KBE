@@ -9,10 +9,11 @@
                mesh-model-object 				nil ;;This property is set as a link-mesh-class
 			   link-model						nil ;;link-model-class
                mesh-database-object 			(get-mesh-database ^mesh-model-object)
+			   export-surface? 					(default t)
                
-               z-load 							(default -100.0)
-               analysis-type 					:linear-static
-               load-case-objects-list 			(list ^load-case-1)
+               ;z-load 							(default -100.0)
+               ;analysis-type 					:linear-static
+               ;load-case-objects-list 			(list ^load-case-1)
                material-catalog-object 			^material-catalog
                materials-list 					(list (the material-name (:from ^material-selection)))
                property-set-objects-list 		(progn 
@@ -29,7 +30,6 @@
 			   element-set-3d-objects-list 		(if ^export-surface? 
 													nil (list ^link-analysis-solid-elements))
 				
-			   export-surface? 					(default t)
 				
                mesh-object 						(the link-mesh (:from ^mesh-model-object))
                node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)))
@@ -88,7 +88,8 @@
 				   )
                (nastran-interface :class 'nastran-analysis-class
                    analysis-model-object ^superior
-                   model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) (the version-name (:from ^^version-selection)))
+                   model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) 
+								(the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string (object-name ^^superior)) ".bdf")
                    nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) 
 				   ;; could write 'nastran-version :nx-nastran' but this also shows the available versions
@@ -100,23 +101,49 @@
 	!material-selection
 )
 
-(define-method change-steel-properties material-catalog-class ()
-	(change-value (the steel material-properties )
-				(list (list 'elastic-modulus 9.9E7 (list 'N (list 'length -2)) 
-					"youngs modulus") (list 'poissons-ratio 0.29 'nil "") 
-					(list 'mass-density 7850 (list 'mass (list 'length -3)) "") 
-					(list 'shear-modulus 7.7E7 (list 'N (list 'length -2)) "")
-				)
+(define-method get-yield-strength material-class ()
+	(if (nth 4 !material-properties)
+		(nth 1 (nth 4 !material-properties))
+		(progn 
+			(change-steel-properties !superior)
+			(nth 1 (nth 4 !material-properties))
+		)
 	)
 )
 
+;------------------------------------------------------------
+; Method for circumventing AML bug when writing to bdf.
+; Manually overwriting all material-properties for steel, 
+; as well as adding the yield strength for Steel, API 5L X65.
+;------------------------------------------------------------
+(define-method change-steel-properties material-catalog-class ()
+	(unless (nth 1 (nth 4 (the steel material-properties)))
+		(change-value (the steel material-properties)
+					(list (list 'elastic-modulus 9.9E7 (list 'N (list 'm -2)) "youngs modulus") 
+						(list 'poissons-ratio 0.29 'nil "") 
+						(list 'mass-density 7.85 (list 'kg (list 'cm -3)) "") 
+						(list 'shear-modulus 7.7E7 (list 'N (list 'm -2)) "")
+						(list 'yield-strength 4.48E5 (list 'N (list 'm -2)) "")
+					)
+		)
+	)
+)
+
+;-----------------------------------------------------------
+; Method for circumventing AML bug when writing to bdf.
+; Manually overwriting all material-properties for aluminum, 
+; as well as adding the yield strength for Aluminum 6061-T6
+;-----------------------------------------------------------
 (define-method change-aluminum-properties material-catalog-class ()
-	(change-value (the aluminum material-properties)
-				(list (list 'elastic-modulus 6.89E7 (list 'N (list 'length -2)) 
-					"youngs modulus") (list 'poissons-ratio 0.33 'nil "") 
-					(list 'mass-density 2720 (list 'mass (list 'length -3)) "") 
-					(list 'shear-modulus 2.6E7 (list 'N (list 'length -2)) "")
-				)
+	(unless (nth 1 (nth 4 (the aluminum material-properties)))
+		(change-value (the aluminum material-properties)
+					(list (list 'elastic-modulus 6.89E7 (list 'N (list 'm -2)) "youngs modulus") 
+						(list 'poissons-ratio 0.33 'nil "") 
+						(list 'mass-density 2.72 (list 'kg (list 'cm -3)) "") 
+						(list 'shear-modulus 2.6E7 (list 'N (list 'm -2)) "")
+						(list 'yield-strength 2.76E5 (list 'N (list 'm -2)) "")
+					)
+		)
 	)
 )
   
