@@ -867,6 +867,12 @@
 	)
 )
 
+(define-method reset-all-database-values main-mechanism-class ()
+	(loop for link in (get-links !links) do
+		(smash-value (the db-id (:from (get-mesh-database link))))
+	)
+)
+
 (define-method get-all-joint-elements main-mechanism-class ()
 	(remove nil
 		(loop for constraint in (get-constraints !constraints) 
