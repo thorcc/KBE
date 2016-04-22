@@ -166,6 +166,10 @@
 	!type
 )
 
+(define-method get-loaded-link load-model ()
+	!loaded-link
+)
+
 (define-method get-magnitude load-model ()
 	(the magnitude value-in)
 )
