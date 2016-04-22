@@ -735,19 +735,6 @@
 					;formula (nth (- (length !options-list) 1) !options-list)
 					label "Select Version"
 					)
-					
-			   (dv :class 'data-matrix-property-class
-					label "Edit design variables"
-					mode 'pop-up
-					columns-labels-list (list "Value")
-					rows-labels-list (loop for dv in ^dv-ref-list
-						collect (string (the dv-name (:from dv)))
-						)
-					formula (loop for dv in ^dv-ref-list
-						collect (list (the dv-value (:from dv)))
-						)
-					)
-			   
 			   
 			   property-objects-list (list 
 											(list (the superior mechanism-selection self) 
@@ -794,12 +781,16 @@
 			   quantity 		(length ^opt-list)
 			   
 			   init-form '(
-						   affected-links	(nth 1 (nth ^index ^opt-list))
-						   init-values		(nth 2 (nth ^index ^opt-list))
-						   links 			(get-links ^^links)
-						   current-path		(get-version-path ^^version-selection)
-						   main-mech-ref	(the superior superior)
-						   label			(format nil "~a-opt"  (nth 0 (nth ^index ^opt-list)))
+						   affected-links			(nth 1 (nth ^index ^opt-list))
+						   init-values				(nth 2 (nth ^index ^opt-list))
+						   constraint-type			(nth 3 (nth ^index ^opt-list))
+						   max-allowed-deformation	(nth 4 (nth ^index ^opt-list))
+						   load-objects				(get-loads ^^loads)	
+						   links 					(get-links ^^links)
+						   current-path				(get-version-path ^^version-selection)
+						   main-mech-ref			(the superior superior)
+						   label					(format nil "~a-optimization"  
+														(nth 0 (nth ^index ^opt-list)))
 						   )
 			   
 			   )
@@ -835,7 +826,7 @@
 			(loop for line = (read-line file  nil :eof)
 				until (equal line :eof)
 				for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-				for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls))
+				for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
 				collect data
 			)
         )
@@ -876,6 +867,12 @@
 		 )
 		 finally (return (sqrt (+ (expt max-x 2) (expt max-y 2) (expt max-z 2))))
 	   )
+	)
+)
+
+(define-method reset-all-database-values main-mechanism-class ()
+	(loop for link in (get-links !links) do
+		(smash-value (the db-id (:from (get-mesh-database link))))
 	)
 )
 
