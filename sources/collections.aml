@@ -755,8 +755,11 @@
 											""
 											'("Create .bdf-files" (button1-parameters :create-bdf)
 											ui-work-area-action-button-class)
+											'("Create .stl-files" (button1-parameters :create-stl)
+											ui-work-area-action-button-class)
 											'("Export to FEDEM" (button1-parameters :export-fedem)
 											ui-work-area-action-button-class)
+											
                                      )
                
                ;;Property storing folders from library
@@ -952,6 +955,9 @@
 				)
 			)
 			(write-nastran-bdf-files (the))
+		)
+		(:create-stl
+			(write-stl-files (the) (get-version-path !version-selection))
 		)
 		(:export-fedem
 			(write-nastran-bdf-files (the))

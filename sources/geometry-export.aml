@@ -7,6 +7,35 @@
 	)
 )
 
+;--------------------------------
+; Writes each link to a .stl file
+;-------------------------------- 
+(define-method write-stl-files main-mechanism-class (path)
+	
+	(let( 
+			(corrected-path (concatenate (replace-all-in-string "/" "\\" path) "/Stl-files/"))
+		)
+		
+		(if (not (probe-file corrected-path))
+			(create-directory corrected-path)
+		)
+		(loop for link in !final-link-ref-list do
+			(write-stl-file (the link-geometry (:from link)) (concatenate corrected-path (the label (:from link)) ".stl"))
+		)
+	)
+)
+
+;--------------------------------------------
+; Replaces all specified characters in string
+;--------------------------------------------
+(defun replace-all-in-string (new old string)
+	
+	(if (equal string (replace-in-string new old string))
+		string
+		(replace-all-in-string new old (replace-in-string new old string))
+	)
+)
+
 ;-----------------------------------------------------------------
 ; Writes one link to a nastran .bdf file, stored in :nastran-data
 ;----------------------------------------------------------------- 
