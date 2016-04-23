@@ -30,7 +30,7 @@ Add the following entries in logical.pth:
 in your Nastran installation folder, e.g: 
 "C:\Program Files\Siemens\NX 10.0\NXNASTRAN\bin\"
 
-2) :nastran-data, pointing to wherever the nastran output files shall be stored
+2) :nastran-data, pointing to wherever the nastran output files is to be stored
 
 For AMOpt:
 

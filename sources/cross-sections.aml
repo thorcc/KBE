@@ -298,34 +298,34 @@
                simplify? 		t
 
                
-               (left-flange :class 'sheet-object
+               (right-flange :class 'sheet-object
                    width 		^^flange-thickness
-                   height 		^^height
+                   height 		^^width
                    orientation 	(list
-									(translate (list (half ^^width) 0 0))
+									(translate (list (half (+ ^^height ^^flange-thickness)) 0 0))
 									)
                    )
                (web :class 'sheet-object
-                   width 	^^width
+                   width 	^^height
                    height 	^^web-thickness
                    )
-               (right-flange :class 'sheet-object
+               (left-flange :class 'sheet-object
                    width 		^^flange-thickness
-                   height 		^^height
+                   height 		^^width
                    orientation 	(list
-									(translate (list (- (half ^^width)) 0 0))
+									(translate (list (- (half (+ ^^height ^^flange-thickness))) 0 0))
 									)
                    )
                )
   )
 (define-method get-width I-beam-section ()
 	!width
- )
+)
 (define-method get-height I-beam-section ()
 	(+ !flange-thickness !height)
- )
+)
  
- (define-method calculate-second-moment-of-area-about-z-axis I-beam-section ()
+(define-method calculate-second-moment-of-area-about-z-axis I-beam-section ()
 	(+
 		(+ (/ (* !width (expt !flange-thickness 3)) 6) 
 			(* 0.5 !flange-thickness !width (expt !height 2))
@@ -333,7 +333,11 @@
 			(* 0.5 (expt !flange-thickness 3) !width))
 		(/ (* !web-thickness (expt !height 3)) 12)
 	)
- )
+)
+ 
+(define-method get-second-moment-of-area-about-z-axis I-beam-section ()
+	!second-moment-of-area
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END I-beam-section definitions
 ;-------------------------------------------------------------------------------------------------------------
