@@ -258,10 +258,10 @@
                )
   )
 (define-method get-width H-beam-section ()
-	(+ !width !flange-thickness)
+	!height
 )
 (define-method get-height H-beam-section ()
-	!height
+	(+ !width !flange-thickness)
 )
 ;-------------------------------------------------------------------------------------------------------------
 ; END H-beam-section definitions
@@ -319,10 +319,10 @@
                )
   )
 (define-method get-width I-beam-section ()
-	!width
+	(+ !flange-thickness !height)
 )
 (define-method get-height I-beam-section ()
-	(+ !flange-thickness !height)
+	!width
 )
  
 (define-method calculate-second-moment-of-area-about-z-axis I-beam-section ()
