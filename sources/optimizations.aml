@@ -7,24 +7,16 @@
 	:inherit-from (data-model-node-mixin)
 	:properties (
 				 (dv-value :class 'editable-data-property-class
-					label (format nil "~a initial value" (object-name ^superior))
+					label (format nil "~:(~a~) initial value" (object-name ^superior))
 					)
 				 (min-value :class 'editable-data-property-class
 					 formula (default (* 0.5 ^dv-value))
-					 label (format nil "~a minimum value" (object-name ^superior))
+					 label (format nil "~:(~a~) minimum value" (object-name ^superior))
 					 )
 				 (max-value :class 'editable-data-property-class
 					 formula (default (* 2 ^dv-value))
-					 label (format nil "~a maximum value" (object-name ^superior))
+					 label (format nil "~:(~a~) maximum value" (object-name ^superior))
 					 )
-				 property-objects-list (list 
-										 (list (the superior dv-value self)
-												'(automatic-apply? t))
-										 (list (the superior min-value self)
-												'(automatic-apply? t))
-										 (list (the superior max-value self)
-												'(automatic-apply? t))
-										)
 				 )
 )
 	
@@ -55,7 +47,10 @@
 	:properties (
 				 type					(default nil)
 				 constraint-value		(default nil)
-				 limit					(default 0)
+				 (limit	:class 'editable-data-property-class
+					formula	(default 0)
+					label 	(format nil "Limit for the difference in max ~a and yield ~a" ^type ^type)
+					)
 				 inequality-type		(default (nth 0 (list :lt :lteq :gt :gteq :eq))) ;;Default less than
 				 penalty-weight-factor	(default 10)
 				 penalty-power			(default 2)
@@ -220,7 +215,9 @@
 											(list (the superior web-thickness max-value self)
 												'(automatic-apply? t))
 											""
-											'("Set optimization variables and get initial deformation from FEDEM" 
+											(list (the superior constraint-object limit self)
+												'(automatic-apply? t))
+											'("Set optimization variables" 
 												(button1-parameters :init-optimization-variables)
 												ui-work-area-action-button-class)
 											)
@@ -249,6 +246,10 @@
 	(save-best-result-in-generation (the))
 )
 
+;----------------------------------------------------------------------------------------------------;
+; Deletes the files FEDEM use for reduction of the different parts, as well as any simulation files. ;
+; Requires that XEmacs runs in administrator mode.													 ;
+;----------------------------------------------------------------------------------------------------;
 (define-method delete-all-previous-fmm-files cross-section-optimization-model ()
 	(if (probe-file !results-file-path)
 		(delete-file !results-file-path)
@@ -279,9 +280,11 @@
 ;------------------------------------------------------------------------------------------------------------;
 (define-method handle-results-and-get-area cross-section-optimization-model ()
 	(when !first-run?
+		(reset-temporary-optimization-values (the))
 		(change-value !first-run? nil)
 		(run-fedem-simulation (the))
 	)
+	(draw-sewn-wo-mesh !main-mech-ref)
 	(add-iteration-result (the))
 	(change-value !counter (1+ !counter))
 	
@@ -295,7 +298,7 @@
 		
 		(when (= !generation-counter
 				(the number-of-generations (:from !multiga-exploration-object))) ;;End of optimization
-			(set-final-result-and-reset-values (the))
+			(set-and-draw-final-result (the))
 		)
 	)
 	(get-total-area (the)) ;;Return value
@@ -325,6 +328,9 @@
 	)
 )
 
+;--------------------;
+; To be implemented? ;
+;--------------------;
 (define-method get-strain-constraint-value cross-section-optimization-model()
 	nil
 )
@@ -453,13 +459,39 @@
 	)
 )
 
-(define-method set-final-result-and-reset-values cross-section-optimization-model ()
-	(message-box "Final result" (format nil "Setting final result: ~a" (get-final-result (the))) :mode :ok)
+(define-method set-and-draw-final-result cross-section-optimization-model ()
+	(change-value !first-run? t)
 	(change-value !final-result (get-final-result (the)))
+	(if !final-result
+		(progn 
+			(change-value (the width dv-value) (nth 1 (nth 1 !final-result)))
+			(change-value (the height dv-value) (nth 1 (nth 2 !final-result)))
+			(change-value (the flange-thickness dv-value) (nth 1 (nth 3 !final-result)))
+			(change-value (the web-thickness dv-value) (nth 1 (nth 4 !final-result)))
+			(draw-sewn-wo-mesh !main-mech-ref)
+			(message-box "Final result!" 
+				(format nil "Width; ~d~%Height: ~d~%Flange: ~d~%Web: ~d~%Cross section area: ~d~%Max deformation: ~d~%" 
+					(the width dv-value) (the height dv-value) (the flange-thickness dv-value) 
+					(the web-thickness dv-value) (nth 1 (nth 0 !final-result)) (nth 1 (nth 6 !final-result))) 
+					:mode :ok :width 400 :height 300)
+		)
+		(progn 
+			(change-value (the width dv-value) (nth 0 !init-values))
+			(change-value (the height dv-value) (nth 1 !init-values))
+			(change-value (the flange-thickness dv-value) (* 0.1 (nth 0 !init-values)))
+			(change-value (the web-thickness dv-value) (* 0.1 (nth 1 !init-values)))
+			(draw-sewn-wo-mesh !main-mech-ref)
+			(message-box "No result!" 
+				(format nil "None of the tested cross sections fulfilled the criterias for max stress and deformation. 
+					Change the init values and try again." :mode :ok :width 400 :height 300))
+		)
+	)
+)
+
+(define-method reset-temporary-optimization-values cross-section-optimization-model ()
 	(change-value !generation-counter 0)
 	(change-value !iteration-results-list nil)
 	(change-value !best-result-from-each-gen-list nil)
-	(change-value !first-run? t)
 )
 
 ;--------------------------------------------------------------------------;
