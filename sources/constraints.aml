@@ -12,6 +12,7 @@
 			   constraint-variable	(default nil)
 			   degrees-of-freedom	(default nil) ;;Only applicable for free joints
 			   incident-links		(default nil) ;;Ref to the link-model-class objects
+               constraint-type		(default nil)
 			   
 			   gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
 											(list (if (nth 1 ^link-incidence) "female" nil))))
@@ -33,9 +34,8 @@
                    direction (arbitrary-normal-to-vector ^^direction)
                    )
                
-               constraint-type (default nil)
 			   
-			   dimensions (calculate-dimensions (the superior))
+			   dimensions 		(calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
 				   label "Joint width"
