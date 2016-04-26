@@ -1,5 +1,6 @@
-; Class: collecion-class
-; Constructs a generic collecion-class, used by the different collections
+;-------------------------------------------------------------------------------------------------------------
+; Class: collection-class
+; Superclass for the different collection types, to let them have access to the same read-from-file method 
 ;-------------------------------------------------------------------------------------------------------------
 (define-class collection-class
   :inherit-from (object)
@@ -59,8 +60,8 @@
 						   constraint-type 		(nth 1 (nth !index ^constraint-list))
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
                            direction 			(normalize (nth 3 (nth !index ^constraint-list)))
-                           constraint-variable	(nth 4 (nth !index ^constraint-list))
-						   degrees-of-freedom	(nth 5 (nth !index ^constraint-list))
+						   degrees-of-freedom	(nth 4 (nth !index ^constraint-list))
+                           constraint-variable	(nth 5 (nth !index ^constraint-list))
 						   incident-links		(let (
 													  (link1 (if (first (nth 2 (nth !index ^constraint-list)))
 															(nth (first (nth 2 (nth !index ^constraint-list))) ^links-list)
@@ -89,9 +90,24 @@
 	(children (the) :class 'master-joint-model)
 )
   
-;-------------------------------
-; Creates buttons to draw joints
-;-------------------------------
+;----------------------------------------------------------------
+; Reads each line of the constraints file and adds this to a list 
+;----------------------------------------------------------------
+(defun read-constraints-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream nil :eof)
+      until (equal line :eof)
+      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for c-data = (list
+                    (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls)
+                    )
+      collect c-data
+      )
+    )
+  )  
+;----------------------------------------------------
+; Left click button methods for constraint-collection
+;----------------------------------------------------
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
 		(:draw-joints
@@ -175,6 +191,21 @@
 (define-method get-points point-collection ()
 	(children (the) :class 'point-data-model)
 )
+
+;---------------------------------------------------------------
+; Reads each line of the coordinats file and adds this to a list
+;---------------------------------------------------------------
+(defun read-coordinates-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream nil :eof)
+      until (equal line :eof)
+	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+	  for coord-line = (list
+		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls)) (nth 7 ls) )
+      collect coord-line
+      )
+    )
+  )
 ;-------------------------------------------------------------------------------------------------------------
 ; END point-collection definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -209,6 +240,23 @@
 (define-method get-input-shapes shape-collection ()
 	(children (the) :class 'shape-model)
 )
+
+;-----------------------------------------------------------
+; Reads each line of the shapes file and adds this to a list
+;-----------------------------------------------------------
+(defun read-shapes-from-file (stream)
+ (when stream
+   (loop for line = (read-line stream  nil :eof)
+     until (equal line :eof)
+     for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+     for shape-data = (list
+                       (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)) 
+					   (nth 4 ls) (nth 5 ls) (nth 6 ls)
+                       )
+     collect shape-data
+     )
+   )
+ )
 ;-------------------------------------------------------------------------------------------------------------
 ; END shape-collection definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -416,6 +464,20 @@
 (define-method get-dampers spring-damper-collection ()
 	(children (the) :class 'damper-model-class)
 )
+
+;------------------------------------------------------------------
+; Reads each line of the spring-damper file and adds this to a list
+;------------------------------------------------------------------
+(defun read-spring-damper-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
+			until (equal line :eof)
+			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls))
+			collect data
+			)
+		)
+)
 ;-------------------------------------------------------------------------------------------------------------
 ; END spring-damper-collection definitions
 ;-------------------------------------------------------------------------------------------------------------
@@ -456,6 +518,23 @@
 	(children (the) :class 'load-model)
 )
 
+;------------------------------------------------------------------
+; Reads each line of the loads file and adds this to a list
+;------------------------------------------------------------------
+(defun read-loads-from-file (stream)
+	(when stream
+		(loop for line = (read-line stream  nil :eof)
+			until (equal line :eof)
+			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+			for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
+			collect data
+			)
+		)
+)
+;-------------------------------------------------------------------------------------------------------------
+; END load-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: folder-collection
 ; Reads all subfolders of the library folder in the file system and creates a subobject for each folder 
@@ -478,101 +557,7 @@
 ;-------------------------------------------------------------------------------------------------------------
 ; END folder-collection definitions
 ;------------------------------------------------------------------------------------------------------------- 
-
-;-----------------------------------------------------------
-; Reads each line of the shapes file and adds this to a list
-;-----------------------------------------------------------
-(defun read-shapes-from-file (stream)
- (when stream
-   (loop for line = (read-line stream  nil :eof)
-     until (equal line :eof)
-     for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-     for shape-data = (list
-                       (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls) 
-					   (nth 6 ls)
-                       )
-     collect shape-data
-     )
-   )
- )
  
-;----------------------------------------------------------------
-; Reads each line of the constraints file and adds this to a list 
-;----------------------------------------------------------------
-(defun read-constraints-from-file (stream)
-  (when stream
-    (loop for line = (read-line stream nil :eof)
-      until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-      for c-data = (list
-                    (nth 0 ls) (nth 1 ls) (read-from-string (nth 2 ls)) (read-from-string (nth 3 ls)) 
-					(read-from-string (nth 4 ls)) (nth 5 ls)
-                    )
-      collect c-data
-      )
-    )
-  )
-
-
-  
-;---------------------------------------------------------------
-; Reads each line of the coordinats file and adds this to a list
-;---------------------------------------------------------------
-(defun read-coordinates-from-file (stream)
-  (when stream
-    (loop for line = (read-line stream nil :eof)
-      until (equal line :eof)
-	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-	  for coord-line = (list
-		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls)) (nth 7 ls) )
-      collect coord-line
-      )
-    )
-  )
-  
-;---------------------------------------------------------------------
-; Reads each line of the design-variables file and adds this to a list
-;---------------------------------------------------------------------  
-(defun read-design-variables-from-file (stream)
-	(when stream
-		(loop for line = (read-line stream  nil :eof)
-			until (equal line :eof)
-			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for design-data = (list (read-from-string (nth 0 ls)) (read-from-string (nth 1 ls)) )
-			collect design-data
-			)
-		)
-   )
-   
-;------------------------------------------------------------------
-; Reads each line of the spring-damper file and adds this to a list
-;------------------------------------------------------------------
-(defun read-spring-damper-from-file (stream)
-	(when stream
-		(loop for line = (read-line stream  nil :eof)
-			until (equal line :eof)
-			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) 
-				(read-from-string (nth 3 ls)) (nth 4 ls))
-			collect data
-			)
-		)
-)
-
-;------------------------------------------------------------------
-; Reads each line of the loads file and adds this to a list
-;------------------------------------------------------------------
-(defun read-loads-from-file (stream)
-	(when stream
-		(loop for line = (read-line stream  nil :eof)
-			until (equal line :eof)
-			for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
-			for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (read-from-string (nth 2 ls))
-				(nth 3 ls) (nth 4 ls))
-			collect data
-			)
-		)
-)
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: folder-info-model
 ; Defines the data-model for folders
@@ -612,8 +597,8 @@
 (define-class mechanism-version-info 
 	:inherit-from (object)
 	:properties (
-				 version-path nil				 
-				 version-name nil
+				 version-path	nil				 
+				 version-name 	nil
 				 )
 )
 	
