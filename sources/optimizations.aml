@@ -248,16 +248,22 @@
 
 ;----------------------------------------------------------------------------------------------------;
 ; Deletes the files FEDEM use for reduction of the different parts, as well as any simulation files. ;
-; Requires that XEmacs runs in administrator mode.													 ;
+; Requires that XEmacs runs in administrator mode, and that the fmm file is not open in FEDEM.		 ;
 ;----------------------------------------------------------------------------------------------------;
 (define-method delete-all-previous-fmm-files cross-section-optimization-model ()
-	(if (probe-file !results-file-path)
+	(when (probe-file !results-file-path)
 		(delete-file !results-file-path)
 	)
-	(tsi::leave-directory-empty (format nil "~a\\model_RDB" !current-path))
-	(delete-directory (format nil "~a\\model_RDB" !current-path))
-	(delete-file (format nil "~a.bak" !fedem-model-file))
-	(delete-file !fedem-model-file)
+	(when (probe-file (format nil "~a\\model_RDB" !current-path))
+		(tsi::leave-directory-empty (format nil "~a\\model_RDB" !current-path))
+		(delete-directory (format nil "~a\\model_RDB" !current-path))
+	)
+	(when (probe-file (format nil "~a.bak" !fedem-model-file))
+		(delete-file (format nil "~a.bak" !fedem-model-file))
+	)
+	(when (probe-file !fedem-model-file)
+		(delete-file !fedem-model-file)
+	)
 )
 
 (define-method save-best-result-in-generation cross-section-optimization-model ()
