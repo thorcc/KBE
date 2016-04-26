@@ -479,56 +479,6 @@
 ; END folder-collection definitions
 ;------------------------------------------------------------------------------------------------------------- 
 
-;-------------------------------------------------------------------------------------------------------------
-; Class: design-variables-collection
-;-------------------------------------------------------------------------------------------------------------
-(define-class design-variables-collection 
-	:inherit-from (series-object collection-class)
-	:properties (
-				 ;collection-type 'design-variables
-				 ;dv-list (read-from-file !superior)
-				 ;quantity (length ^dv-list)
-				 ;series-prefix 'dv
-				 ;class-expression 'design-variable-class
-				 ;init-form '(
-				;			 type (nth 0 (nth ^index ^dv-list))
-				;			 dv-name (nth 0 (nth ^index ^dv-list))
-				;			 direction (nth 1 (nth ^index ^dv-list))
-				;			 ;; TODO: Handle the possibility of more than one group of points on a line
-				;			 line-name (nth 0 (remove-duplicates (remove nil 
-				;								(loop for point-entry in ^^point-ref-list
-				;									if (the dv-values (:from point-entry)) 
-				;										append (loop for dv in (the dv-values (:from point-entry))
-				;											if (and (string-equal (string dv) (string ^dv-name)) (the line-group (:from point-entry)))
-				;												collect (the line-group (:from point-entry))
-				;											)
-				;										)
-				;									)
-				;								))
-				;							
-				;			 points-on-line (remove nil 
-				;								(loop for point-entry in ^^point-ref-list
-				;									if (string-equal ^line-name (the line-group (:from point-entry)))
-				;										collect (list (the id (:from point-entry)) (the is-fixed? (:from point-entry)) )
-				;									)
-				;								)
-				;								
-				;			 affected-translation-coords-list 
-				;					(remove nil (loop for point-entry in ^^point-ref-list
-				;						if (the dv-values (:from point-entry))
-				;							 append (loop for dv in (the dv-values (:from point-entry))
-				;								if (string-equal (string dv) (string ^dv-name))
-				;									collect (the id (:from point-entry))
-				;								 )
-				;						)
-				;					)
-                 ;            )
-				 )
-	 )	 
-;-------------------------------------------------------------------------------------------------------------
-; END design-variables-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
-
 ;-----------------------------------------------------------
 ; Reads each line of the shapes file and adds this to a list
 ;-----------------------------------------------------------
@@ -538,7 +488,8 @@
      until (equal line :eof)
      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
      for shape-data = (list
-                       (read-from-string(nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)) (read-from-string (nth 4 ls)) (read-from-string (nth 5 ls)) (read-from-string (nth 6 ls))
+                       (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls) 
+					   (nth 6 ls)
                        )
      collect shape-data
      )
