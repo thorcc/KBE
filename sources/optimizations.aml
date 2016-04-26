@@ -284,7 +284,6 @@
 		(change-value !first-run? nil)
 		(run-fedem-simulation (the))
 	)
-	(draw-sewn-wo-mesh !main-mech-ref)
 	(add-iteration-result (the))
 	(change-value !counter (1+ !counter))
 	
@@ -637,17 +636,3 @@
 ;------------------------------------------------------------------------------------------------------------;
 ; END cross-section-optimization-model definitions															 ;
 ;------------------------------------------------------------------------------------------------------------;
-
-
-
-
-
-
-
-
-
-	
-	
-	
-	
-	
