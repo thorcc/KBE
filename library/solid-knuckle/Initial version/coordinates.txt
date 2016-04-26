@@ -1,4 +1,4 @@
-Index	Name			X-pos	Y-pos	Z-pos	Design-variables
+Index	Name			X-pos	Y-pos	Z-pos
 0 		"cord0"			0.0		0.0		0.5
 1 		"cord1"			0.0		0.0		0.0
 2 		"cord2"			0.0		0.0		-0.5

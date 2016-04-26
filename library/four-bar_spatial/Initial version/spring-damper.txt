@@ -1,3 +1,1 @@
 Type		Point-from	Point-to	Incident-links	Stiffness/Damping
-"Spring"	5			6			"(1 nil)"		750000
-"Damper"	1			2			"(0 2)"			3000

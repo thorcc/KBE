@@ -1,4 +1,4 @@
-Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+Index	Name						X-pos	Y-pos	Z-pos
 0		"link-0-c-rev"				0.0		-1.75	0.0	
 1		"link-0-l-nurb"				-2.5	1.75	0.0	
 2		"link-0-r-nurb"				2.5		1.75	0.0	

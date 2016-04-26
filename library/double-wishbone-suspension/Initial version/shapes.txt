@@ -5,9 +5,9 @@ Name					Link	Member	Cross-section		Dimensions			Points-list		Weights-list
 "Lower-wishbone"		1		0		"rectangular"		(0.1 0.05)			(14)			(0.5)
 "Lower-wishbone"		1		1		"rectangular"		(0.1 0.05)			(13)			(0.5)
 "Lower-wishbone"		1		2		"rectangular"		(0.1 0.05)			(1)				(0.4)
-"Knuckle"				0		0		"rectangular"		(0.6 0.1 0.2 0.1)	(11)
-"Knuckle"				0		1		"rectangular"		(0.6 0.1 0.2 0.1)	(12)
-"Steering-link"			0		2		"rectangular"		(0.1 0.1)			(17)
+"Knuckle"				0		0		"rectangular"		(0.6 0.1 0.2 0.1)	(11)			(1)
+"Knuckle"				0		1		"rectangular"		(0.6 0.1 0.2 0.1)	(12)			(1)
+"Steering-link"			0		2		"rectangular"		(0.1 0.1)			(17)			(1)
 "Knuckle invis"			0		3		"nil"			
 "Knuckle invis"			0		4		"nil"			
 "Knuckle invis"			0		5		"nil"			

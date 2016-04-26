@@ -1,49 +1,49 @@
-Point	Type			Link-incidence	Joint-direction		Joint-variable
-0		"revolute"		"(nil 0)"		"(-1 0 0)"			
-1		"ball"			"(0 1)"			"(0.1 0 1)"			"((0 0 1))"
-2		"ball"			"(0 2)"			"(0.1 0 -1)"		"((0 0 -1))"
-3		"ball"			"(0 22)"		"(0 0.4 1)"			"((0 0 1))"
-4		"revolute"		"(nil 1)"		"(0 1 0)"			
-5		"revolute"		"(nil 1)"		"(0 -1 0)"			
-6		"revolute"		"(nil 2)"		"(0 1 0)"			
-7		"revolute"		"(2 nil)"		"(0 -1 0)"	
-22		"free"			"(nil 3)"		"(0 0 1)"
-23		"free"			"(nil 3)"		"(0 0 1)"
-24		"free"			"(nil 4)"		"(0 0 1)"
-25		"free"			"(nil 4)"		"(0 0 1)"
-26		"free"			"(nil 5)"		"(0 0 1)"
-27		"free"			"(nil 5)"		"(0 0 1)"
-26		"free"			"(nil 6)"		"(0 0 1)"
-26		"free"			"(nil 7)"		"(0 0 1)"
-26		"free"			"(nil 8)"		"(0 0 1)"
-28		"free"			"(nil 6)"		"(0 0 1)"
-29		"free"			"(nil 7)"		"(0 0 1)"
-30		"free"			"(nil 8)"		"(0 0 1)"
-31		"revolute"		"(nil 9)"		"(1 0 0)"			
-32		"ball"			"(9 10)"		"(-0.1 0 1)"		"((0 0 1))"
-33		"ball"			"(9 11)"		"(-0.1 0 -1)"		"((0 0 -1))"
-34		"ball"			"(9 22)"		"(0 0.4 1)"			"((0 0 1))"
-35		"revolute"		"(nil 10)"		"(0 1 0)"			
-36		"revolute"		"(nil 10)"		"(0 -1 0)"			
-37		"revolute"		"(nil 11)"		"(0 1 0)"			
-38		"revolute"		"(11 nil)"		"(0 -1 0)"
-53		"free"			"(nil 12)"		"(0 0 1)"
-54		"free"			"(nil 12)"		"(0 0 1)"
-55		"free"			"(nil 13)"		"(0 0 1)"
-56		"free"			"(nil 13)"		"(0 0 1)"
-57		"free"			"(nil 14)"		"(0 0 1)"
-58		"free"			"(nil 14)"		"(0 0 1)"
-57		"free"			"(nil 15)"		"(0 0 1)"
-57		"free"			"(nil 16)"		"(0 0 1)"
-57		"free"			"(nil 17)"		"(0 0 1)"
-59		"free"			"(nil 15)"		"(0 0 1)"
-60		"free"			"(nil 16)"		"(0 0 1)"
-61		"free"			"(nil 17)"		"(0 0 1)"
-4		"free"			"(18 nil)"		"(0 1 0)"			
-35		"free"			"(18 nil)"		"(0 1 0)"			
-5		"free"			"(19 nil)"		"(0 -1 0)"			
-36		"free"			"(19 nil)"		"(0 -1 0)"			
-6		"free"			"(20 nil)"		"(0 1 0)"			
-37		"free"			"(20 nil)"		"(0 1 0)"			
-62		"free"			"(nil 21)"		"(0 -1 0)"	
-63		"free"			"(nil 21)"		"(0 -1 0)"
+Point	Type			Link-incidence	Joint-direction		DOF		Joint-variable
+0		"revolute"		(nil 0)			(-1 0 0)			
+1		"ball"			(0 1)			(0.1 0 1)			()		(0 0 1)
+2		"ball"			(0 2)			(0.1 0 -1)			()		(0 0 -1)
+3		"ball"			(0 22)			(0 0.4 1)			()		(0 0 1)
+4		"revolute"		(nil 1)			(0 1 0)			
+5		"revolute"		(nil 1)			(0 -1 0)			
+6		"revolute"		(nil 2)			(0 1 0)			
+7		"revolute"		(2 nil)			(0 -1 0)	
+22		"free"			(nil 3)			(0 0 1)
+23		"free"			(nil 3)			(0 0 1)
+24		"free"			(nil 4)			(0 0 1)
+25		"free"			(nil 4)			(0 0 1)
+26		"free"			(nil 5)			(0 0 1)
+27		"free"			(nil 5)			(0 0 1)
+26		"free"			(nil 6)			(0 0 1)
+26		"free"			(nil 7)			(0 0 1)
+26		"free"			(nil 8)			(0 0 1)
+28		"free"			(nil 6)			(0 0 1)
+29		"free"			(nil 7)			(0 0 1)
+30		"free"			(nil 8)			(0 0 1)
+31		"revolute"		(nil 9)			(1 0 0)			
+32		"ball"			(9 10)			(-0.1 0 1)			()		(0 0 1)
+33		"ball"			(9 11)			(-0.1 0 -1)			()		(0 0 -1)
+34		"ball"			(9 22)			(0 0.4 1)			()		(0 0 1)
+35		"revolute"		(nil 10)		(0 1 0)			
+36		"revolute"		(nil 10)		(0 -1 0)			
+37		"revolute"		(nil 11)		(0 1 0)			
+38		"revolute"		(11 nil)		(0 -1 0)
+53		"free"			(nil 12)		(0 0 1)
+54		"free"			(nil 12)		(0 0 1)
+55		"free"			(nil 13)		(0 0 1)
+56		"free"			(nil 13)		(0 0 1)
+57		"free"			(nil 14)		(0 0 1)
+58		"free"			(nil 14)		(0 0 1)
+57		"free"			(nil 15)		(0 0 1)
+57		"free"			(nil 16)		(0 0 1)
+57		"free"			(nil 17)		(0 0 1)
+59		"free"			(nil 15)		(0 0 1)
+60		"free"			(nil 16)		(0 0 1)
+61		"free"			(nil 17)		(0 0 1)
+4		"free"			(18 nil)		(0 1 0)			
+35		"free"			(18 nil)		(0 1 0)			
+5		"free"			(19 nil)		(0 -1 0)			
+36		"free"			(19 nil)		(0 -1 0)			
+6		"free"			(20 nil)		(0 1 0)			
+37		"free"			(20 nil)		(0 1 0)			
+62		"free"			(nil 21)		(0 -1 0)	
+63		"free"			(nil 21)		(0 -1 0)

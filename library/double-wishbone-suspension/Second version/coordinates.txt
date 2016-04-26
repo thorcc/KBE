@@ -1,4 +1,4 @@
-Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+Index	Name						X-pos	Y-pos	Z-pos
 0		"Spindle"					0.0		0.0		0.0	
 1		"Upper-ball-joint"			0.25	0.0		1.0	
 2		"Lower-ball-joint"			0.25	0.0		-1.0	

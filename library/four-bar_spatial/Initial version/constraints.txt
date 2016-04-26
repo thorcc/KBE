@@ -1,6 +1,6 @@
 Point	Type			Link-incidence		Joint-direction		Joint-variable
-0		"revolute"		"(nil 0)"			"(1 0 0)"			"()"
-1		"ball"			"(1 0)"				"(0 0 1)"			"((0 0 1))"
-2		"revolute"		"(nil 2)"			"(0 0 1)"			"()"
-3		"ball"			"(1 2)"				"(0 0 1)"			"((0 0 1))"
-4		"free"			"(nil 1)"			"(0 0 1)"			"()"
+0		"revolute"		(nil 0)				(1 0 0)		
+1		"ball"			(1 0)				(0 0 1)				(0 0 1)
+2		"revolute"		(nil 2)				(0 0 1)			
+3		"ball"			(1 2)				(0 0 1)				(0 0 1)
+4		"free"			(nil 1)				(0 0 1)
