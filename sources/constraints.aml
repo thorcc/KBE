@@ -34,7 +34,6 @@
                    direction (arbitrary-normal-to-vector ^^direction)
                    )
                
-			   
 			   dimensions 		(calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
@@ -47,7 +46,8 @@
 					)
 			   
 			   quantity			(length ^gender-list)
-			   class-expression '(read-from-string (concatenate !constraint-type "-" (nth !index ^gender-list) "-element"))
+			   class-expression '(read-from-string (concatenate !constraint-type "-" 
+									(nth !index ^gender-list) "-element"))
 			  
 			   init-form '(
 						   master-joint-object	(the superior superior) ;;Reference to the master-joint-model
@@ -71,7 +71,6 @@
 					;'("Change joint type" (button1-parameters :change-joint ui-work-area-action-button-class))
 					(the superior max-width self)
 					(the superior max-height self)
-					""
 					)
 				)
 			   )

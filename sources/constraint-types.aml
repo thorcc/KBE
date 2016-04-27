@@ -293,7 +293,7 @@
 ; Defines geometry for the revolute male element
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class revolute-male-element
-  :inherit-from (joint-element-model)
+  :inherit-from (union-object joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
 			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -340,9 +340,11 @@
                (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					interface-object 				(the point-ref (:from ^^main-frame-object))
-					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
+					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) 
+														(expt (/ (the diameter (:from ^^pin)) 2) 2)))
 					quantity 						nil ;;Collect all nodes within the tolerance
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
+														^^link-mesh-model-object)
 					color 							'green
 					display							nil
 					)
@@ -413,13 +415,6 @@
 (define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-			   orientation (list
-							(rotate
-							 (angle-between-2-vectors ^direction (nth 0 ^constraint-variable) )
-							 (cross-product ^direction (nth 0 ^constraint-variable) )
-							 :axis-point (the coordinates (:from ^point-ref) )
-							 )
-							)
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -501,7 +496,8 @@
 (define-class ball-female-element
   :inherit-from (difference-object joint-element-model)
   :properties (
-               main-frame-object (get-main-frame (the superior))
+               joint-variable 	nil
+			   
 			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-socket)
                             )
@@ -540,6 +536,14 @@
                    height ^^max-height
                    diameter ^^max-width             
                    )
+				   
+			   orientation (list
+							(rotate
+							 (angle-between-2-vectors ^direction ^constraint-variable)
+							 (cross-product ^direction ^constraint-variable) 
+							 :axis-point (the coordinates (:from ^point-ref) )
+							 )
+							)
                )
   :subobjects (
                (rbe2-dependent-nodes :class 'mesh-nodes-query-class
