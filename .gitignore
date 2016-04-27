@@ -9,3 +9,4 @@ nastran-data/
 *.ftl
 *.bdf
 *.stl
+sources_old/
