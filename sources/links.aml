@@ -38,17 +38,17 @@
                tag-dimensions 	'(1 2 3)
                tag-attributes 	(list ^max-element-size .01 0 0.1 0 20.0 1.0e-5)
                default-shape 	(let(
-								(def (loop for shape in (children ^^^shapes :class 'shape-model)
-										 when (and
-											   (equal 'default (the sweep-index (:from shape)))
-											   (equal ^link-index (the link-ref (:from shape)))
-											   ) do
-										 (return shape)
-										 )
-									   )
-								  )
-							   (if def def ^^default-shape)
-							   )
+										(def (loop for shape in (children ^^^shapes :class 'shape-model)
+											 when (and
+												   (equal 'default (the sweep-index (:from shape)))
+												   (equal ^link-index (the link-ref (:from shape)))
+												   ) do
+											 (return shape)
+											 )
+										   )
+									 )
+									(if def def ^^default-shape)
+								)
 
                constraint-connection-combination	(connection-combinations (length ^incident-constraints))
                
@@ -72,36 +72,36 @@
 														)
                
                (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
-                   tag-dimensions '(1 2 3)
-                   tag-attributes (list ^max-element-size .01
+                   tag-dimensions 	'(1 2 3)
+                   tag-attributes 	(list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
-                   source-object ^^union-element
+                   source-object 	^^union-element
                    )
 			   ;;; Imprints the union-element with the point reference
                (imprint-constraint-points :class '(tagging-object imprint-class)
-                   target-object ^^imprint-union-element
-                   tool-object-list (loop for c in ^incident-constraints
+                   target-object 	^^imprint-union-element
+                   tool-object-list	(loop for c in ^incident-constraints
                                       collect (the point-ref (:from c))
                                       )
                    )
                ;;The final sewn geometry of members, surfaces and joints
 			   (difference-element :class '(tagging-object difference-object)
-                   tag-dimensions '(1 2 3)
-                   tag-attributes (list ^max-element-size .01
+                   tag-dimensions 	'(1 2 3)
+                   tag-attributes 	(list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
-				   object-list (append (list ^union-element) ^difference-list)
-                   simplify? t
+				   object-list 		(append (list ^union-element) ^difference-list)
+                   simplify? 		t
                    )
-                                
+                
 			   ;;Union of surfaces, members and joint geometry without difference objects
                (union-element :class '(tagging-object union-object) 
-                   tag-dimensions '(1 2 3)
-                   tag-attributes (list ^max-element-size .01
+                   tag-dimensions	'(1 2 3)
+                   tag-attributes 	(list ^max-element-size .01
                                         0 0.1 0 20.0 1.0e-5)
-                   object-list (append  (if ^surfaces-ref-list ^surfaces-ref-list nil)
+                   object-list 		(append  (if ^surfaces-ref-list ^surfaces-ref-list nil)
                                         ^visible-members-ref-list
                                         ^^union-list)
-				   simplify? t
+				   simplify? 		t
                    )
 				render 'shaded
 				

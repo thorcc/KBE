@@ -1,4 +1,4 @@
-Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+Index	Name						X-pos	Y-pos	Z-pos
 0		"Spindle"					0.0		0.0		0.0			
 1		"Upper-ball-joint"			0.25	0.0		1.0			
 2		"Upper-ball-joint"			0.25	0.0		-1.0			
@@ -16,4 +16,6 @@ Index	Name						X-pos	Y-pos	Z-pos	Design-variables
 14		"Control-point-7"			1.0		0.5		1.0			
 15		"Control-point-8"			1.0		-0.5	-1.0			
 16		"Control-point-9"			1.0		0.5		-1.0			
-17		"Control-point-10"			0.0		0.3		0.0			
+17		"Control-point-10"			0.0		0.3		0.0		
+18		"Spring-damper-connection"	0.5		0.0		-1.0
+29		"Spring-damper-ground"		1.5		0.0		1.0

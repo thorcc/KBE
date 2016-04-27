@@ -1,6 +1,6 @@
 Name				Link	Member	Cross-section	Dimensions	Points-list	Weights-list
-"Crank"				0		0		"circular"		"(0.1 0.1)"	
-"Coupler lower"		1		0		"circular"		"(0.1 0.1)"	
-"Coupler upper"		1		2		"circular"		"(0.1 0.1)"	
-"Rocker"			2		0		"circular"		"(0.1 0.1)"	
+"Crank"				0		0		"circular"		(0.1 0.1)	
+"Coupler lower"		1		0		"circular"		(0.1 0.1)	
+"Coupler upper"		1		2		"circular"		(0.1 0.1)	
+"Rocker"			2		0		"circular"		(0.1 0.1)	
 "Coupler invis"		1		1		"nil"		

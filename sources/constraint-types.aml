@@ -19,18 +19,18 @@
 (define-class free-male-element
   :inherit-from (joint-element-model)
   :properties (
-               )
-  :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
 					plane-normal-vector				(get-direction-along-member 
-														(get-spline-frame-at-joint-element
-															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+														(get-spline-frame-at-joint-element (first 
+															(get-displayed-members-connected-to-joint-element 
+																^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
+														^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
@@ -57,8 +57,7 @@
 								(translate (list 0 0 ^z-translation))
                                 )
                    )
-               )
-  :subobjects (
+
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
@@ -118,8 +117,6 @@
 (define-class fixed-male-element
   :inherit-from (joint-element-model)
   :properties (
-               )
-  :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
@@ -152,8 +149,6 @@
 								(translate (list 0 0 ^z-translation))
                                 )
                    )
-               )
-  :subobjects (
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
@@ -293,7 +288,7 @@
 ; Defines geometry for the revolute male element
 ;------------------------------------------------------------------------------------------------------------- 
 (define-class revolute-male-element
-  :inherit-from (joint-element-model)
+  :inherit-from (union-object joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
 			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -335,16 +330,17 @@
                                 (translate (list 0 0 (/ (- ^^max-height) 1) ))
                                 )
                    )
-               )
-  :subobjects (
                (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
 					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
 					interface-object 				(the point-ref (:from ^^main-frame-object))
-					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) (expt (/ (the diameter (:from ^^pin)) 2) 2)))
+					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) 
+														(expt (/ (the diameter (:from ^^pin)) 2) 2)))
 					quantity 						nil ;;Collect all nodes within the tolerance
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
+														^^link-mesh-model-object)
 					color 							'green
-					display							nil
+					line-width						3
+					;display							t
 					)
                )
   )
@@ -392,13 +388,13 @@
 
                (sub-point-ref :class 'sub-point-data-model
                    )
-               )
-  :subobjects (
                (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (list ^^imprinted-pin-hole)
-				   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
-                   color 'green
-				   display? nil
+                   tagged-object-list	(list ^^imprinted-pin-hole)
+				   mesh-object 			(get-surface-mesh (get-mesh-model-object 
+											(get-incident-link ^superior)))
+                   color 				'green
+				   line-width			3
+				   ;display? 			t
                    )
                )
   )
@@ -413,13 +409,6 @@
 (define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-			   orientation (list
-							(rotate
-							 (angle-between-2-vectors ^direction (nth 0 ^constraint-variable) )
-							 (cross-product ^direction (nth 0 ^constraint-variable) )
-							 :axis-point (the coordinates (:from ^point-ref) )
-							 )
-							)
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
@@ -480,13 +469,13 @@
                                 (translate (list 0 0  (- 0 (/ ^^max-height 2) (* 1 (the diameter (:from ^^ball))) )) )
                                 )
                    )
-               )
-  :subobjects (
                (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (list ^^imprinted-ball)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
-                   color 'green
-				   display? nil
+                   tagged-object-list	(list ^^imprinted-ball)
+                   mesh-object 			(get-surface-mesh (get-mesh-model-object 
+											(get-incident-link ^superior)))
+                   color 				'green
+				   line-width			3
+				   ;display? nil
                    )       
                )
   )
@@ -501,7 +490,8 @@
 (define-class ball-female-element
   :inherit-from (difference-object joint-element-model)
   :properties (
-               main-frame-object (get-main-frame (the superior))
+               joint-variable 	nil
+			   
 			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-socket)
                             )
@@ -540,15 +530,24 @@
                    height ^^max-height
                    diameter ^^max-width             
                    )
-               )
-  :subobjects (
-               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (list ^^imprinted-hole)
-                   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
-                   color 'green
-				   display? nil
+				   
+			   orientation (list
+							(rotate
+							 (angle-between-2-vectors ^direction ^constraint-variable)
+							 (cross-product ^direction ^constraint-variable) 
+							 :axis-point (the coordinates (:from ^point-ref) )
+							 )
+							)
+               
+			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list 	(list ^^imprinted-hole)
+                   mesh-object 			(get-surface-mesh (get-mesh-model-object 
+											(get-incident-link ^superior)))
+                   color 				'green
+				   line-width			3
+				   ;display? nil
                    )
-               )
+				)
   )
 ;-------------------------------------------------------------------------------------------------------------
 ; END ball-female-element definitions
@@ -573,7 +572,7 @@
 ;-------------------------------------------------------------------------------------------------------------  
 (define-class solid-knuckle-female-element
 	:inherit-from (difference-object joint-element-model)
-	:properties (	
+	:properties (
 				  main-frame-object (get-main-frame (the superior))
 				  outer-radius (* ^max-width ^scale-factor)
 				  inner-radius (* ^outer-radius 0.6)
@@ -610,16 +609,14 @@
 
 				  (sub-point-ref :class 'sub-point-data-model
 					   )
-
-		   
-				 )
-	:subobjects (
-					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
-						   tagged-object-list (list ^^imprinted-pin-hole)
-						   mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
-						   color 'green
-						   display? nil
-						)
+				 (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+					tagged-object-list 	(list ^^imprinted-pin-hole)
+					mesh-object 		(get-surface-mesh (get-mesh-model-object 
+											(get-incident-link ^superior)))
+					color 				'green
+					line-width			3
+					;display? nil
+					)
 				)
  )
 ;-------------------------------------------------------------------------------------------------------------
@@ -741,14 +738,14 @@
 							(list (translate (list (- (* ^^outer-radius 2) ^^inner-radius) 0 0)))
 							
 					)
+				(rbe2-dependent-nodes :class 'mesh-nodes-query-class
+					tagged-object-list	(list ^^imprinted-pin)
+					mesh-object 		(get-surface-mesh (get-mesh-model-object 
+											(get-incident-link ^superior)))
+					color 				'green
+					line-width			3
+					;display? nil
 				)
-  :subobjects (
-					(rbe2-dependent-nodes :class 'mesh-nodes-query-class
-						tagged-object-list (list ^^imprinted-pin)
-						mesh-object (get-surface-mesh (get-mesh-model-object (get-incident-link ^superior)))
-						color 'green
-						display? nil
-					)
                )
   )
 ;-------------------------------------------------------------------------------------------------------------
