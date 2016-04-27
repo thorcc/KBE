@@ -77,10 +77,10 @@
                property-objects-list (list
 									  '("Draw all joints" (button1-parameters :draw-joints )
                                         ui-work-area-action-button-class)
-									  '("Draw all joints with mating nodes" (button1-parameters :draw-joints-mesh)
+									  '("Draw all RBE2 nodes" (button1-parameters :draw-rbe2)
                                         ui-work-area-action-button-class)
 										""
-										'("Undraw" (button1-parameters :undraw)
+										'("Undraw all joints and nodes" (button1-parameters :undraw)
                                         ui-work-area-action-button-class)
 									  )
 			   )
@@ -111,52 +111,30 @@
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
 		(:draw-joints
-			(loop for constraint in (get-constraints (the))
-				do 
+			(loop for constraint in (get-constraints (the)) do 
 				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
 						(object-name constraint))) :show-system-error? nil)
-					(let (
-							(male (the male-joint-element (:from constraint)))
-							(female (the female-joint-element (:from constraint)))
-						)
-						(progn
-							(if male (progn 
-								(change-value (the display? (:from (the rbe2-independent-node (:from male)))) nil)
-								(change-value (the display? (:from (the rbe2-dependent-nodes (:from male)))) nil)
-								))
-							(if female (progn
-								(change-value (the display? (:from (the rbe2-independent-node (:from female)))) nil)
-								(change-value (the display? (:from (the rbe2-dependent-nodes (:from female)))) nil)
-								))
-						)
-					)
-				(draw constraint))
+					(draw constraint))
 			)
 		)
-		(:draw-joints-mesh
-			(loop for constraint in (get-constraints (the))
-				do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
-						(object-name constraint))) :show-system-error? t)
-					(let (
-							(male (the male-joint-element (:from constraint)))
-							(female (the female-joint-element (:from constraint)))
-						)
-						(progn
-							(if male (progn 
-								(change-value (the display? (:from (the rbe2-independent-node (:from male)))) t)
-								(change-value (the display? (:from (the rbe2-dependent-nodes (:from male)))) t)
-								))
-							(if female (progn
-								(change-value (the display? (:from (the rbe2-independent-node (:from female)))) t)
-								(change-value (the display? (:from (the rbe2-dependent-nodes (:from female)))) t)
-								))
-						)
+		(:draw-rbe2
+			(loop for constraint in (get-constraints (the)) do 
+				(loop for joint-element in (children constraint) do
+					(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+							(object-name constraint))) :show-system-error? t)
+						(draw (get-rbe2-dependent-nodes joint-element))
+						(draw (get-rbe2-independent-node joint-element))
 					)
-				(draw constraint))
+				)
 			)
 		)
 		(:undraw
+			(loop for constraint in (get-constraints (the)) do 
+				(loop for joint-element in (children constraint) do
+					(undraw (get-rbe2-dependent-nodes joint-element))
+					(undraw (get-rbe2-independent-node joint-element))
+				)
+			)
 			(undraw self)
 		)
 	)  
