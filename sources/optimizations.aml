@@ -215,8 +215,6 @@
 											(list (the superior web-thickness max-value self)
 												'(automatic-apply? t))
 											""
-											(list (the superior constraint-object limit self)
-												'(automatic-apply? t))
 											'("Set optimization variables" 
 												(button1-parameters :init-optimization-variables)
 												ui-work-area-action-button-class)
@@ -316,9 +314,13 @@
 	)
 )
 
+;----------------------------------------------------------------------;
+; Normalized stress constraint for the max stress in the loaded links. ;
+; g(x) = (σ(x) / σ_yield) - 1										   ;
+;----------------------------------------------------------------------;
 (define-method get-stress-constraint-value cross-section-optimization-model ()
 	(loop for load in (get-loads-on-optimization-links (the))
-		maximize (- (calculate-max-stress-in-cross-section (the) 
+		maximize (- (/ (calculate-max-stress-in-cross-section (the) 
 						(case (get-load-type load)
 							('torque :torque)
 							('force :force)
@@ -327,7 +329,7 @@
 							(get-scale-load load)
 							(get-magnitude load)
 						))
-					(get-yield-strength (get-material-type (get-loaded-link load))))
+					(get-yield-strength (get-material-type (get-loaded-link load)))) 1)
 					into max-stress
 		finally (return max-stress)
 	)
