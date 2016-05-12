@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; Class: RBE2-collection
 ; Instantiates every RBE2 as a series-object
-;------------------------------------------------------------------------------------------------------------- 
+;===========================================
 (define-class RBE2-collection
 	:inherit-from (series-object)
 	:properties (
@@ -17,19 +17,21 @@
 							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
 																	(nth ^index ^constraints-list))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
-                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 create-new-independent-node? 		nil ;; The node is added in the node-set
+																	;; manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, 
+																		;; as default is 1 for each instance
 							 )
 				 )
 	)
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; END RBE2-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
+;================================
 
-;-------------------------------------------------------------------------------------------------------------
+;==============================
 ; Class: link-mesh-class
 ; Class responsible for meshing
-;------------------------------------------------------------------------------------------------------------- 
+;==============================
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
@@ -38,13 +40,12 @@
 			   joint-elements 				nil
 			   
 			   mesh-object 					^link-mesh
-			   
-			   ;non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
-			   
+			   		   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
 											collect (get-rbe2-independent-node element)
 				)
-               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^link-mesh)))))
+               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query 
+				   (:from ^link-mesh)))))
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
 												(list (the nodes-query (:from ^^link-mesh)))
@@ -73,10 +74,8 @@
                    tagged-object-list (list
                                        (the fixed-edge (:from ^^geometry-model-object))
                                        )
-;                    mesh-object ^^link-mesh
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
-                   ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
                    mesh-object ^^link-mesh
                    )
 			   (rbe2-list :class 'RBE2-collection
@@ -131,6 +130,6 @@
 (define-method get-node-position-in-query-list link-mesh-class (node-query-object)
 	(1+ (position node-query-object (the node-set query-objects-list)))
 )
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; END link-mesh-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;================================

@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;===============================================================
 ; Class: surface-model
 ; Model creating a thickened surface from three connected curves
-;------------------------------------------------------------------------------------------------------------- 
+;===============================================================
 (define-class surface-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
@@ -18,19 +18,15 @@
                             when (or (not (the display? (:from (nth i ^members)))) 
 								  (not (the geom (:from (get-connection (nth i ^members))))))
                             do (return nil)
-                            finally (return t) ;(> ^thickness 0)
+                            finally (return t) 
                             )
                  )
-				  
-			;  (display? :class 'flag-property-class
-			;			formula (when ^surface t)
-			;	)
                edge-combination nil
 			   
-			   ;;The source-object has to be nil when it can't be displayed. Else there will be a null geom
+			   ;; The source-object has to be nil when it can't be displayed. Else there will be a null geom
                source-object (if ^display? ^surface nil)
 
-               ;;; Surface thickness 20% of smallest cross-section height
+               ;; Surface thickness 20% of smallest cross-section height
                thickness (* 0.2 (loop for i in ^edge-combination
                            minimize (get-height (get-cross-section_D (nth i ^members)))
                            ))
@@ -38,8 +34,8 @@
                back-thickness (/ ^thickness 2)
                render 'shaded
 			   (start-point :class 'point-object
-					coordinates (nth 0 (get-start-weight (get-connection (nth (nth 0 ^edge-combination) ^members))))
-				   )
+					coordinates (nth 0 (get-start-weight (get-connection (nth (nth 0 ^edge-combination) 
+						^members)))))
                property-objects-list (list 
                                       (list (the superior display? self)
                                             '(automatic-apply? t)
@@ -59,14 +55,14 @@
 (define-method calculate-mesh-size surface-model ()
 	(* !thickness !mesh-size-factor)
 )  
-;-------------------------------------------------------------------------------------------------------------
+;==============================
 ; END surface-model definitions
-;------------------------------------------------------------------------------------------------------------- 
+;==============================
 
-;-------------------------------------------------------------------------------------------------------------
+;=============================================================
 ; Class: surfaces-on-link-collection
 ; Instantiates every surface-model on a link as series-objects
-;------------------------------------------------------------------------------------------------------------- 
+;=============================================================
 (define-class surfaces-on-link-collection
   :inherit-from (series-object)
   :properties (
@@ -101,11 +97,11 @@
       )
     )
   )
-
-;-----------------------------------------------------------
+  
+;===========================================================
 ; C(n,3) = 3! / ( 3! (n - 3)! 
 ; Output: List unique combinations of three, given n numbers
-;-----------------------------------------------------------
+;===========================================================
 (defun 3-edge-loop-combinations (n)
    (loop for i from 0 to (- n 3)   
      append (loop for j from (1+ i) to (- n 2)
@@ -130,6 +126,6 @@
       )
     )
   )
-  ;-------------------------------------------------------------------------------------------------------------
+;============================================
 ; END surfaces-on-link-collection definitions
-;-------------------------------------------------------------------------------------------------------------
+;============================================
