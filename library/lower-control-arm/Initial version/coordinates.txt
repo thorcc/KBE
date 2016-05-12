@@ -1,4 +1,4 @@
-Index	Name						X-pos	Y-pos	Z-pos	Design-variables
+Index	Name						X-pos	Y-pos	Z-pos
 0		"pt0"						0.0		0.0		0.0
 1		"pt1"						1.5		0.0		0.0
 2		"pt2"						-0.175	1.55	0.15

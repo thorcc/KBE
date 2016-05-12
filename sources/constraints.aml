@@ -34,7 +34,6 @@
                    direction (arbitrary-normal-to-vector ^^direction)
                    )
                
-			   
 			   dimensions 		(calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
@@ -47,7 +46,8 @@
 					)
 			   
 			   quantity			(length ^gender-list)
-			   class-expression '(read-from-string (concatenate !constraint-type "-" (nth !index ^gender-list) "-element"))
+			   class-expression '(read-from-string (concatenate !constraint-type "-" 
+									(nth !index ^gender-list) "-element"))
 			  
 			   init-form '(
 						   master-joint-object	(the superior superior) ;;Reference to the master-joint-model
@@ -66,12 +66,8 @@
 					""
 					'("Undraw" (button1-parameters :undraw)
                                         ui-work-area-action-button-class)
-					;(list (the superior constraint-type-selection self) 
-					;	'(automatic-apply? t))
-					;'("Change joint type" (button1-parameters :change-joint ui-work-area-action-button-class))
 					(the superior max-width self)
 					(the superior max-height self)
-					""
 					)
 				)
 			   )
@@ -165,19 +161,15 @@
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
 		(:draw-joint
-			(draw self)
+			(when !female-joint-element
+				(draw !female-joint-element :draw-subobjects? nil)
+			)
+			(when !male-joint-element
+				(draw !male-joint-element :draw-subobjects? nil)
+			)
 		)
 		(:undraw
 			(undraw self)
-		)
-		(:apply-load
-			(if (equal "Yes" (pop-up-message (format nil "Are these settings OK?~%Load type: ~a~%Magnitude: ~a~%Direction: ~a" 
-					!load-type !magnitude !load-direction) :width 200 :done-label "Yes" :cancel-label "No"))
-					(progn
-						(add-load (the superior superior) !load-case)
-						(draw !load-case)
-					)
-			)
 		)
 	)
 )
@@ -225,12 +217,22 @@
 
                (sub-point-ref :class 'sub-point-data-model
                    )
-			   
+			   (rbe2-independent-node :class 'mesh-node-class
+                   coordinates 	(get-rbe2-independent-node-coordinates ^superior)
+                   mesh-object	(get-surface-mesh (get-mesh-model-object ^^incident-link))
+				   color		'red
+				   line-width	3
+				   ;display? 	t
+                   )
 			    property-objects-list (list 
-										'("Draw" (button1-parameters :draw)
-                                        ui-work-area-action-button-class)
+										'("Draw joint element geometry" (button1-parameters :draw-joint)
+											ui-work-area-action-button-class)
+										""
+										'("Draw RBE2 nodes" (button1-parameters :draw-nodes)
+											ui-work-area-action-button-class)
+										""
 										'("Undraw" (button1-parameters :undraw)
-                                        ui-work-area-action-button-class)
+											ui-work-area-action-button-class)
 										)
                )
   :subobjects (
@@ -258,12 +260,6 @@
                 )
 				;;; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
                (sub-frame :class 'sub-frame-data-model
-                   )
-			   (rbe2-independent-node :class 'mesh-node-class
-                   coordinates 	(get-rbe2-independent-node-coordinates ^superior)
-                   mesh-object	(get-surface-mesh (get-mesh-model-object ^^incident-link))
-				   color		'red
-				   display? 	t
                    )
                )
 )
@@ -347,11 +343,17 @@
 
 (define-method work-area-button1-action joint-element-model (params)
 	(case params
-		(:draw
+		(:draw-joint
 			(draw self)
+		)
+		(:draw-nodes
+			(draw !rbe2-independent-node)
+			(draw !rbe2-dependent-nodes)
 		)
 		(:undraw
 			(undraw self)
+			(undraw !rbe2-independent-node)
+			(undraw !rbe2-dependent-nodes)
 		)
 	)
 )
