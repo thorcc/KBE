@@ -215,8 +215,6 @@
 											(list (the superior web-thickness max-value self)
 												'(automatic-apply? t))
 											""
-											(list (the superior constraint-object limit self)
-												'(automatic-apply? t))
 											'("Set optimization variables" 
 												(button1-parameters :init-optimization-variables)
 												ui-work-area-action-button-class)

@@ -47,7 +47,7 @@
                                       )
                )
   :subobjects (
-               (surface :class 'surface-from-uv-curves-class				
+               (surface :class 'surface-from-uv-curves-class
 					u-curves-objects-list (list ^start-point 
 							(get-connection (nth (nth 2 ^edge-combination) ^members)))					
 					v-curves-objects-list (list (get-connection (nth (nth 0 ^edge-combination) ^members)) 
