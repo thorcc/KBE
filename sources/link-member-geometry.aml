@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;============================================================================
 ; Class: connection-model
 ; Creates a NURBS curve between two endpoints, using Sheth-Uicker definitions
-;-------------------------------------------------------------------------------------------------------------
+;============================================================================
 (define-class connection-model
   :inherit-from (nurb-curve-object)
   :properties (
@@ -32,7 +32,6 @@
 								  (list (append start-tangent start-weight) (append end-tangent end-weight) )
 								  )
 								) )
-                               ;; if param_a == param_c && paramb=0
                                ('intersecting (let (
 									(center (nth 0 ^inter_points ))
 
@@ -76,7 +75,8 @@
                points (let (
                             (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
                                             for w in ^weight-points
-                                            collect (append (the coordinates (:from (nth p-index ^point-ref-list)) ) (list w)) ))
+                                            collect (append (the coordinates (:from 
+												(nth p-index ^point-ref-list)) ) (list w)) ))
                             )
                         (if shape-points
                             (append ^start-weight shape-points ^end-weight)
@@ -91,13 +91,16 @@
                inter_points (inter_section (the superior) ^line-config )
                perpendicular-dir (perp-dir (the superior) ^line-config )
 
-               param_a (vector-length (subtract-vectors (the origin (:from ^frame_A)) (the origin (:from ^frame_B))))
-               param_b (vector-length (subtract-vectors (the origin (:from ^frame_B)) (the origin (:from ^frame_C))))
-               param_c (vector-length (subtract-vectors (the origin (:from ^frame_C)) (the origin (:from ^frame_D))))
+               param_a (vector-length (subtract-vectors (the origin (:from ^frame_A)) 
+				   (the origin (:from ^frame_B))))
+               param_b (vector-length (subtract-vectors (the origin (:from ^frame_B)) 
+				   (the origin (:from ^frame_C))))
+               param_c (vector-length (subtract-vectors (the origin (:from ^frame_C)) 
+				   (the origin (:from ^frame_D))))
 
                )
   :subobjects (
-;;;               cross section at start of spline
+				;;cross section at start of spline
                (spline-frame_start :class 'frame-data-model
                    point-ref ^point-ref_D
                    z-vector-ref ^z-vector-ref_D
@@ -106,7 +109,7 @@
                                  direction (subtract-vectors (nth 1 ^points)  (nth 0 ^points))
                                  )
                    )
-;;;               cross section at end of spline
+				;;cross section at end of spline
                (spline-frame_end :class 'frame-data-model
 				
                    point-ref ^point-ref_A
@@ -156,16 +159,16 @@
 (define-method get-start-weight connection-model ()
 	!start-weight
 )
-;-----------------------------------------------------------------
+;=================================================================
 ; Finds the middle point between p1 and p2, given the direction d1
-;-----------------------------------------------------------------
+;=================================================================
 (defun m-point (p1 d1 p2)
   (add-vectors p1 (proj_v d1 (multiply-vector-by-scalar (subtract-vectors p2 p1) 0.5) ) )
   )
 
-;--------------------------------
+;================================
 ; Finds the closest point from p1
-;--------------------------------
+;================================
 (defun cl-point (p1 d1 p2 d2)
   (let (
         (n1x (cross-product d1 d2))
@@ -181,9 +184,9 @@
       )
   )
 
-;-------------------------------------------------------------
+;=============================================================
 ;Determine configuration of two lines in relation to eachother
-;-------------------------------------------------------------
+;=============================================================
 (define-method line-pose connection-model ()
   (let (
         (v0_1 (cross-product !pij !wij) )
@@ -197,12 +200,12 @@
     )
   )
 
-;---------------------------------------------------------
+;=========================================================
 ; Generalized closest points
 ; If lines Gij Gjk are intersecting or skew: closest point
 ; If lines Gij Gjk are coincident or parallel: mid-point
 ; Calculate intersection between lines
-;---------------------------------------------------------
+;=========================================================
 (define-method inter_section connection-model (line-config)
    (case line-config
      ('skew
@@ -219,9 +222,9 @@
       )
      )
    )
-;--------------------------------------------
+;============================================
 ; Returns generalized perpendicular direction 
-;--------------------------------------------
+;============================================
 (define-method perp-dir connection-model (line-config)
   (let (
         (cross (cross-product !wij !wjk) )
@@ -243,28 +246,29 @@
   )
 
 
-;----------------------------------------------------------------------------
+;============================================================================
 ; Returns the orthogonal projection of a vector b onto some vector a, pi_a(b)
-;----------------------------------------------------------------------------
+;============================================================================
 (defun proj_v (a b)
   (multiply-vector-by-scalar a (/ (dot-product b a ) (dot-product a a )) )
   )
 
-;---------------------------------------------------------------------------------------------------
-; Returns the orthogonal projection of vector b into the orthogonal complement of vector a, tau_a(b)
-;---------------------------------------------------------------------------------------------------
+;==================================================================
+; Returns the orthogonal projection of vector b into the orthogonal 
+; complement of vector a, tau_a(b)
+;==================================================================
 (defun orthogonal-projection-complement (a b)
   (subtract-vectors b (proj_v a b) )
   )
 
-;-------------------------------------------------------------------------------------------------------------
+;=================================
 ; END connection-model definitions
-;-------------------------------------------------------------------------------------------------------------
+;=================================
 
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================
 ; Class: member-solid-model
 ; Creates the link cross-section sweep for a link member
-;-------------------------------------------------------------------------------------------------------------   
+;=======================================================
 (define-class member-solid-model
   :inherit-from (tagging-object general-sweep-class)
   :properties(
@@ -284,10 +288,12 @@
               point-ref_A (the point-ref (:from ^frame_A ))
               
               ;;test for "link twist"
-			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
+			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A) 
+				  (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
 						;;test for opposite joint directions	
-					(if (is-joint-directions-opposite (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) 
-													(get-x-vector-ref_A ^connection) (get-x-vector-ref_D ^connection))
+					(if (is-joint-directions-opposite 
+							(get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D) 
+								(get-x-vector-ref_A ^connection) (get-x-vector-ref_D ^connection))
 						(the z-vector-ref (:from ^frame_D))
 						(the z-vector-ref (:from ^frame_A))
 					)	
@@ -338,8 +344,10 @@
                   label "Cross-section Type"
                   mode 'menu
                   formula (if (the cross-section-type (:from ^shape-ref))
-                              (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) !labels-list)  !options-list)
-                            (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) !labels-list)  !options-list) )
+                              (nth (position (write-to-string (the cross-section-type (:from ^shape-ref))) 
+								  !labels-list)  !options-list)
+                            (nth (position (write-to-string (the cross-section-type (:from ^default-shape))) 
+								!labels-list)  !options-list) )
                   options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
                   labels-list (loop for option in !options-list
                                 collect (remove "-section" (write-to-string option))
@@ -352,7 +360,8 @@
                                      (list (the superior cross-section-type self) 
                                            '(automatic-apply? t)
                                            )
-									'("Set cross-section" (button1-parameters :set-c button3-parameters :set-c)
+									'("Set cross-section" (button1-parameters :set-c button3-parameters 
+										:set-c)
 									 ui-work-area-action-button-class)
 									
                                      (the superior width self)
@@ -430,16 +439,16 @@
 		!joints-on-member)
 )
 
-;-----------------------------------------------------------------------------------------------------
+;=====================================================================================================
 ; Returns the smallest dimension of a member times a mesh scaling factor defined in member-solid-model
-;-----------------------------------------------------------------------------------------------------
+;=====================================================================================================
 (define-method calculate-mesh-size member-solid-model ()
 	(* (min !width !height !width-end !height-end) !mesh-size-factor)
 )
 
-;---------------------------------------------------------------------
+;=====================================================================
 ; Returns the members width and height for a given joint-element-model
-;---------------------------------------------------------------------
+;=====================================================================
 (define-method get-max-dimensions member-solid-model (joint-element)
 	(let (
 		  (pos (position joint-element (get-joints-on-member (the))))
@@ -455,9 +464,9 @@
 	)
 )
 
-;----------------------------------------------------
+;====================================================
 ; Returns the member cross-section at a joint element
-;---------------------------------------------------- 
+;==================================================== 
 (define-method get-cross-section-at-joint-element member-solid-model (joint-element)
 	(if (= 0 (position joint-element (get-joints-on-member (the))))
 		!cross-section_D
@@ -472,9 +481,9 @@
 	)
 )
 
-;-------------------------------------------------
+;=================================================
 ; Left-click button methods for member-solid-model
-;-------------------------------------------------
+;=================================================
 (define-method work-area-button1-action member-solid-model (params)
   (case params
 	 (:set-c
@@ -489,9 +498,9 @@
     )
   )
 
-;--------------------------------------------------
+;==================================================
 ; Right-click button methods for member-solid-model
-;--------------------------------------------------
+;==================================================
 (define-method work-area-button3-action member-solid-model (params)
   (case params
     (:draw
@@ -503,40 +512,40 @@
     )
   )
 
-;---------------------------------------------------
+;===================================================
 ; Checks whether vector v1 is linear independent to,
 ; the plane defined by the vectors pv1 and pv2
-;---------------------------------------------------
+;===================================================
 (defun is-vectors-dependent (v1 pv1 pv2)
 	(line-is-in-plane '(0 0 0) v1 '(0 0 0) (cross-product pv1 pv2))
 )
 
-;---------------------------------------------------
+;===================================================
 ; Checks whether the joint directions z1 and z2 is
 ; opposite when the x-vector (sweeping direction)
 ; is the same.
-;---------------------------------------------------
+;===================================================
 (defun is-joint-directions-opposite (z1 z2 x1 x2)
 	(and (equal (nth 2 z1) (- (nth 2 z2)))
 		(equal (round-point (every-but-last x1) 3) (round-point (every-but-last x2) 3)))
 )
 
-;------------------------------------------
+;==========================================
 ; Returns every element of list except last
-;------------------------------------------
+;==========================================
 (defun every-but-last (list)
    (loop for l on list
 		 while (rest l)
 		 collect (first l))
 )
-;-------------------------------------------------------------------------------------------------------------
+;===================================
 ; END member-solid-model definitions
-;------------------------------------------------------------------------------------------------------------- 
+;===================================
   
-;-------------------------------------------------------------------------------------------------------------
+;======================================================
 ; Class: members-on-link-collection
 ; Instantiates every member on a link as series-objects
-;------------------------------------------------------------------------------------------------------------- 
+;======================================================
 (define-class members-on-link-collection
   :inherit-from (series-object)
   :properties (               
@@ -554,6 +563,6 @@
                )
   )
 
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; END members-on-link-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
+;===========================================

@@ -1,15 +1,14 @@
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; Class: load-geometry-class
 ; Creates the geometry for a load
-;-------------------------------------------------------------------------------------------------------------
+;================================
 (define-class load-geometry-class
 	:inherit-from (union-object)
 	:properties (
 				 load-point		nil
 				 mechanism-size	nil
 				 type 			nil
-				 direction		nil
-				 
+				 direction		nil			 
 				 ;;This defines the line length, controlled by the size of the mechanism
 				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^direction)
 									(/ ^mechanism-size 6))) 
@@ -20,17 +19,17 @@
 				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
 				 arrow-vector1 				(add-points 
 												(add-points ^load-point (multiply-vector-by-scalar 
-													^total-vector 0.2)) ;;small portion of the total line
+													^total-vector 0.2)) ;; Small portion of the total line
 												(multiply-vector-by-scalar ^random-direction-normal 
-													(/ ^mechanism-size 70)) ;; How far the arrow points move from the line 
-											)
+													(/ ^mechanism-size 70)) ;; How far the arrow points 
+											)								;; move from the line 
 				 arrow-vector2 				(add-points 
 												(add-points ^load-point (multiply-vector-by-scalar 
-													^total-vector 0.2)) ;; This is the small portion of the total line
+													^total-vector 0.2)) ;; This is the small portion 
+																		;; of the total line
 												(multiply-vector-by-scalar ^negative-random 
 													(/ ^mechanism-size 70)) 
-											)
-				 
+											)			 
 				 object-list (case ^type
 							  ('force (list ^line ^arrow1 ^arrow2 ))
 							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
@@ -72,14 +71,14 @@
 				 line-width 1
 				)
 )
-;-------------------------------------------------------------------------------------------------------------
+;========================
 ; END load-geometry-class
-;-------------------------------------------------------------------------------------------------------------
+;========================
 
-;-------------------------------------------------------------------------------------------------------------
+;======================
 ; Class: load-model
 ; Holds load parameters
-;------------------------------------------------------------------------------------------------------------- 
+;======================
 (define-class load-model
 	:inherit-from (load-geometry-class)
 	:properties (
@@ -121,8 +120,7 @@
 					unit-in 	^current-load
 					unit 		^current-load
 					label 		"Scaling load"
-				 )
-				 
+				 )				 
 				 property-objects-list (list
 										(list (the superior type self)
 											'(automatic-apply? t))
@@ -136,9 +134,7 @@
 										)
 										(list (the superior direction self)
 											'(automatic-apply? t))
-					)
-				 
-				 
+					)		 
 				)
 	:subobjects (
 				 (loaded-node :class 'mesh-query-nodes-with-label-class 
@@ -189,6 +185,6 @@
 (define-method get-load-ID load-model ()
 	(1+ !index)
 )
-;-------------------------------------------------------------------------------------------------------------
+;===========================
 ; END load-model definitions
-;------------------------------------------------------------------------------------------------------------- 
+;===========================
