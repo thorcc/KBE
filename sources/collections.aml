@@ -436,11 +436,11 @@
 )
 
 (define-method get-springs spring-damper-collection ()
-	(children (the) :class 'spring-model-class)
+	(children (the) :class 'spring-model)
 )
 
 (define-method get-dampers spring-damper-collection ()
-	(children (the) :class 'damper-model-class)
+	(children (the) :class 'damper-model)
 )
 
 ;------------------------------------------------------------------

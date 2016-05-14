@@ -1,6 +1,6 @@
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: general-spring-damper-class
-; Superclass for spring-model-class and damper-model-class
+; Superclass for spring-model and damper-model
 ; Contains information about spring/damper start and end points, as well as which link(s) they are
 ; connected to.
 ; Has any link mesh nodes that the link/damper is connected to, as subobjects
@@ -109,6 +109,7 @@
 			point1 ^^end-mid-point
 			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-direction ^^spring-radius))
 		)
+		color		'purple
 	)	
 )
 ;-------------------------------------------------------------------------------------------------------------
@@ -237,7 +238,9 @@
 		(box-line4 :class 'line-object           
 			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
 			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-		)		
+		)
+		color		'red
+
 	)
 )
 
@@ -249,43 +252,41 @@
 ;-------------------------------------------------------------------------------------------------------------
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: damper-model-class
+; Class: damper-model
 ; Specifies the damper implementation of a general-spring-damper-class
 ;-------------------------------------------------------------------------------------------------------------
-(define-class damper-model-class 
+(define-class damper-model 
 	:inherit-from (general-spring-damper-class damper-geometry-class)
 	:properties (
 				 type		'damper
 				 damping 	(get-stiffness-damping !superior)
-				 color		'red
 				)
 )
 
-(define-method get-damping damper-model-class ()
+(define-method get-damping damper-model ()
 	!damping
 )
 ;-------------------------------------------------------------------------------------------------------------
-; END damper-model-class
+; END damper-model
 ;-------------------------------------------------------------------------------------------------------------
 
 ;-------------------------------------------------------------------------------------------------------------
-; Class: spring-model-class
+; Class: spring-model
 ; Specifies the spring implementation of a general-spring-damper-class
 ;-------------------------------------------------------------------------------------------------------------
-(define-class spring-model-class
+(define-class spring-model
 	:inherit-from (general-spring-damper-class spring-geometry-class)
 	:properties (
 				 type		'spring
 				 stiffness	(get-stiffness-damping !superior)
-				 color		'purple
 				)
 )
 
-(define-method get-stiffness spring-model-class ()
+(define-method get-stiffness spring-model ()
 	!stiffness
 )
 ;-------------------------------------------------------------------------------------------------------------
-; END spring-model-class
+; END spring-model
 ;-------------------------------------------------------------------------------------------------------------
 
 ;-------------------------------------------------------------------------------------------------------------
