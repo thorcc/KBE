@@ -5,8 +5,8 @@
 (define-class RBE2-collection
 	:inherit-from (series-object)
 	:properties (
-				 link-mesh 			nil ;;link-mesh-class
-				 constraints-list 	(get-rbe2-constraints-list ^link-mesh)
+				 link-mesh-object 	nil ;;link-mesh-class
+				 constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
 				 
 				 class-expression 	'analysis-rigid-body-element-type-1-class
 				 series-prefix 		'rbe2
@@ -37,17 +37,15 @@
                geometry-model-object 		nil ;;link-geometry-class
 			   joint-elements 				nil
 			   
-			   mesh-object 					^link-mesh
-			   
-			   ;non-free-constraints-list  	(get-non-free-constraints-incident-on-link-list ^link-model)
-			   
+			   mesh-object 					(the (:from (the surface-tri-mesh)))
+			   			   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
 											collect (get-rbe2-independent-node element)
 				)
-               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^link-mesh)))))
+               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^mesh-object)))))
 			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
-												(list (the nodes-query (:from ^^link-mesh)))
+												(list (the nodes-query (:from ^^mesh-object)))
 												(list (the nodes-query (:from ^^tet-mesh))))
 											^rbe2-independent-node-list
 											)
@@ -56,37 +54,34 @@
   :subobjects (
 			   (mesh-database :class 'mesh-database-class
 					)
-			   (link-mesh :class 'paver-mesh-class
+			   (surface-tri-mesh :class 'paver-mesh-class
 					object-to-mesh 			^^geometry-model-object
 					mesh-database-object	^^mesh-database
 					element-shape 			:tri
 					)
 			   (tet-mesh :class 'tet-mesh-class
 					mesh-database-object	^^mesh-database
-					object-to-mesh 			(the superior superior link-mesh surface-elements-query)
+					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
+														^superior))
 					)
 			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list	(get-rbe2-dependent-nodes-list ^^geometry-model-object)
-                   mesh-object 			^^link-mesh
+                   mesh-object 			^^mesh-object
                    )
-               (fixed-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list (list
-                                       (the fixed-edge (:from ^^geometry-model-object))
-                                       )
-;                    mesh-object ^^link-mesh
+               (rbe2-list :class 'RBE2-collection
+				   link-mesh-object		^superior
+				   )
+			   ;; Example subobjects for analysis in AML:---------------->
+			   (fixed-nodes :class 'mesh-nodes-query-class
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
-                   ;interface-object (the point-ref (:from (the constraint-element (:from (nth 0 ^^solid-constraints-ref-list) ))))
-                   mesh-object ^^link-mesh
                    )
-			   (rbe2-list :class 'RBE2-collection
-				   link-mesh ^superior
-				   )
-               )
+               ; <--------------------------------------------------------
+			   )
   )
 
 (define-method get-surface-mesh link-mesh-class ()
-	!link-mesh
+	!mesh-object
 )
   
 (define-method get-mesh-database link-mesh-class ()
@@ -95,18 +90,18 @@
   
 (define-method get-mesh-entities-list link-mesh-class ()
 	(if (get-export-surface !link-model)
-		(the link-mesh nodes-query mesh-entities-list)
+		(the nodes-query mesh-entities-list (:from !mesh-object))
 		(the tet-mesh nodes-query mesh-entities-list)
 	)
 )
 
 (define-method get-link-mesh-node-query-objects-list link-mesh-class ()
-	(list (the nodes-query (:from !link-mesh)))
+	(list (the nodes-query (:from !mesh-object)))
 )
 
 (define-method get-link-surface-mesh-elements-query-objects-list link-mesh-class ()
-	(when (the surface-elements-query (:from !link-mesh :error nil :relation nil))
-		(list (the surface-elements-query (:from !link-mesh)))
+	(when (the surface-elements-query (:from !mesh-object :error nil :relation nil))
+		(list (the surface-elements-query (:from !mesh-object)))
 	)
 )
 
@@ -121,6 +116,10 @@
 
 (define-method get-rbe2-independent-node-list link-mesh-class ()
 	!rbe2-independent-node-list
+)
+
+(define-method get-all-node-objects-list link-mesh-class ()
+	(list !node-set)
 )
 
 (define-method get-rigid-body-element-objects-list link-mesh-class ()

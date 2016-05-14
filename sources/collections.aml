@@ -276,8 +276,6 @@
 					""
 					'("Draw all link members" (button1-parameters :draw-without-mesh button3-parameters :draw-without-mesh)
 					ui-work-area-action-button-class)
-					'("Draw all link members with mesh" (button1-parameters :draw-with-mesh button3-parameters :draw-with-mesh)
-					ui-work-area-action-button-class)
 					""
 					'("Undraw" (button1-parameters :undraw button3-parameters :unset)
 					ui-work-area-action-button-class)
@@ -388,9 +386,6 @@
 		)
 		(:undraw
 			(undraw self)
-		)
-		(:draw-with-mesh
-			(draw self)
 		)
 	)
 	
@@ -827,7 +822,7 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+			(draw (first (get-link-solid-mesh-elements-query-objects-list (get-mesh-model-object link))))
 		)
 	)
 )
@@ -836,7 +831,7 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (the link-mesh-model link-mesh elements-query (:from link)))
+			(draw (first (get-link-surface-mesh-elements-query-objects-list (get-mesh-model-object link))))
 		)
 	)
 )
