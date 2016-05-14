@@ -47,10 +47,7 @@
 	:properties (
 				 type					(default nil)
 				 constraint-value		(default nil)
-				 (limit	:class 'editable-data-property-class
-					formula	(default 0)
-					label 	(format nil "Limit for the difference in max ~a and yield ~a" ^type ^type)
-					)
+				 limit					(default 0)
 				 inequality-type		(default (nth 0 (list :lt :lteq :gt :gteq :eq))) ;;Default less than
 				 penalty-weight-factor	(default 10)
 				 penalty-power			(default 2)
@@ -423,9 +420,14 @@
 		)
 		(progn
 			(loop for result in !best-result-from-each-gen-list do
-				(if (and (< (nth 1 (nth 0 result)) min-area) 
-						(< (nth 1 (nth 6 result)) !max-allowed-deformation))
-					(progn
+				(if !max-allowed-deformation
+					(when (and (< (nth 1 (nth 0 result)) min-area) 
+							(< (nth 1 (nth 6 result)) !max-allowed-deformation))
+						(setf min-area (nth 1 (nth 0 result)))
+						(setf final-result result)
+					)
+					;; If no max allowed deformation exists, it should not be evaluated.
+					(when (< (nth 1 (nth 0 result)) min-area)
 						(setf min-area (nth 1 (nth 0 result)))
 						(setf final-result result)
 					)
