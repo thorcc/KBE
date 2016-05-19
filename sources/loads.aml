@@ -147,7 +147,7 @@
 					mesh-database-object 			(get-mesh-database ^^loaded-link)
 					interface-object 				^^load-point-object
 					subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
-														^^mesh-model-object)
+															^^mesh-model-object)
 														(get-rbe2-independent-node-list 
 															^^mesh-model-object))
 					tolerance						1.0e3

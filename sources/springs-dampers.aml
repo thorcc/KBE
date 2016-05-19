@@ -240,7 +240,6 @@
 			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
 		)
 		color		'red
-
 	)
 )
 

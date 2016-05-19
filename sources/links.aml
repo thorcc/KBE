@@ -201,9 +201,9 @@
      )
    )
 
-;-------------------------------------------------
-; Left-click button methods for member-solid-model
-;-------------------------------------------------
+;--------------------------------------------------
+; Left-click button methods for link-geometry-class
+;--------------------------------------------------
 (define-method work-area-button1-action link-geometry-class (params)
   (case params
 	(:set-c
