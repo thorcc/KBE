@@ -1,30 +1,3 @@
-;-------------------------------------------------------------------------------------------------------------
-; Class: RBE2-collection
-; Instantiates every RBE2 as a series-object
-;------------------------------------------------------------------------------------------------------------- 
-(define-class RBE2-collection
-	:inherit-from (series-object)
-	:properties (
-				 link-mesh-object 	nil ;;link-mesh-class
-				 constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
-				 
-				 class-expression 	'analysis-rigid-body-element-type-1-class
-				 series-prefix 		'rbe2
-				 quantity 			(length ^constraints-list)
-				 init-form '(
-							 independent-node-query-object 		(get-rbe2-independent-node 
-																	(nth ^index ^constraints-list))
-							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
-																	(nth ^index ^constraints-list))
-							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
-                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
-							 )
-				 )
-	)
-;-------------------------------------------------------------------------------------------------------------
-; END RBE2-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
 
 ;-------------------------------------------------------------------------------------------------------------
 ; Class: link-mesh-class
@@ -33,17 +6,17 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-               link-model 					nil ;;link-model-class
-               geometry-model-object 		nil ;;link-geometry-class
-			   joint-elements 				nil
+                link-model 					nil ;;link-model-class
+                geometry-model-object 		nil ;;link-geometry-class
+			    joint-elements 				nil ;;joint-element-models
 			   
-			   mesh-object 					(the (:from (the surface-tri-mesh)))
+			    mesh-object 					(the (:from (the surface-tri-mesh)))
 			   			   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
-											collect (get-rbe2-independent-node element)
+												collect (get-rbe2-independent-node element)
 				)
-               nodes-query-length (length (the mesh-entities-list (:from (the nodes-query (:from ^mesh-object)))))
-			   (node-set :class 'analysis-node-set-class
+
+				(node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
 												(list (the nodes-query (:from ^^mesh-object)))
 												(list (the nodes-query (:from ^^tet-mesh))))
@@ -64,13 +37,6 @@
 					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
 														^superior))
 					)
-			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list	(get-rbe2-dependent-nodes-list ^^geometry-model-object)
-                   mesh-object 			^^mesh-object
-                   )
-               (rbe2-list :class 'RBE2-collection
-				   link-mesh-object		^superior
-				   )
 			   ;; Example subobjects for analysis in AML:---------------->
 			   (fixed-nodes :class 'mesh-nodes-query-class
                    )
@@ -120,11 +86,6 @@
 
 (define-method get-all-node-objects-list link-mesh-class ()
 	(list !node-set)
-)
-
-(define-method get-rigid-body-element-objects-list link-mesh-class ()
-	(when !rbe2-list 
-		(children !rbe2-list :class 'analysis-rigid-body-element-type-1-class))
 )
 
 (define-method get-node-position-in-query-list link-mesh-class (node-query-object)

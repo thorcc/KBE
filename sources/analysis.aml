@@ -1,4 +1,32 @@
 ;-------------------------------------------------------------------------------------------------------------
+; Class: RBE2-collection
+; Instantiates every RBE2 as a series-object
+;------------------------------------------------------------------------------------------------------------- 
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 link-mesh-object 	nil ;;link-mesh-class
+				 constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(get-rbe2-independent-node 
+																	(nth ^index ^constraints-list))
+							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
+																	(nth ^index ^constraints-list))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 )
+				 )
+	)
+;-------------------------------------------------------------------------------------------------------------
+; END RBE2-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
 ; Class: analysis-link-model-class
 ; Used for creating objects for writing to the nastran bdf file.
 ; Can also be used to set up a load case for use in an AML analysis
@@ -30,7 +58,8 @@
                mesh-object 						(get-surface-mesh  ^mesh-model-object)
                node-set-objects-list 			(get-all-node-objects-list ^mesh-model-object)
 			   
-			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
+			   rigid-body-element-objects-list	(children ^rbe2-list 
+													:class 'analysis-rigid-body-element-type-1-class)
 			   
 			   (material-selection :class 'option-property-class
 					options-list	(children ^^material-catalog)
@@ -63,6 +92,9 @@
                    query-objects-list	(get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object 	^^link-3D-material-properties
                    )
+			    (rbe2-list :class 'RBE2-collection
+				   link-mesh-object		^^mesh-model-object
+				   )
 			   ;; Example subobjects for analysis in AML:--------------------------->
 			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
                    )
