@@ -33,7 +33,7 @@
 			   incident-constraints	nil
 											
                ;source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
-			   source-object 	^blend-object
+			   source-object 	(if ^blend? ^blend-object ^difference-element)
 			   
                max-element-size 0.02
                tag-dimensions 	'(1 2 3)
@@ -128,6 +128,14 @@
 			    ;;; simplify? nil keeps them
 			    simplify? 	nil
 				
+				(blend? :class 'option-property-class
+					mode 			'radio
+					options-list	(list t nil)
+					labels-list 	(list "Yes" "No")
+					formula 		(default nil)
+					label 			"Automatic blending?"
+					)
+				
 				property-objects-list (list
 										"Link sewn with incident joint element"
 										(list (the superior cross-section-type self) 
@@ -143,7 +151,8 @@
 										'("Undraw" (button1-parameters :undraw-sewn)
 										ui-work-area-action-button-class)
 										""
-										
+										(list (the superior blend? self)
+											'(automatic-apply? t))
 										;'("Add/remove surface" (button1-parameters :set-surface)
 										;ui-work-area-action-button-class)
 										)
@@ -171,6 +180,8 @@
 											append (list (vgl::intersection-geoms (list (copy-geom (the geom 
 														(:from !difference-element)))
 												geom)))))
+			;(non-free-joints (remove nil (loop for joint in !incident-constraints
+			;					append (unless (is-free-constraint joint)))))
 		)
 		(remove nil (loop for edge in difference-egde-list 
 			append (loop for member in members-diff-intersection
