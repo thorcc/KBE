@@ -37,12 +37,12 @@
 			   dimensions 		(calculate-dimensions (the superior))
 			   
 			   (max-width :class 'editable-data-property-class
-				   label "Joint width"
-					formula (nth 0 ^dimensions)
+				    label 	"Joint width"
+					formula	(nth 0 ^dimensions)
 					)
                (max-height :class 'editable-data-property-class
-					label "Joint height"
-					formula (nth 1 ^dimensions)
+					label 	"Joint height"
+					formula	(nth 1 ^dimensions)
 					)
 			   
 			   quantity			(length ^gender-list)

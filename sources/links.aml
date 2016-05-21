@@ -32,7 +32,8 @@
   :properties (
 			   incident-constraints	nil
 											
-               source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
+               ;source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
+			   source-object 	^blend-object
 			   
                max-element-size 0.02
                tag-dimensions 	'(1 2 3)
@@ -105,7 +106,19 @@
                    )
 				render 'shaded
 				
-				;; This list collects the members that can be drawed.
+				(blend-object :class '(tagging-object blend-class)
+				   source-object	^^difference-element
+				   edge-ids			(get-intersecting-edges-list ^superior)
+				   radii			(loop for edge in ^edge-ids 
+										append (list (/ (the max-width (:from (first ^^incident-constraints)))
+														3)))
+				   
+				   tag-dimensions 	'(1 2 3)
+				   tag-attributes 	(list (/ (the max-element-size (:from (first ^^incident-constraints))) 2)
+										0 0.1 0 20.0 1.0e-5) 
+				   )
+				
+				;; This list collects the members that can be drawn.
 				;; If it is empty, this links will not be considered in the mesh or analysis
 				drawable-members-ref-list 	(loop for member in ^members-ref-list 
 												if (the geom (:from member)) 
@@ -147,7 +160,31 @@
                    )
                )
   )
-  
+
+
+(define-method get-intersecting-edges-list link-geometry-class ()
+	(let* (
+			(difference-egde-list (vgl::k-sub-geoms (the geom (:from !difference-element)) 1))
+			(member-geom-list (loop for member in !visible-members-ref-list 
+									append (list (copy-geom (the geom (:from member))))))
+			(members-diff-intersection (loop for geom in member-geom-list 
+											append (list (vgl::intersection-geoms (list (copy-geom (the geom 
+														(:from !difference-element)))
+												geom)))))
+		)
+		(remove nil (loop for edge in difference-egde-list 
+			append (loop for member in members-diff-intersection
+				append (loop for joint in !incident-constraints
+					collect (when (and (vgl::intersect-geom-p member edge)
+								(< (points-distance (get-sub-frame-coords joint) (geom-center edge)) 
+									(* (the max-width (:from joint)) 0.75)))
+							edge)
+						)
+				)
+		))
+	)
+)
+ 
 (define-method get-shapes-on-link link-geometry-class ()
 	(let (
 			(shape-list (make-sequence 'list (length !constraint-connection-combination) 
@@ -268,7 +305,7 @@
 				   incident-constraints ^^constraints-incident-on-link-list
 				   optimization-object	^^optimization-object
                    )
-               (link-mesh-model :class 'link-mesh-class
+			   (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry
 				   link-model 				^superior
 				   joint-elements			^^constraints-incident-on-link-list
@@ -279,6 +316,13 @@
                    )
                )
   )
+  
+(defun get-blend-mesh-size (dimensions-list)
+	(loop for dim in dimensions-list do
+		minimize dim into min-size
+		finally (return (/ min-size 16))
+	)
+)
   
 (define-method get-non-free-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
