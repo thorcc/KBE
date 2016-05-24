@@ -1,24 +1,22 @@
-
-;-------------------------------------------------------------------------------------------------------------
+;==============================
 ; Class: link-mesh-class
 ; Class responsible for meshing
-;------------------------------------------------------------------------------------------------------------- 
+;==============================
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-                link-model 					nil ;;link-model-class
-                geometry-model-object 		nil ;;link-geometry-class
-			    joint-elements 				nil ;;joint-element-models
+               link-model 					nil ;;link-model-class
+               geometry-model-object 		nil ;;link-geometry-class
+			   joint-elements 				nil
 			   
-			    mesh-object 					(the (:from (the surface-tri-mesh)))
-			   			   
+			   mesh-object 					(the (:from (the surface-tri-mesh)))
+			   		   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
-												collect (get-rbe2-independent-node element)
+											collect (get-rbe2-independent-node element)
 				)
-
-				(node-set :class 'analysis-node-set-class
+			   (node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
-												(list (the nodes-query (:from ^^mesh-object)))
+												(list (the nodes-query (:from ^^link-mesh)))
 												(list (the nodes-query (:from ^^tet-mesh))))
 											^rbe2-independent-node-list
 											)
@@ -91,6 +89,6 @@
 (define-method get-node-position-in-query-list link-mesh-class (node-query-object)
 	(1+ (position node-query-object (the node-set query-objects-list)))
 )
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; END link-mesh-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;================================

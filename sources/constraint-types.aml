@@ -1,21 +1,22 @@
-;-------------------------------------------------------------------------------------------------------------
+;===============================================
 ; Class: free-constraint-class
 ; An free constraint is a joint with no geometry
 ; Used for leaving the end of a link free
-;------------------------------------------------------------------------------------------------------------- 
+;===============================================
 (define-class free-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 ; END free-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;======================================
 
-;-------------------------------------------------------------------------------------------------------------
+;============================================
 ; Class: free-male-element
-; Female element of an free constraint type. As this element is free, it has no geometry
-;------------------------------------------------------------------------------------------------------------- 
+; Female element of an free constraint type. 
+; As this element is free, it has no geometry
+;============================================
 (define-class free-male-element
   :inherit-from (joint-element-model)
   :properties (
@@ -36,14 +37,15 @@
 					)
 			   )
   )
-;-------------------------------------------------------------------------------------------------------------
+;==================================
 ; END free-male-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;==================================
 
-;-------------------------------------------------------------------------------------------------------------
+;============================================
 ; Class: free-female-element
-; Female element of an free constraint type. As this element is free, it has no geometry
-;------------------------------------------------------------------------------------------------------------- 
+; Female element of an free constraint type. 
+; As this element is free, it has no geometry
+;============================================
 (define-class free-female-element
   :inherit-from (joint-element-model)
   :properties (
@@ -60,25 +62,28 @@
 
 			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
 				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
-					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
-					plane-normal-vector				(get-direction-along-member 
-														(get-spline-frame-at-joint-element
-															(first (get-displayed-members-connected-to-joint-element ^superior)) ^superior))
+					mesh-database-object	(get-mesh-database ^^link-mesh-model-object)
+					point-in-plane-coords	(get-rbe2-independent-node-coordinates ^superior)
+					plane-normal-vector		(get-direction-along-member 
+												(get-spline-frame-at-joint-element
+													(first 
+														(get-displayed-members-connected-to-joint-element 
+															^superior)) ^superior))
 					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
 					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list ^^link-mesh-model-object)
+					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
+														^^link-mesh-model-object)
 					color 							'green
 					line-width						3
 					)
 			   )
   )
 
-;-------------------------------------------------------------------------
+;=========================================================================
 ; Method finding the translational value for an free/fixed female element
 ; Finds the member where the free joint is, then gets the other joint
 ; on that member and moves the free joint's sub-frame to match the other's
-;-------------------------------------------------------------------------
+;=========================================================================
 (define-method get-translational-z-value joint-element-model ()
 	(let (
 		  (displayed-member
@@ -92,128 +97,90 @@
 		  )
 	)
 )
-;-------------------------------------------------------------------------------------------------------------
+;====================================
 ; END free-female-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;====================================
 
-;-------------------------------------------------------------------------------------------------------------
+;==============================
 ; Class: rigid-constraint-class
-;-------------------------------------------------------------------------------------------------------------  
+;==============================
 (define-class rigid-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;=======================================
 ; END rigid-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;=======================================
 
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; Class: helical-constraint-class
-;------------------------------------------------------------------------------------------------------------- 
+;================================
 (define-class helical-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-;;;                joint-variables 'theta or 's
-               ;;;                to element
-;;;                (temp-element :class 'vector-data-model
-;;;                    point-ref  ^^point-ref
-;;;                    direction  ^^direction
-                   orientation (list
-                                  (translate !direction :distance (nth 0 !constraint-variable)) 
-                                  )
-;;;                    )
                )
   
   )
-;-------------------------------------------------------------------------------------------------------------
+;=========================================
 ; END helical-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================
 
-;-------------------------------------------------------------------------------------------------------------
+;==================================
 ; Class: prismatic-constraint-class
-;------------------------------------------------------------------------------------------------------------- 
+;==================================
 (define-class prismatic-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-;;;                joint-variables 's
-               ;;;                to element
-;;;                (temp-element :class 'vector-data-model
-;;;                    point-ref  ^^point-ref
-;;;                    direction  ^^direction
-                   orientation (list
-                                  (translate !direction :distance (nth 0 !constraint-variable)) 
-                                  )
-;;;                    )
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; END prismatic-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================== 
 
-;-------------------------------------------------------------------------------------------------------------
+;==================================
 ; Class: cylindric-constraint-class
-;------------------------------------------------------------------------------------------------------------- 
+;================================== 
 (define-class cylindric-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-;;;                joint-variables 'theta and 's
-               ;;;                to element
-;;;                (temp-element :class 'vector-data-model
-;;;                    point-ref  ^^point-ref
-;;;                    direction  ^^direction
-                   orientation (list
-					   (translate !direction :distance (nth 0 !constraint-variable)) 
-                                  )
-;;;                    )
                )
   )
 
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; END cylindric-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================== 
 
-;-------------------------------------------------------------------------------------------------------------
+;===============================
 ; Class: planar-constraint-class
-;-------------------------------------------------------------------------------------------------------------   
+;===============================
 (define-class planar-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-;;;                joint-variables 's, s' and  theta
- 
-;;;                (temp-element :class 'vector-data-model
-;;;                    orientation (list
-;;;                                 (translate
-;;;                                  (angle-between-2-vectors (the superior solid-element direction) (nth 0 ^^constraint-variable) )
-;;;                                  (cross-product (the superior solid-element direction)  (nth 0 ^^constraint-variable) )
-;;;                                  :axis-point (the coordinates (:from (the superior solid-element point-ref)) )
-;;;                                  )
-;;;                                 )
-;;;                    )
                )
   )
 
-;-------------------------------------------------------------------------------------------------------------
-; END cylindric-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;========================================
+; END planar-constraint-class definitions
+;========================================
 
-;-------------------------------------------------------------------------------------------------------------
+;===========================================================
 ; Class: revolute-constraint-class
 ; Holding revolute male and female elements on instantiation
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================================== 
 (define-class revolute-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;==========================================
 ; END revolute-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;========================================== 
 
-;-------------------------------------------------------------------------------------------------------------
+;===============================================
 ; Class: revolute-male-element
 ; Defines geometry for the revolute male element
-;------------------------------------------------------------------------------------------------------------- 
+;=============================================== 
 (define-class revolute-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
@@ -267,18 +234,17 @@
 														^^link-mesh-model-object)
 					color 							'green
 					line-width						3
-					;display							t
 					)
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 ; END revolute-male-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;======================================
   
-;-------------------------------------------------------------------------------------------------------------
+;=================================================
 ; Class: revolute-female-element
 ; Defines geometry for the revolute female element
-;-------------------------------------------------------------------------------------------------------------   
+;=================================================   
 (define-class revolute-female-element
   :inherit-from (difference-object joint-element-model)
   :properties(
@@ -321,31 +287,30 @@
 											(get-incident-link ^superior)))
                    color 				'green
 				   line-width			3
-				   ;display? 			t
                    )
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;========================================
 ; END revolute-female-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;========================================
   
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================
 ; Class: ball-constraint-class
 ; Holding ball male and female elements on instantiation
-;------------------------------------------------------------------------------------------------------------- 
+;======================================================= 
 (define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 ; END ball-constraint-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;======================================
   
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; Class: ball-male-element
 ; Defines geometry for the ball male element
-;------------------------------------------------------------------------------------------------------------- 
+;===========================================
 (define-class ball-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
@@ -366,7 +331,8 @@
                    )
                (stud :class 'cylinder-object
                    reference-object ^sub-frame
-                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame)) (the origin (:from ^main-frame-object)) ) )
+                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame)) 
+					   (the origin (:from ^main-frame-object)) ) )
                    diameter (/ (the diameter (:from ^ball)) 2)
                    orientation (list
                                 (translate (list 0 0 (/ ^height 2)) )
@@ -393,7 +359,8 @@
 
                (sub-point-ref :class 'sub-point-data-model
                    orientation (list
-                                (translate (list 0 0  (- 0 (/ ^^max-height 2) (* 1 (the diameter (:from ^^ball))) )) )
+                                (translate (list 0 0  (- 0 (/ ^^max-height 2) (* 1 (the diameter 
+									(:from ^^ball))) )) )
                                 )
                    )
                (rbe2-dependent-nodes :class 'mesh-nodes-query-class
@@ -402,18 +369,17 @@
 											(get-incident-link ^superior)))
                    color 				'green
 				   line-width			3
-				   ;display? nil
                    )       
                )
   )
-;-------------------------------------------------------------------------------------------------------------
+;==================================
 ; END ball-male-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;==================================
   
-;-------------------------------------------------------------------------------------------------------------
+;=============================================
 ; Class: ball-female-element
 ; Defines geometry for the ball female element
-;-------------------------------------------------------------------------------------------------------------   
+;=============================================
 (define-class ball-female-element
   :inherit-from (difference-object joint-element-model)
   :properties (
@@ -472,32 +438,31 @@
 											(get-incident-link ^superior)))
                    color 				'green
 				   line-width			3
-				   ;display? nil
                    )
 				)
   )
-;-------------------------------------------------------------------------------------------------------------
+;====================================
 ; END ball-female-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;====================================
   
-;-------------------------------------------------------------------------------------------------------------
-; Class: knuckle-constraint-class
+;==========================================================
+; Class: solid-knuckle-constraint-class
 ; Holding knuckle male and female elements on instantiation
-;------------------------------------------------------------------------------------------------------------- 
-(define-class knuckle-constraint-class  
+;==========================================================
+(define-class solid-knuckle-constraint-class  
 	:inherit-from (master-joint-model)
 	:properties (
 				 )
  )
-;-------------------------------------------------------------------------------------------------------------
-; END knuckle-constraint-class definitions
-;-------------------------------------------------------------------------------------------------------------  
+;===============================================
+; END solid-knuckle-constraint-class definitions
+;===============================================  
  
-;-------------------------------------------------------------------------------------------------------------
-; Class: knuckle-female-element
+;================================================
+; Class: solid-knuckle-female-element
 ; Defines geometry for the knuckle female element
-;-------------------------------------------------------------------------------------------------------------  
-(define-class knuckle-female-element
+;================================================
+(define-class solid-knuckle-female-element
 	:inherit-from (difference-object joint-element-model)
 	:properties (
 				  main-frame-object (get-main-frame (the superior))
@@ -542,19 +507,18 @@
 											(get-incident-link ^superior)))
 					color 				'green
 					line-width			3
-					;display? nil
 					)
 				)
  )
-;-------------------------------------------------------------------------------------------------------------
-; END knuckle-female-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;=============================================
+; END solid-knuckle-female-element definitions
+;=============================================
  
-;-------------------------------------------------------------------------------------------------------------
-; Class: knuckle-male-element
+;==============================================
+; Class: solid-knuckle-male-element
 ; Defines geometry for the knuckle male element
-;------------------------------------------------------------------------------------------------------------- 
-(define-class knuckle-male-element
+;============================================== 
+(define-class solid-knuckle-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
 			   main-frame-object (get-main-frame (the superior))
@@ -562,14 +526,14 @@
 			   outer-radius (* ^max-width ^scale-factor)
 			   inner-radius (* ^outer-radius 0.6)
 			   
-			   ;;; Lists sent to link-geometry-class ------->
+			   ;;; Lists sent to link-geometry-class =======>
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list !superior) 
                             )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
                                 (list ^subtracted-box)
                                 )
-			   ;;; <-------
+			   ;;; <=======
 			   
 			   object-list (list ^pin ^fork)
                simplify? t
@@ -581,7 +545,7 @@
 											0 0.1 0 20.0 1.0e-5)
 					)
 			   
-			   ;;; Objects used to create the male joint geometry ---->
+			   ;;; Objects used to create the male joint geometry ====>
 			   (fork :class 'difference-object
 					object-list (list ^^box ^^subtracted-box ^^trim-object ^^sphere)
 					)
@@ -646,9 +610,9 @@
 				(sphere :class 'difference-object
 					object-list (list ^^trim-sphere ^^difference-sphere)
 					)
-				;;; <-------
+				;;; <=======
 				
-				;;; Used as the difference-list in link-geometry-class --->
+				;;; Used as the difference-list in link-geometry-class ===>
                (difference-box :class 'difference-object
 					object-list(list ^^subtracted-box ^^eye)
 					)
@@ -657,7 +621,7 @@
 					   height ^^max-height
 					   diameter ^^outer-radius
 					   )
-			   ;;; <-----	 
+			   ;;; <=====	 
 				
 			   ;;; Defines where the sub-frame should be placed
 			   (sub-point-ref :class 'sub-point-data-model
@@ -671,10 +635,9 @@
 											(get-incident-link ^superior)))
 					color 				'green
 					line-width			3
-					;display? nil
 				)
                )
   )
-;-------------------------------------------------------------------------------------------------------------
-; END knuckle-male-element definitions
-;------------------------------------------------------------------------------------------------------------- 
+;===========================================
+; END solid-knuckle-male-element definitions
+;===========================================

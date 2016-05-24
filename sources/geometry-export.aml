@@ -1,15 +1,15 @@
-;-----------------------------------------------------------------
+;=================================================================
 ; Writes each link to a nastran .bdf file, stored in :nastran-data
-;----------------------------------------------------------------- 
+;================================================================= 
 (define-method write-nastran-bdf-files main-mechanism-class ()
 	(loop for link in !final-link-ref-list do
 		(write-nastran-bdf-file (the) link)
 	)
 )
 
-;--------------------------------
+;================================
 ; Writes each link to a .stl file
-;-------------------------------- 
+;================================ 
 (define-method write-stl-files main-mechanism-class (path)
 	(let( 
 			(corrected-path (concatenate (replace-all-in-string "/" "\\" path) "/Stl-files/"))
@@ -19,14 +19,15 @@
 			(create-directory corrected-path)
 		)
 		(loop for link in !final-link-ref-list do
-			(write-stl-file (the link-geometry (:from link)) (concatenate corrected-path (the label (:from link)) ".stl"))
+			(write-stl-file (the link-geometry (:from link)) (concatenate corrected-path 
+				(the label (:from link)) ".stl"))
 		)
 	)
 )
 
-;--------------------------------------------
+;============================================
 ; Replaces all specified characters in string
-;--------------------------------------------
+;============================================
 (defun replace-all-in-string (new old string)
 	
 	(if (equal string (replace-in-string new old string))
@@ -35,16 +36,16 @@
 	)
 )
 
-;-----------------------------------------------------------------
+;=================================================================
 ; Writes one link to a nastran .bdf file, stored in :nastran-data
-;----------------------------------------------------------------- 
+;================================================================= 
 (define-method write-nastran-bdf-file main-mechanism-class (link)
 	(the analysis nastran-interface run-nastran@ (:from link))
 )
 
-;----------------------------------------------------------------------
+;======================================================================
 ; Writes a fedem fmm file, stored in library\"mechanism-type"\"version"
-;----------------------------------------------------------------------
+;======================================================================
 (define-method write-fmm-model-file main-mechanism-class (&key from-opt?)
 	(let (
 		  (baseID 				2)
@@ -118,7 +119,8 @@
 									(get-joint-ID (the) male-element))
 								(setf baseID (1+ baseID))
 								(write-triad-to-fmm stream baseID triads-written
-									(get-rbe2-independent-node-coordinates male-element) -1 -1) ;;In FEDEM, -1 means that it's fixed to the ground
+									(get-rbe2-independent-node-coordinates male-element) -1 -1) ;;In FEDEM, 
+																	;;-1 means that it's fixed to the ground
 								(setf triads-written (1+ triads-written))
 							)
 							;;Case 2: female element exists, male does not
@@ -199,20 +201,21 @@
 								(case (get-type spring-damper)
 									('spring 
 										(write-spring-properties-to-fmm stream baseID 
-											(1+ (the index (:from spring-damper))) (get-stiffness spring-damper) 
+											(1+ (the index (:from spring-damper))) (get-stiffness 
+												spring-damper) 
 											(first connecting-triads) (second connecting-triads))
 									)
 									('damper
 										(write-damper-properties-to-fmm stream baseID 
-											(1+ (the index (:from spring-damper))) (get-damping spring-damper)
+											(1+ (the index (:from spring-damper))) (get-damping 
+												spring-damper)
 											(first connecting-triads) (second connecting-triads))
 									)
 								)
 							)
 						)
 					)
-				)
-				
+				)				
 				;; Loads
 				(loop for load in (get-loads !loads) do
 					(setf baseID (1+ baseID))
@@ -223,7 +226,8 @@
 						(progn 
 							(loop for tuple in triad-fe-node-list do 
 								(if (and (= (get-node-position loaded-node) (nth 1 tuple))
-										(= (1+ (the index (:from (get-owner-link loaded-node)))) (nth 2 tuple)))
+										(= (1+ (the index (:from (get-owner-link loaded-node)))) 
+											(nth 2 tuple)))
 									(setf load-triad-fe-node (nth 0 tuple))
 								)
 							)
@@ -286,9 +290,9 @@
 	)
 )
 
-;----------------------------------------------------------------
+;================================================================
 ; Below are self-explanatory helping functions for writing to fmm
-;---------------------------------------------------------------- 
+;================================================================ 
 (defun write-static-top-part-to-fmm (stream)
 	(progn 
 		(format stream "FEDEMMODELFILE {R7.0.4 ASCII}~2%")
@@ -520,8 +524,6 @@
 	)
 )
 
-
-
 (defun write-spring-properties-to-fmm (stream baseID ID stiffness triad1 triad2)
 	(format stream "AXIAL_SPRING~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
@@ -541,41 +543,7 @@
 )
 
 (defun write-analysis-properties-to-fmm (mechanism-type stream baseID loads-list)
-	;(if (equal "four-bar-i-beam" !mechanism-version)
-	;	(progn 
-	;		;;Graphs
-	;		;(let (
-	;		;	  (descr (list "Motor torque" "x-acceleration " "Motor velocity" "Tip placement"))
-	;		;	  (title (list "Motor torque [Nm]" "x-acceleration [m/sec2]" "Motor velocity [rad/sec]" "Tip Placement"))
-	;		;	  )
-	;		;	 (loop for i from 0 to 3 do
-	;		;		(setf baseID (1+ baseID))
-	;		;		(write-graph-definitions-to-fmm stream baseID (nth i descr) (1+ i) (nth i title))
-	;		;	 )
-	;		;)
-	;		
-	;		;;Curves. Need to set triad ids??
-	;		(let (
-	;			  (descr (list "\"Set 0\"" "\"Set 0\"" "\"Set 0\"" "\"Tip placement\""))
-	;			  (x-result (list "<\"SCALAR\",\"Physical time\">" "<\"SCALAR\",\"Physical time\">" 
-	;				  "<\"SCALAR\",\"Physical time\">" "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
-	;			  (x-oper (list "\"None\"" "\"None\"" "\"None\"" "\"Position X\""))
-	;			  (y-result (list "<\"Torque\",40,1,\"SCALAR\",\"Moment value\">" "<\"Triad\",10,9,\"VEC3\",\"Acceleration\">"
-	;				  "<\"Revolute joint\",21,1,\"SCALAR\",\"Rz joint variables\",\"Angular velocity\">" 
-	;				  "<\"Triad\",10,1,\"TMAT34\",\"Position matrix\">"))
-	;			  (y-object (list "1 FcLOAD" "9 FcTRIAD" "1 FcREV_JOINT" "1 FcTRIAD"))
-	;			  (y-oper (list "\"None\"" "\"X\"" "\"None\"" "\"Position Y\""))
-	;			  (legend "\"Triad [1], Position Y vs Triad [1], Position X\"")
-	;			  (x-object "1 FcTRIAD")
-	;			  )
-	;			 (loop for i from 0 to 3 do
-	;				(setf baseID (1+ baseID))
-	;				(write-curve-sets-to-fmm stream baseID (nth i descr) (1+ i) (1+ i) (nth i x-result) (nth i x-oper) 
-	;					(nth i y-result) (nth i y-object) (nth i y-oper) (if (= i 3) legend) (if (= i 3) x-object))
-	;			 )
-	;		)
-	;	)
-	;)
+	
 )
 
 (defun write-control-system-properties-to-fmm (stream baseID)
@@ -630,7 +598,8 @@
 	
 	;;Control i/oX
 	(let (
-		  (name (list "CONTROL_INPUT" "CONTROL_INPUT" "CONTROL_OUTPUT" "CONTROL_AMPLIFIER" "CONTROL_COMPARATOR"))
+		  (name (list "CONTROL_INPUT" "CONTROL_INPUT" "CONTROL_OUTPUT" "CONTROL_AMPLIFIER" 
+			  "CONTROL_COMPARATOR"))
 		  (IDs (list 1 2 1 1 1))
 		  (engine (list "2 FcENGINE" "3 FcENGINE" "0 0" "0 0" "0 0"))
 		  (position (list "-3.5 1 0" "-3.5 0 0" "2.5 0.5 0" "0.5 0.5 0" "-1.5 0.5 0"))
@@ -647,11 +616,8 @@
 	(format stream "ENGINE~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
 	(format stream "ID = ~d;~%" ID)
-	;(format stream "DESCR = ~a;~%" descr)
 	(format stream "MATH_FUNC = ~a;~%" math-func)
 	(format stream "SENSOR = ~a;~%}~2%" sensor)
-	;(format stream "ENTITY = ~d;~%" entity)
-	;(format stream "DOF = ~d;~%}~2%" dof)
 )
 
 (defun write-function-to-fmm (stream baseID ID scale)
@@ -729,13 +695,12 @@
 	(format stream "USE_TIME_RANGE = false;~%")
 	(format stream "X_AXIS_RANGE = 0 1;~%")
 	(format stream "Y_AXIS_RANGE = 0 0.001;~%}~2%")
-	;(format stream "TITLE = \"~a\";~%}~2%" title)
 )
 
-(defun write-curve-sets-to-fmm (stream baseID ID owner x-result x-oper y-result y-object y-oper &key legend x-object)
+(defun write-curve-sets-to-fmm (stream baseID ID owner x-result x-oper y-result y-object y-oper 
+		&key legend x-object)
 	(format stream "CURVE_SET~%{~%")
 	(format stream "BASE_ID = ~d;~%" baseID)
-	;(format stream "DESCR = ~a;~%" descr)
 	(format stream "EXPORT_AUTOMATICALLY = true;~%")
 	(format stream "FATIGUE_DOMAIN_START = 0;~%")
 	(format stream "FATIGUE_DOMAIN_STOP = 1;~%")

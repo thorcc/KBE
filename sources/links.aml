@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;=========================================
 ; Class: shape-model
 ; Defines the shape properties of a member
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================
 (define-class shape-model
   :inherit-from (object)
   :properties (
@@ -19,14 +19,14 @@
 (define-method get-cs-type shape-model ()
 	!cross-section-type
 )
-;-------------------------------------------------------------------------------------------------------------
+;============================
 ; END shape-model definitions
-;-------------------------------------------------------------------------------------------------------------
+;============================
 
-;-------------------------------------------------------------------------------------------------------------
+;====================================================
 ; Class: link-geometry-class 
 ; Generates a link's total geometry, including joints
-;-------------------------------------------------------------------------------------------------------------
+;====================================================
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
   :properties (
@@ -195,7 +195,7 @@
 		))
 	)
 )
- 
+  
 (define-method get-shapes-on-link link-geometry-class ()
 	(let (
 			(shape-list (make-sequence 'list (length !constraint-connection-combination) 
@@ -237,10 +237,10 @@
 		)
 )
 
-;----------------------------------------------------------
+;==========================================================
 ; Returns all possible connections with all incident joints
 ; Input: Number of incident joints
-;----------------------------------------------------------
+;==========================================================
 (defun connection-combinations (n)
 	(loop for j from 0 to (- n 2)
      append (loop for k from (1+ j) to (1- n)
@@ -249,9 +249,9 @@
      )
    )
 
-;--------------------------------------------------
-; Left-click button methods for link-geometry-class
-;--------------------------------------------------
+;=================================================
+; Left-click button methods for member-solid-model
+;=================================================
 (define-method work-area-button1-action link-geometry-class (params)
   (case params
 	(:set-c
@@ -274,10 +274,6 @@
 		)
 	 )
 	(:set-surface
-		;(change-value (the display? (:from (nth 0 (the surfaces-ref-list)))) (if (the display? (:from (nth 0 (the surfaces-ref-list)))) nil t))
-		
-		;(change-value (the display? (:from (get-surface (the) 0))) (if (the display? (:from (get-surface (the) 0))) nil t))
-		
 		(let (
 			  (display-value? (the display? (:from (nth 0 (the surfaces-ref-list)))))
 			)
@@ -285,27 +281,26 @@
 				(change-value (the display? (:from (get-surface (the) 0))) nil)
 				(change-value (the display? (:from (get-surface (the) 0))) t)
 			)
-			;(change-value (the display? (:from (nth 0 (the surfaces-ref-list)))) display-value)
-			;(setf display-value (the display? (:from (nth 0 (the surfaces-ref-list)))))
 		)
 	 )
     )
   )
-;-------------------------------------------------------------------------------------------------------------
+;====================================
 ; END link-geometry-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;====================================
 
-;-------------------------------------------------------------------------------------------------------------
+;========================================================================
 ; Class: link-model-class 
 ; Used to hold the link geometry, its mesh and the analysis as subobjects
-;-------------------------------------------------------------------------------------------------------------
+;========================================================================
 (define-class link-model-class
   :inherit-from (object)
   :properties (
                ;; properties set from parent init-form
                label											nil
 			   constraints-incident-on-link-list 				nil ;;List of joint-element-models
-               connection-between-2-constraints-combinations 	(list-combinations ^constraints-incident-on-link-list)
+               connection-between-2-constraints-combinations 	
+					(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
 			   
 			   optimization-object								(default nil)
@@ -316,7 +311,7 @@
 				   incident-constraints ^^constraints-incident-on-link-list
 				   optimization-object	^^optimization-object
                    )
-			   (link-mesh-model :class 'link-mesh-class
+               (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry
 				   link-model 				^superior
 				   joint-elements			^^constraints-incident-on-link-list
@@ -327,14 +322,14 @@
                    )
                )
   )
-  
+
 (defun get-blend-mesh-size (dimensions-list)
 	(loop for dim in dimensions-list do
 		minimize dim into min-size
 		finally (return (/ min-size 16))
 	)
 )
-  
+
 (define-method get-non-free-constraints-incident-on-link-list link-model-class ()
 	(when !constraints-incident-on-link-list
 		(loop for joint-element in !constraints-incident-on-link-list do
@@ -384,10 +379,10 @@
 	(the export-surface? (:from !analysis))
 )
  
-;-----------------------------------------------------------------
+;=================================================================
 ; Returns all possible connections with all incident joints
 ; Input: List of incident joints, OR the number of incident joints
-;-----------------------------------------------------------------
+;=================================================================
 (defun list-combinations (p)
   (let (
         (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ))))
@@ -400,6 +395,6 @@
       )
     )
   )
-;-------------------------------------------------------------------------------------------------------------
+;=================================
 ; END link-model-class definitions
-;-------------------------------------------------------------------------------------------------------------   
+;=================================

@@ -1,8 +1,7 @@
-
-;-------------------------------------------------------------------------------------------------------------
+;========================================================================
 ; Class: design-variable-class
 ; Holding the design variable value, as well as min and max values for it
-;-------------------------------------------------------------------------------------------------------------
+;========================================================================
 (define-class design-variable-class
 	:inherit-from (data-model-node-mixin)
 	:properties (
@@ -29,19 +28,19 @@
 (define-method get-max-value design-variable-class ()
 	!max-value
 )
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 ; END design-variable-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;======================================
 
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================================================
 ; Class: constraint-class
-; Holds properties needed for a constraint. constraint-value is the actual constraint value to be evaluated. 
-; limit is the right side value of the constraint equation. inequality-type is the relation between value and 
-; limit. For example, if value = -2, inequality-type = "<=" and limit = 0, means:
-; -2 <= 0
-; Penalty-weight-factor and penalty-power are penalty functions for the optimization, giving a penalty if
-; the constraint inequality is not satisfied
-;-------------------------------------------------------------------------------------------------------------
+; Holds properties needed for a constraint. constraint-value is the 
+; actual constraint value to be evaluated. Limit is the right side value of 
+; the constraint equation. inequality-type is the relation between value and 
+;limit. For example, if value = -2, inequality-type = "<=" and limit = 0, means: -2 <= 0
+; Penalty-weight-factor and penalty-power are penalty functions for the optimization, 
+; giving a penalty if the constraint inequality is not satisfied
+;=======================================================================================
 (define-class constraint-class
 	:inherit-from (object)
 	:properties (
@@ -67,14 +66,14 @@
 		)
 	)
 )
-;-------------------------------------------------------------------------------------------------------------
+;=================================
 ; END constraint-class definitions
-;-------------------------------------------------------------------------------------------------------------
+;=================================
 
-;-------------------------------------------------------------------------------------------------------------
+;========================================
 ; Class: general-optimization-model
 ; Superclass for all optimization classes
-;-------------------------------------------------------------------------------------------------------------
+;========================================
 (define-class general-optimization-model
 	:inherit-from (object)
 	:properties (
@@ -109,15 +108,15 @@
 		append (list link (get-material-type link))
 	)
 )
-;------------------------------------------------------------------------------------------------------------;
-; END general-optimization-model definitions																 ;
-;------------------------------------------------------------------------------------------------------------;
+;===========================================
+; END general-optimization-model definitions																 
+;===========================================
 
-;------------------------------------------------------------------------------------------------------------;
-; Class: cross-section-optimization-model																	 ;
-; Class for dealing with the optimization of one or more cross sections in the mechanism. The class and its  ;
-; methods assume that all cross sections to be optimized are equal.											 ;
-;------------------------------------------------------------------------------------------------------------;
+;========================================================================================
+; Class: cross-section-optimization-model																	 
+; Class for dealing with the optimization of one or more cross sections in the mechanism. 
+; The class and its methods assume that all cross sections to be optimized are equal.											 ;
+;========================================================================================
 (define-class cross-section-optimization-model
 	:inherit-from (general-optimization-model)
 	:properties (
@@ -220,11 +219,12 @@
 				 )
 )
 
-;-----------------------------------------------------------------------------------------------------------;
-; Returns the largest deformation of the mechanism simulated in FEDEM.										;
-; Will initiate a new simulation if it's the first run or if it's the beginning of a new generation.		;
-; For a new generation simulation, the best mechanism design from the previous generation will be simulated ;
-;-----------------------------------------------------------------------------------------------------------;
+;=========================================================================
+; Returns the largest deformation of the mechanism simulated in FEDEM.										
+; Will initiate a new simulation if it's the first run or if it's the 
+; beginning of a new generation. For a new generation simulation, the best 
+; mechanism design from the previous generation will be simulated 
+;=========================================================================
 
 
 (define-method run-fedem-simulation cross-section-optimization-model ()
@@ -241,10 +241,11 @@
 	(save-best-result-in-generation (the))
 )
 
-;----------------------------------------------------------------------------------------------------;
-; Deletes the files FEDEM use for reduction of the different parts, as well as any simulation files. ;
-; Requires that XEmacs runs in administrator mode, and that the fmm file is not open in FEDEM.		 ;
-;----------------------------------------------------------------------------------------------------;
+;==================================================================================
+; Deletes the files FEDEM use for reduction of the different parts, 
+; as well as any simulation files. Requires that XEmacs runs in administrator mode,
+; and that the fmm file is not open in FEDEM.		 
+;==================================================================================
 (define-method delete-all-previous-fmm-files cross-section-optimization-model ()
 	(when (probe-file !results-file-path)
 		(delete-file !results-file-path)
@@ -273,12 +274,13 @@
 	)
 )
 
-;------------------------------------------------------------------------------------------------------------;
-; This method returns the cross section area, which is the objective function of the optimization. Before it ;
-; returns the area, however, the current state of the optimization is saved. It assumes the use of the       ;
-; multi-objective genetic algorithm (multiga), and as such, at the end of each generation, will mesh the 	 ; 
-; best results in that generation, and run a FEDEM simulation on it.										 ;
-;------------------------------------------------------------------------------------------------------------;
+;===============================================================================
+; This method returns the cross section area, which is the objective function   
+; of the optimization. Before it returns the area, however, the current state of
+; the optimization is saved. It assumes the use of the multi-objective genetic  
+; algorithm (multiga), and as such, at the end of each generation, will mesh the
+; best results in that generation, and run a FEDEM simulation on it.		
+;===============================================================================
 (define-method handle-results-and-get-area cross-section-optimization-model ()
 	(when !first-run?
 		(reset-temporary-optimization-values (the))
@@ -311,10 +313,10 @@
 	)
 )
 
-;----------------------------------------------------------------------;
-; Normalized stress constraint for the max stress in the loaded links. ;
-; g(x) = (σ(x) / σ_yield) - 1										   ;
-;----------------------------------------------------------------------;
+;=====================================================================
+; Normalized stress constraint for the max stress in the loaded links.
+; g(x) = (σ(x) / σ_yield) - 1										  
+;=====================================================================
 (define-method get-stress-constraint-value cross-section-optimization-model ()
 	(loop for load in (get-loads-on-optimization-links (the))
 		maximize (- (/ (calculate-max-stress-in-cross-section (the) 
@@ -332,16 +334,16 @@
 	)
 )
 
-;--------------------;
-; To be implemented? ;
-;--------------------;
+;===================
+; To be implemented?
+;===================
 (define-method get-strain-constraint-value cross-section-optimization-model()
 	nil
 )
 
-;------------------------------;
-; σ = (M_torque / I_z) * y_max ;
-;------------------------------;
+;=============================
+; σ = (M_torque / I_z) * y_max
+;=============================
 (define-method calculate-max-stress-in-cross-section cross-section-optimization-model (&key torque force)
 	(if torque
 		(* (/ torque 											;;M_torque
@@ -364,9 +366,9 @@
 	)
 )
 
-;-----------------------------------------------------------------------------------;
-; Function that will continue calling itself until the results from FEDEM are ready ;
-;-----------------------------------------------------------------------------------;
+;==================================================================================
+; Function that will continue calling itself until the results from FEDEM are ready
+;==================================================================================
 (defun wait-for-fedem-results (results-file-path)
 	(unless (probe-file results-file-path)
 		(sleep 1)
@@ -374,10 +376,10 @@
 	)
 )
 
-;------------------------------------------------------------------------------------------;
-; For each change in the design variables, this method is called, adding the current state ;
-; to the iteration-results-list object													   ;
-;------------------------------------------------------------------------------------------;
+;=========================================================================================
+; For each change in the design variables, this method is called, adding the current state
+; to the iteration-results-list object													  
+;=========================================================================================
 (define-method add-iteration-result cross-section-optimization-model ()
 	(change-value !iteration-results-list 
 		(append !iteration-results-list 
@@ -389,10 +391,10 @@
 	)
 )
 
-;-------------------------------------------------------------------;
-; Method retrieving the best result from the iteration-results-list ;
-; Disregarding all results where the constraint is not held			;
-;-------------------------------------------------------------------;
+;==================================================================
+; Method retrieving the best result from the iteration-results-list
+; Disregarding all results where the constraint is not held			
+;==================================================================
 (define-method get-best-result cross-section-optimization-model ()
 	(let (
 			(min-area 		1.0e10)
@@ -420,14 +422,9 @@
 		)
 		(progn
 			(loop for result in !best-result-from-each-gen-list do
-				(if !max-allowed-deformation
-					(when (and (< (nth 1 (nth 0 result)) min-area) 
-							(< (nth 1 (nth 6 result)) !max-allowed-deformation))
-						(setf min-area (nth 1 (nth 0 result)))
-						(setf final-result result)
-					)
-					;; If no max allowed deformation exists, it should not be evaluated.
-					(when (< (nth 1 (nth 0 result)) min-area)
+				(if (and (< (nth 1 (nth 0 result)) min-area) 
+						(< (nth 1 (nth 6 result)) !max-allowed-deformation))
+					(progn
 						(setf min-area (nth 1 (nth 0 result)))
 						(setf final-result result)
 					)
@@ -438,9 +435,9 @@
 	)
 )
 
-;--------------------------------------------------------------------------;
-; Reads the result from fedem and stores all deformation entries in a list ;
-;--------------------------------------------------------------------------;
+;=========================================================================
+; Reads the result from fedem and stores all deformation entries in a list
+;=========================================================================
 (define-method read-results-from-file cross-section-optimization-model ()
     (if (probe-file !results-file-path)
         (with-open-file (file !results-file-path :direction :input)
@@ -458,9 +455,9 @@
     )
 )
 
-;---------------------------------------------------------------;
-; Retrieves the largest deformation from the fedem results list ;
-;---------------------------------------------------------------;
+;==============================================================
+; Retrieves the largest deformation from the fedem results list
+;==============================================================
 (define-method get-largest-deformation cross-section-optimization-model ()
 	(loop for deformation in (read-results-from-file (the))
 		maximize deformation into max-deformation
@@ -479,7 +476,8 @@
 			(change-value (the web-thickness dv-value) (nth 1 (nth 4 !final-result)))
 			(draw-sewn-wo-mesh !main-mech-ref)
 			(message-box "Final result!" 
-				(format nil "Width; ~d~%Height: ~d~%Flange: ~d~%Web: ~d~%Cross section area: ~d~%Max deformation: ~d~%" 
+				(format nil "Width; ~d~%Height: ~d~%Flange: ~d~%Web: ~d~%Cross section area: ~d~%Max 
+					deformation: ~d~%" 
 					(the width dv-value) (the height dv-value) (the flange-thickness dv-value) 
 					(the web-thickness dv-value) (nth 1 (nth 0 !final-result)) (nth 1 (nth 6 !final-result))) 
 					:mode :ok :width 400 :height 300)
@@ -491,8 +489,8 @@
 			(change-value (the web-thickness dv-value) (* 0.1 (nth 1 !init-values)))
 			(draw-sewn-wo-mesh !main-mech-ref)
 			(message-box "No result!" 
-				(format nil "None of the tested cross sections fulfilled the criterias for max stress and deformation. 
-					Change the init values and try again." :mode :ok :width 400 :height 300))
+				(format nil "None of the tested cross sections fulfilled the criterias for max stress and 
+					deformation. Change the init values and try again." :mode :ok :width 400 :height 300))
 		)
 	)
 )
@@ -503,10 +501,10 @@
 	(change-value !best-result-from-each-gen-list nil)
 )
 
-;--------------------------------------------------------------------------;
-; Initializes the design variable values and the objective function value, ;
-; from the values in the GUI											   ;
-;--------------------------------------------------------------------------;
+;=========================================================================
+; Initializes the design variable values and the objective function value,
+; from the values in the GUI											  
+;=========================================================================
 (define-method init-optimization-variables cross-section-optimization-model ()
 	(add-object (the continuous-variables (:from !parent-exploration-object))
 		'height
@@ -575,9 +573,9 @@
 	)
 )
 
-;----------------------------------------------------------------;
-; Left-click button actions for cross-section-optimization-model ;
-;----------------------------------------------------------------;				
+;===============================================================
+; Left-click button actions for cross-section-optimization-model
+;===============================================================				
 (define-method work-area-button1-action cross-section-optimization-model (params)
 	(case params
 		(:init-optimization-variables
@@ -596,9 +594,9 @@
 	)
 )
 
-;-------------------;
-; Get methods below ;
-;-------------------;
+;==================
+; Get methods below
+;==================
 (define-method get-width cross-section-optimization-model ()
 	(get-dv-value !width)
 )
@@ -629,20 +627,20 @@
 	)
 )
 
-;-------------------------------------------------------------------------------;
-; Used for retrieving the exploration-object when an AMOPT model has been added ;
-; to the main-mechanism-class													;
-;-------------------------------------------------------------------------------;
+;==============================================================================
+; Used for retrieving the exploration-object when an AMOPT model has been added
+; to the main-mechanism-class												
+;==============================================================================
 (define-method get-exploration-object cross-section-optimization-model ()
 	(first (children (the) :class 'dcms-exploration-object-manager-class))
 )
 
-;----------------------------------------;
-; Used for retrieving the multiga-object ;
-;----------------------------------------;
+;=======================================
+; Used for retrieving the multiga-object
+;=======================================
 (define-method get-multiga-object dcms-exploration-object-manager-class ()
 	(first (children (the) :class 'dcms-exploration-multiga-optimization-class))
 )
-;------------------------------------------------------------------------------------------------------------;
-; END cross-section-optimization-model definitions															 ;
-;------------------------------------------------------------------------------------------------------------;
+;=================================================
+; END cross-section-optimization-model definitions
+;=================================================

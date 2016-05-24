@@ -1,0 +1,5 @@
+Name				Link	Member	Cross-section	Dimensions	Points-list	Weights-list
+"Crank"				0		0		"rectangular"	"(0.1 0.02)"	
+"Connection-rod"	1		0		"rectangular"	"(0.1 0.02)"	
+"Cylinder"			3		0		"circular-tube"	"(0.5 0.5)"	
+"slider"			2		0		"circular"		"(0.4 0.4)"	
