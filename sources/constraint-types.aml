@@ -101,83 +101,6 @@
 ; END free-female-element definitions
 ;====================================
 
-;================================================
-; Class: fixed-constraint-class
-; A fixed constraint is a joint with no geometry. 
-; Fixed constraints has no geometry and indicates 
-; that the end of the incident link is held fixed
-;================================================
-(define-class fixed-constraint-class
-	:inherit-from (master-joint-model)
-	:properties (
-				 )
-)
-;=======================================
-; END fixed-constraint-class definitions
-;=======================================
- 
-;=========================================
-; Class: fixed-male-element
-; Male element of an fixed constraint type
-;=========================================
-(define-class fixed-male-element
-  :inherit-from (joint-element-model)
-  :properties (
-			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
-				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object	(get-mesh-database ^^link-mesh-model-object)
-					point-in-plane-coords	(get-rbe2-independent-node-coordinates ^superior)
-					plane-normal-vector		(get-direction-along-member 
-												(get-spline-frame-at-joint-element
-													(first (get-displayed-members-connected-to-joint-element 
-														^superior)) ^superior))
-					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
-					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
-														^^link-mesh-model-object)
-					color 							'green
-					line-width						3
-					)
-			   )
-  )
-;===================================
-; END fixed-male-element definitions
-;===================================
-
-;==========================================
-; Class: fixed-female-element
-; Female element of an free constraint type
-;==========================================
-(define-class fixed-female-element
-  :inherit-from (joint-element-model)
-  :properties (
-               z-translation (get-translational-z-value (the superior))
-			   (sub-point-ref :class 'sub-point-data-model
-                   orientation (list
-								(translate (list 0 0 ^z-translation))
-                                )
-                   )
-			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
-				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object	(get-mesh-database ^^link-mesh-model-object)
-					point-in-plane-coords	(get-rbe2-independent-node-coordinates ^superior)
-					plane-normal-vector		(get-direction-along-member 
-												(get-spline-frame-at-joint-element
-													(first (get-displayed-members-connected-to-joint-element 
-														^superior)) ^superior))
-					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
-					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
-														^^link-mesh-model-object)
-					color 							'green
-					line-width						3
-					)
-			   )
-  )
-;=====================================
-; END fixed-female-element definitions
-;=====================================
- 
 ;==============================
 ; Class: rigid-constraint-class
 ;==============================
@@ -248,7 +171,6 @@
 (define-class revolute-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-               diameter 0
                )
   )
 ;==========================================
@@ -544,8 +466,8 @@
 	:inherit-from (difference-object joint-element-model)
 	:properties (
 				  main-frame-object (get-main-frame (the superior))
-				  outer-radius (* ^max-width ^scale-factor)
-				  inner-radius (* ^outer-radius 0.6)
+				  outer-radius (+ ^max-width (- ^max-width ^inner-radius))
+				  inner-radius (/ (* 2 ^max-width) ^scale-factor)
 				
 				  union-list (when (and (plusp ^max-width) (plusp ^max-height) )
 					   (list !superior)

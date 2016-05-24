@@ -46,11 +46,8 @@
 	:properties (
 				 type					(default nil)
 				 constraint-value		(default nil)
-				 (limit	:class 'editable-data-property-class
-					formula	(default 0)
-					label 	(format nil "Limit for the difference in max ~a and yield ~a" ^type ^type)
-					)
-				 inequality-type		(default (nth 0 (list :lt :lteq :gt :gteq :eq))) 
+				 limit					(default 0)
+				 inequality-type		(default (nth 0 (list :lt :lteq :gt :gteq :eq))) ;;Default less than
 				 penalty-weight-factor	(default 10)
 				 penalty-power			(default 2)
 				 )
