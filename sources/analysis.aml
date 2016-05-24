@@ -1,4 +1,32 @@
 ;-------------------------------------------------------------------------------------------------------------
+; Class: RBE2-collection
+; Instantiates every RBE2 as a series-object
+;------------------------------------------------------------------------------------------------------------- 
+(define-class RBE2-collection
+	:inherit-from (series-object)
+	:properties (
+				 link-mesh-object 	nil ;;link-mesh-class
+				 constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
+				 
+				 class-expression 	'analysis-rigid-body-element-type-1-class
+				 series-prefix 		'rbe2
+				 quantity 			(length ^constraints-list)
+				 init-form '(
+							 independent-node-query-object 		(get-rbe2-independent-node 
+																	(nth ^index ^constraints-list))
+							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
+																	(nth ^index ^constraints-list))
+							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
+                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 )
+				 )
+	)
+;-------------------------------------------------------------------------------------------------------------
+; END RBE2-collection definitions
+;------------------------------------------------------------------------------------------------------------- 
+
+;-------------------------------------------------------------------------------------------------------------
 ; Class: analysis-link-model-class
 ; Used for creating objects for writing to the nastran bdf file.
 ; Can also be used to set up a load case for use in an AML analysis
@@ -10,10 +38,7 @@
 			   link-model						nil ;;link-model-class
                mesh-database-object 			(get-mesh-database ^mesh-model-object)
 			   export-surface? 					(default t)
-               
-               ;z-load 							(default -100.0)
-               ;analysis-type 					:linear-static
-               ;load-case-objects-list 			(list ^load-case-1)
+
                material-catalog-object 			^material-catalog
                materials-list 					(list (the material-name (:from ^material-selection)))
                property-set-objects-list 		(progn 
@@ -30,11 +55,11 @@
 			   element-set-3d-objects-list 		(if ^export-surface? 
 													nil (list ^link-analysis-solid-elements))
 				
-				
-               mesh-object 						(the link-mesh (:from ^mesh-model-object))
-               node-set-objects-list 			(list (the node-set (:from ^mesh-model-object)))
+               mesh-object 						(get-surface-mesh  ^mesh-model-object)
+               node-set-objects-list 			(get-all-node-objects-list ^mesh-model-object)
 			   
-			   rigid-body-element-objects-list	(get-rigid-body-element-objects-list ^mesh-model-object)
+			   rigid-body-element-objects-list	(children ^rbe2-list 
+													:class 'analysis-rigid-body-element-type-1-class)
 			   
 			   (material-selection :class 'option-property-class
 					options-list	(children ^^material-catalog)
@@ -67,26 +92,18 @@
                    query-objects-list	(get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object 	^^link-3D-material-properties
                    )
-               
+			    (rbe2-list :class 'RBE2-collection
+				   link-mesh-object		^^mesh-model-object
+				   )
+			   ;; Example subobjects for analysis in AML:--------------------------->
 			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
-                   target-object (the fixed-nodes (:from ^^mesh-model-object))
-                   tx 0.0
-                   ty 0.0
-                   tz 0.0
-                   mx 0.0
-                   my 0.0
-                   mz 0.0
                    )
                (nodal-load :class 'analysis-load-force-nodal-class
-                   target-object (the loaded-nodes
-                                   (:from ^^mesh-model-object))
-                   load-vector (list 0.0 0.0 ^^z-load)
                    )
                (load-case-1 :class 'analysis-load-case-class
-;;;                    load-objects-list (list ^nodal-load)
-;;;                    constraint-objects-list (list ^^fixed-nodes-constraint)
 				   )
-               (nastran-interface :class 'nastran-analysis-class
+               ;; <------------------------------------------------------------------
+			   (nastran-interface :class 'nastran-analysis-class
                    analysis-model-object ^superior
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) 
 								(the version-name (:from ^^version-selection)))

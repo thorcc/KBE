@@ -11,7 +11,6 @@
 ; Writes each link to a .stl file
 ;-------------------------------- 
 (define-method write-stl-files main-mechanism-class (path)
-	
 	(let( 
 			(corrected-path (concatenate (replace-all-in-string "/" "\\" path) "/Stl-files/"))
 		)
@@ -456,12 +455,12 @@
 			(if (equal "free" (get-constraint-type constraint))
 				(let* (
 						(dofs (get-degrees-of-freedom constraint))
-						(dof-list (list (if (position 1 dofs) "FREE" "FIXED")
-										(if (position 2 dofs) "FREE" "FIXED")
-										(if (position 3 dofs) "FREE" "FIXED")
-										(if (position 4 dofs) "FREE" "FIXED")
-										(if (position 5 dofs) "FREE" "FIXED")
-										(if (position 6 dofs) "FREE" "FIXED")))
+						(dof-list (list (if (position 1 dofs) "FIXED" "FREE")
+										(if (position 2 dofs) "FIXED" "FREE")
+										(if (position 3 dofs) "FIXED" "FREE")
+										(if (position 4 dofs) "FIXED" "FREE")
+										(if (position 5 dofs) "FIXED" "FREE")
+										(if (position 6 dofs) "FIXED" "FREE")))
 					)
 					(progn 
 						(format stream "FREE_JOINT~%{~%")

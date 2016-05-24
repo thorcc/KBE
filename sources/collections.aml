@@ -88,7 +88,7 @@
   
 (define-method get-constraints constraint-collection ()
 	(children (the) :class 'master-joint-model)
-)
+)  
   
 ;----------------------------------------------------------------
 ; Reads each line of the constraints file and adds this to a list 
@@ -276,8 +276,6 @@
 					""
 					'("Draw all link members" (button1-parameters :draw-without-mesh button3-parameters :draw-without-mesh)
 					ui-work-area-action-button-class)
-					'("Draw all link members with mesh" (button1-parameters :draw-with-mesh button3-parameters :draw-with-mesh)
-					ui-work-area-action-button-class)
 					""
 					'("Undraw" (button1-parameters :undraw button3-parameters :unset)
 					ui-work-area-action-button-class)
@@ -389,9 +387,6 @@
 		(:undraw
 			(undraw self)
 		)
-		(:draw-with-mesh
-			(draw self)
-		)
 	)
 	
 )
@@ -410,7 +405,7 @@
 				 collection-type 	'spring-damper
 				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
-				 class-expression	'(read-from-string (format nil "~a-model-class"
+				 class-expression	'(read-from-string (format nil "~a-model"
 										(nth 0 (nth !index !sd-list)))) 
 				 init-form '(
 							 label 					(format nil "~a" (nth 0 (nth ^index ^sd-list)))
@@ -436,11 +431,11 @@
 )
 
 (define-method get-springs spring-damper-collection ()
-	(children (the) :class 'spring-model-class)
+	(children (the) :class 'spring-model)
 )
 
 (define-method get-dampers spring-damper-collection ()
-	(children (the) :class 'damper-model-class)
+	(children (the) :class 'damper-model)
 )
 
 ;------------------------------------------------------------------
@@ -620,13 +615,6 @@
 			   final-link-ref-list (loop for link in ^link-ref-list
 										if (are-all-members-displayed? link)
 											collect link)
-											
-			   ;non-free-constraints-list (loop for constraint in (get-constraints ^constraints) do
-				;							  if (not (string-equal "free" (get-constraint-type constraint)))
-				;								  collect constraint)
-			   
-			   dv-ref-list (children ^design-variables :class 'design-variable-class)
-			   
 			   ;; mechanism-selection contains a list of folder-info-models to choose from
                (mechanism-selection :class 'option-property-class
                    labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
@@ -827,7 +815,7 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (the link-mesh-model tet-mesh elements-query (:from link)))
+			(draw (first (get-link-solid-mesh-elements-query-objects-list (get-mesh-model-object link))))
 		)
 	)
 )
@@ -836,7 +824,7 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (the link-mesh-model link-mesh elements-query (:from link)))
+			(draw (first (get-link-surface-mesh-elements-query-objects-list (get-mesh-model-object link))))
 		)
 	)
 )
