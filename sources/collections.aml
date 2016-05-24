@@ -280,11 +280,8 @@
 					'("Set all dimensions" (button1-parameters :set-d button3-parameters :unset)
 					ui-work-area-action-button-class)
 					""
-					'("Draw all link members" (button1-parameters :draw-without-mesh button3-parameters 
-						:draw-without-mesh)
-					ui-work-area-action-button-class)
-					'("Draw all link members with mesh" (button1-parameters :draw-with-mesh button3-parameters 
-						:draw-with-mesh)
+					'("Draw all link members" (button1-parameters :draw-without-mesh 
+						button3-parameters :draw-without-mesh)
 					ui-work-area-action-button-class)
 					""
 					'("Undraw" (button1-parameters :undraw button3-parameters :unset)
@@ -400,9 +397,6 @@
 		(:undraw
 			(undraw self)
 		)
-		(:draw-with-mesh
-			(draw self)
-		)
 	)
 	
 )
@@ -421,7 +415,7 @@
 				 collection-type 	'spring-damper
 				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
-				 class-expression	'(read-from-string (format nil "~a-model-class"
+				 class-expression	'(read-from-string (format nil "~a-model"
 										(nth 0 (nth !index !sd-list)))) 
 				 init-form '(
 							 label 					(format nil "~a" (nth 0 (nth ^index ^sd-list)))
@@ -848,6 +842,7 @@
 				(get-mesh-model-object link))))
 		)
 	)
+)
 
 ;=================================================
 ; Creates buttons to draw and export the mechanism 

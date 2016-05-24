@@ -132,7 +132,7 @@
 					mode 			'radio
 					options-list	(list t nil)
 					labels-list 	(list "Yes" "No")
-					formula 		(default nil)
+					formula 		(default t)
 					label 			"Automatic blending?"
 					)
 				

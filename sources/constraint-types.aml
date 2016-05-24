@@ -466,8 +466,8 @@
 	:inherit-from (difference-object joint-element-model)
 	:properties (
 				  main-frame-object (get-main-frame (the superior))
-				  outer-radius (* ^max-width ^scale-factor)
-				  inner-radius (* ^outer-radius 0.6)
+				  outer-radius (+ ^max-width (- ^max-width ^inner-radius))
+				  inner-radius (/ (* 2 ^max-width) ^scale-factor)
 				
 				  union-list (when (and (plusp ^max-width) (plusp ^max-height) )
 					   (list !superior)

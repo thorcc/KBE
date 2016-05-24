@@ -5,18 +5,19 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-               link-model 					nil ;;link-model-class
-               geometry-model-object 		nil ;;link-geometry-class
-			   joint-elements 				nil
+                link-model 					nil ;;link-model-class
+                geometry-model-object 		nil ;;link-geometry-class
+			    joint-elements 				nil ;;joint-element-models
 			   
-			   mesh-object 					(the (:from (the surface-tri-mesh)))
-			   		   
+			    mesh-object 					(the (:from (the surface-tri-mesh)))
+			   			   
 				rbe2-independent-node-list	(loop for element in ^joint-elements
-											collect (get-rbe2-independent-node element)
+												collect (get-rbe2-independent-node element)
 				)
-			   (node-set :class 'analysis-node-set-class
+
+				(node-set :class 'analysis-node-set-class
                    query-objects-list (append (if (get-export-surface ^link-model) 
-												(list (the nodes-query (:from ^^link-mesh)))
+												(list (the nodes-query (:from ^^mesh-object)))
 												(list (the nodes-query (:from ^^tet-mesh))))
 											^rbe2-independent-node-list
 											)
@@ -35,12 +36,12 @@
 					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
 														^superior))
 					)
-			   ;; Example subobjects for analysis in AML:---------------->
+			   ;; Example subobjects for analysis in AML:----->
 			   (fixed-nodes :class 'mesh-nodes-query-class
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
                    )
-               ; <--------------------------------------------------------
+               ; <-----
 			   )
   )
 
