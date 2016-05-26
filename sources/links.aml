@@ -111,7 +111,7 @@
 				   edge-ids			(get-intersecting-edges-list ^superior)
 				   radii			(loop for edge in ^edge-ids 
 										append (list (/ (the max-width (:from (first ^^incident-constraints)))
-														3)))
+														7)))
 				   
 				   tag-dimensions 	'(1 2 3)
 				   tag-attributes 	(list (/ (the max-element-size (:from (first ^^incident-constraints))) 2)
@@ -132,7 +132,7 @@
 					mode 			'radio
 					options-list	(list t nil)
 					labels-list 	(list "Yes" "No")
-					formula 		(default nil)
+					formula 		(default t)
 					label 			"Automatic blending?"
 					)
 				
@@ -180,8 +180,6 @@
 											append (list (vgl::intersection-geoms (list (copy-geom (the geom 
 														(:from !difference-element)))
 												geom)))))
-			;(non-free-joints (remove nil (loop for joint in !incident-constraints
-			;					append (unless (is-free-constraint joint)))))
 		)
 		(remove nil (loop for edge in difference-egde-list 
 			append (loop for member in members-diff-intersection
