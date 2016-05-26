@@ -148,10 +148,11 @@
 				 ;;Objective function
 				 area 					(handle-results-and-get-area !superior)
 				 
-				 ;FEDEM results
+				 ;;FEDEM results
 				 fedem-model-file		(format nil "~a\\model.fmm" ^current-path)
 				 results-file-path		(format nil "~a\\deformation.asc" ^current-path)
 				 
+				 ;;Used to call (get-area ...) on a cross-section-model
 				 (dummy-cs :class 'I-beam-section
 					 width 				(get-dv-value ^^width)
 					 height 			(get-dv-value ^^height)
@@ -301,7 +302,8 @@
 			(set-and-draw-final-result (the))
 		)
 	)
-	(get-total-area (the)) ;;Return value
+	(get-area !dummy-cs)
+	;(get-total-area (the)) ;;Return value
 )
 
 (define-method get-constraint-value cross-section-optimization-model ()
