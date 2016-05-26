@@ -311,7 +311,7 @@
 				   incident-constraints ^^constraints-incident-on-link-list
 				   optimization-object	^^optimization-object
                    )
-               (link-mesh-model :class 'link-mesh-class
+			   (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry
 				   link-model 				^superior
 				   joint-elements			^^constraints-incident-on-link-list

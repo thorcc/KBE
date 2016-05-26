@@ -95,7 +95,7 @@
   
 (define-method get-constraints constraint-collection ()
 	(children (the) :class 'master-joint-model)
-)
+)  
   
 ;================================================================
 ; Reads each line of the constraints file and adds this to a list 

@@ -147,10 +147,11 @@
 				 ;;Objective function
 				 area 					(handle-results-and-get-area !superior)
 				 
-				 ;FEDEM results
+				 ;;FEDEM results
 				 fedem-model-file		(format nil "~a\\model.fmm" ^current-path)
 				 results-file-path		(format nil "~a\\deformation.asc" ^current-path)
 				 
+				 ;;Used to call (get-area ...) on a cross-section-model
 				 (dummy-cs :class 'I-beam-section
 					 width 				(get-dv-value ^^width)
 					 height 			(get-dv-value ^^height)
@@ -265,7 +266,7 @@
 (define-method save-best-result-in-generation cross-section-optimization-model ()
 	(change-value !best-result-from-each-gen-list 
 		(append !best-result-from-each-gen-list 
-			(list (list (list 'area (get-total-area (the))) (list 'width (get-dv-value !width)) 
+			(list (list (list 'area (get-area !dummy-cs 'I-beam)) (list 'width (get-dv-value !width)) 
 				(list 'height (get-dv-value !height)) (list 'flange (get-dv-value !flange-thickness)) 
 				(list 'web (get-dv-value !web-thickness)) (list 'constraint (get-constraint-value (the)))
 				(list 'deformation (get-largest-deformation (the))))
@@ -303,7 +304,7 @@
 			(set-and-draw-final-result (the))
 		)
 	)
-	(get-total-area (the)) ;;Return value
+	(get-area !dummy-cs 'I-beam)
 )
 
 (define-method get-constraint-value cross-section-optimization-model ()
@@ -383,7 +384,7 @@
 (define-method add-iteration-result cross-section-optimization-model ()
 	(change-value !iteration-results-list 
 		(append !iteration-results-list 
-			(list (list (list 'area (get-total-area (the))) (list 'width (get-dv-value !width)) 
+			(list (list (list 'area (get-area !dummy-cs 'I-beam)) (list 'width (get-dv-value !width)) 
 				(list 'height (get-dv-value !height)) (list 'flange (get-dv-value !flange-thickness)) 
 				(list 'web (get-dv-value !web-thickness)) (list 'constraint (get-constraint-value (the))))
 			)
@@ -422,9 +423,14 @@
 		)
 		(progn
 			(loop for result in !best-result-from-each-gen-list do
-				(if (and (< (nth 1 (nth 0 result)) min-area) 
-						(< (nth 1 (nth 6 result)) !max-allowed-deformation))
-					(progn
+				(if !max-allowed-deformation
+					(when (and (< (nth 1 (nth 0 result)) min-area) 
+							(< (nth 1 (nth 6 result)) !max-allowed-deformation))
+						(setf min-area (nth 1 (nth 0 result)))
+						(setf final-result result)
+					)
+					;; If no max allowed deformation exists, it should not be evaluated.
+					(when (< (nth 1 (nth 0 result)) min-area)
 						(setf min-area (nth 1 (nth 0 result)))
 						(setf final-result result)
 					)
@@ -611,12 +617,6 @@
 
 (define-method get-web cross-section-optimization-model ()
 	(get-dv-value !web-thickness)
-)
-
-(define-method get-total-area cross-section-optimization-model ()
-	(loop for cs-type in !cs-types
-		sum (get-area !dummy-cs cs-type)
-	)
 )
 
 (define-method get-cs-types cross-section-optimization-model ()

@@ -1,6 +1,6 @@
 Point	Type			Link-incidence	Joint-direction		DOF		Joint-variable
 0		"revolute"		(4 0)			(1 0 0)	
-1		"solid-knuckle"	(0 1)			(1 0 0)	
+1		"knuckle"		(0 1)			(1 0 0)	
 2		"revolute"		(2 1)			(1 0 0)	
 3		"revolute"		(2 3)			(1 0 0)	
 4		"revolute"		(4 3)			(1 0 0)	
