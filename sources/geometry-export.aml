@@ -67,7 +67,6 @@
 					(format stream "LINK~%")
 					(format stream "{~%")
 					(format stream "BASE_ID = ~d;~%" baseID)
-					(format stream "COLOR = ~,2f ~,2f ~,2f;~%" (random 1.0) (random 1.0) (random 1.0))
 					(format stream "COORDINATE_SYSTEM = ~%")
 					(format stream "1.00000000 0.00000000 0.00000000 0.00000000~%")
 					(format stream "0.00000000 1.00000000 0.00000000 0.00000000~%")
