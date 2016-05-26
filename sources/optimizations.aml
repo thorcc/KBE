@@ -266,7 +266,7 @@
 (define-method save-best-result-in-generation cross-section-optimization-model ()
 	(change-value !best-result-from-each-gen-list 
 		(append !best-result-from-each-gen-list 
-			(list (list (list 'area (get-area !dummy-cs)) (list 'width (get-dv-value !width)) 
+			(list (list (list 'area (get-area !dummy-cs 'I-beam)) (list 'width (get-dv-value !width)) 
 				(list 'height (get-dv-value !height)) (list 'flange (get-dv-value !flange-thickness)) 
 				(list 'web (get-dv-value !web-thickness)) (list 'constraint (get-constraint-value (the)))
 				(list 'deformation (get-largest-deformation (the))))
@@ -304,7 +304,7 @@
 			(set-and-draw-final-result (the))
 		)
 	)
-	(get-area !dummy-cs)
+	(get-area !dummy-cs 'I-beam)
 )
 
 (define-method get-constraint-value cross-section-optimization-model ()
@@ -384,7 +384,7 @@
 (define-method add-iteration-result cross-section-optimization-model ()
 	(change-value !iteration-results-list 
 		(append !iteration-results-list 
-			(list (list (list 'area (get-area !dummy-cs)) (list 'width (get-dv-value !width)) 
+			(list (list (list 'area (get-area !dummy-cs 'I-beam)) (list 'width (get-dv-value !width)) 
 				(list 'height (get-dv-value !height)) (list 'flange (get-dv-value !flange-thickness)) 
 				(list 'web (get-dv-value !web-thickness)) (list 'constraint (get-constraint-value (the))))
 			)
