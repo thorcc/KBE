@@ -1,12 +1,12 @@
 Name					Link	Member		Cross-section		Dimensions				Points-list		Weights-list
 "Lower-wishbone l"		2		0			"rectangular"		(0.05 0.1)				(17)			(0.8)
-"Lower-wishbone r"		2		1			"rectangular"		(0.05 0.1)				(18)			(1)
-"Lower-wishbone m"		2		2			"rectangular"		(0.1 0.05)				(2)				(0.4)
-"Upper-wishbone l"		1		0			"circular"			(0.1 0.1)				(11 12 13)		(1 0.8 1)
-"Upper-wishbone r"		1		1			"circular"			(0.1 0.1)				(14 15 16)		(1 0.8 1)
+"Lower-wishbone r"		2		1			"rectangular"		(0.05 0.1)				(18 19)			(1 0.2)
+"Lower-wishbone m"		2		2			"rectangular"		(0.1 0.05)				(26 2 19)		(0.2 0.2 0.1)
+"Upper-wishbone l"		1		0			"circular"			(0.1 0.1)				(11 12 13 25)	(1 0.8 1 1)
+"Upper-wishbone r"		1		1			"circular"			(0.1 0.1)				(14 15 16 24)	(1 0.8 1 1)
 "Upper-wishbone m"		1		2			"nil"				(0.1 0.1)				(1)				(1)
-"Knuckle upper"			0		0			"rectangular"		(0.6 0.1 0.2 0.1)					
-"Knuckle lower"			0		1			"rectangular"		(0.6 0.1 0.2 0.1)	
+"Knuckle upper"			0		0			"rectangular"		(0.6 0.1 0.2 0.1)		(22 8)			(0.1 0.7)			
+"Knuckle lower"			0		1			"rectangular"		(0.6 0.1 0.2 0.1)	    (23 9)			(0.1 0.7)
 "Steering-link"			0		2			"rectangular"		(0.1 0.1)				(10)			(1)
 "Knuckle invis"			0		3			"nil"			
 "Knuckle invis"			0		4			"nil"			
