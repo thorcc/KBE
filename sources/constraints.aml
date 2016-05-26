@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;==============================================================
 ; Class: master-joint-model
 ; Used for holding male and female instantiations as subobjects
-;-------------------------------------------------------------------------------------------------------------
+;==============================================================
 (define-class master-joint-model
   :inherit-from (series-object frame-data-model)
   :properties (
@@ -60,7 +60,6 @@
 			   property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))  
 				(list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type)) 
 				(list
-					;(the superior toggle-mesh self)
 					'("Draw joint" (button1-parameters :draw-joint)
                                         ui-work-area-action-button-class)
 					""
@@ -81,10 +80,10 @@
 	!incident-links
 )
 
-;-----------------------------------------------------------------------------------------------
-; Calculates the dimensions by retrieving the biggest width and height from the incident members
-; Dimensions are scaled with the scale-factor
-;-----------------------------------------------------------------------------------------------
+;=======================================================================
+; Calculates the dimensions by retrieving the biggest width and height  
+; from the incident members. Dimensions are scaled with the scale-factor
+;=======================================================================
 (define-method calculate-dimensions master-joint-model ()
 	(let (
 		(max-w 0)
@@ -155,9 +154,9 @@
       )
     )
   )
-;-------------------------------------------------
+;=================================================
 ; Left-click button methods for master-joint-model
-;-------------------------------------------------
+;=================================================
 (define-method work-area-button1-action master-joint-model (params)
 	(case params
 		(:draw-joint
@@ -173,14 +172,14 @@
 		)
 	)
 )
-;-------------------------------------------------------------------------------------------------------------
+;===================================
 ; END master-joint-model definitions
-;-------------------------------------------------------------------------------------------------------------
+;===================================
 
-;-------------------------------------------------------------------------------------------------------------
+;==============================================
 ; Class: joint-element-model
 ; Superclass for male and female joint elements
-;-------------------------------------------------------------------------------------------------------------
+;==============================================
 (define-class joint-element-model
   :inherit-from (frame-data-model)
   :properties (
@@ -210,7 +209,8 @@
 			   
 			   link-mesh-model-object (get-mesh-model-object ^incident-link)
 			   
-			   members-connected-to-joint-element (loop for member in (get-members (get-link-geometry ^incident-link))
+			   members-connected-to-joint-element (loop for member in (get-members 
+														(get-link-geometry ^incident-link))
                                                     when (position !superior (get-joints-on-member member))
                                                     collect member
                                                     )
@@ -222,7 +222,6 @@
                    mesh-object	(get-surface-mesh (get-mesh-model-object ^^incident-link))
 				   color		'red
 				   line-width	3
-				   ;display? 	t
                    )
 			    property-objects-list (list 
 										'("Draw joint element geometry" (button1-parameters :draw-joint)
@@ -237,7 +236,7 @@
                )
   :subobjects (
                 (main-frame :class 'frame-data-model
-					;;; inherited frame properties used in main-frame and sub-frame
+					; Inherited frame properties used in main-frame and sub-frame
 					(x-vector-ref :class 'vector-data-model
 						direction (let (
 										(first-sweep (nth 0 ^members-connected-to-joint-element))
@@ -249,7 +248,8 @@
 														(get-joints-on-member first-sweep)
 														))))))
 											)
-										(x-dir-normal (cross-product ^^direction (cross-product ^^direction x-dir)))
+										(x-dir-normal (cross-product ^^direction 
+											(cross-product ^^direction x-dir)))
 									   )
 									   (if (equal 0 (vector-length x-dir-normal))
 											x-dir-normal
@@ -258,7 +258,7 @@
 									)
                     )
                 )
-				;;; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
+				; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
                (sub-frame :class 'sub-frame-data-model
                    )
                )
@@ -357,6 +357,6 @@
 		)
 	)
 )
-;-------------------------------------------------------------------------------------------------------------
+;====================================
 ; END joint-element-model definitions
-;-------------------------------------------------------------------------------------------------------------
+;====================================

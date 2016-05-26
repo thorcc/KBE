@@ -1,8 +1,7 @@
-
-;-------------------------------------------------------------------------------------------------------------
+;==============================
 ; Class: link-mesh-class
 ; Class responsible for meshing
-;------------------------------------------------------------------------------------------------------------- 
+;==============================
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
@@ -37,12 +36,12 @@
 					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
 														^superior))
 					)
-			   ;; Example subobjects for analysis in AML:---------------->
+			   ;; Example subobjects for analysis in AML:----->
 			   (fixed-nodes :class 'mesh-nodes-query-class
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
                    )
-               ; <--------------------------------------------------------
+               ; <-----
 			   )
   )
 
@@ -91,6 +90,6 @@
 (define-method get-node-position-in-query-list link-mesh-class (node-query-object)
 	(1+ (position node-query-object (the node-set query-objects-list)))
 )
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; END link-mesh-class definitions
-;------------------------------------------------------------------------------------------------------------- 
+;================================

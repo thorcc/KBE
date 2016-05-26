@@ -1,10 +1,10 @@
-;-------------------------------------------------------------------------------------------------------------
+;============================================================================
 ; Class: general-spring-damper-class
-; Superclass for spring-model and damper-model
-; Contains information about spring/damper start and end points, as well as which link(s) they are
-; connected to.
+; Superclass for spring-model-class and damper-model-class
+; Contains information about spring/damper start and end points, 
+; as well as which link(s) they are connected to.
 ; Has any link mesh nodes that the link/damper is connected to, as subobjects
-;-------------------------------------------------------------------------------------------------------------
+;============================================================================
 (define-class general-spring-damper-class 
 	:inherit-from (series-object)
 	:properties (
@@ -56,14 +56,14 @@
 (define-method get-type general-spring-damper-class ()
 	!type
 )
-;-------------------------------------------------------------------------------------------------------------
+;=========================
 ; END main-mechanism-class
-;-------------------------------------------------------------------------------------------------------------
+;=========================
 
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================================
 ; Class: spring-geometry-class
 ; Creates the visual representation for a spring in the mechanism system
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================================
 (define-class spring-geometry-class
 	:inherit-from (union-object)
 	:properties (
@@ -77,7 +77,8 @@
 		end-mid-point 		(add-points ^start-point (multiply-vector-by-scalar ^spring-direction 0.75))		
 		
 		x1-direction (normalize (arbitrary-normal-to-vector ^spring-direction))
-		x2-direction (compute-plane-normal ^start-point ^end-point (add-points ^start-mid-point ^x1-direction))
+		x2-direction (compute-plane-normal ^start-point ^end-point 
+			(add-points ^start-mid-point ^x1-direction))
 		
 		object-list (list ^coil ^start-line ^end-line ^start-spring ^end-spring)
 		
@@ -112,25 +113,26 @@
 		color		'purple
 	)	
 )
-;-------------------------------------------------------------------------------------------------------------
+;==========================
 ; END spring-geometry-class
-;-------------------------------------------------------------------------------------------------------------
+;==========================
 
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================================
 ; Class: damper-geometry-class
 ; Creates the visual representation for a damper in the mechanism system
-;-------------------------------------------------------------------------------------------------------------
+;=======================================================================
 (define-class damper-geometry-class
 	:inherit-from (union-object)
 	:properties (
 		start-point (default '(0 0 0)) 
 		end-point 	(default '(1 1 1)) 
 		damper-direction (subtract-points ^end-point ^start-point)
-		damper-width (/ (points-distance ^start-point ^end-point) 12)	;(the coordinates start-point) (the coordinates end-point)) 12)
+		damper-width (/ (points-distance ^start-point ^end-point) 12)
 		
 		x1-direction					(arbitrary-normal-to-vector ^damper-direction)
 		x1-negative-direction 			(multiply-vector-by-scalar ^x1-direction -1)
-		x2-direction					(compute-plane-normal ^start-point ^end-point (add-points ^start-mid-point (multiply-vector-by-scalar ^x1-direction ^damper-width)))
+		x2-direction					(compute-plane-normal ^start-point ^end-point 
+			(add-points ^start-mid-point (multiply-vector-by-scalar ^x1-direction ^damper-width)))
 		x2-negative-direction 			(multiply-vector-by-scalar ^x2-direction -1)
 		
 		cross-point 		(add-points ^start-point (multiply-vector-by-scalar ^damper-direction 0.4))
@@ -138,10 +140,11 @@
 		end-mid-point 		(add-points ^start-point (multiply-vector-by-scalar ^damper-direction 0.75))
 		
 	    object-list (list ^start-mid-line ^end-mid-line ^lower-cross-line1 ^upper-cross-line1 
-							^lower-cross-line2 ^upper-cross-line2 ^lower-box-line1 ^lower-box-line2 ^lower-box-line3 ^lower-box-line4
-							^upper-box-line1 ^upper-box-line2 ^upper-box-line3 ^upper-box-line4
-							^upper-cross-box-line1 ^upper-cross-box-line2 ^upper-cross-box-line3 ^upper-cross-box-line4
-							^box-line1 ^box-line2 ^box-line3 ^box-line4						
+							^lower-cross-line2 ^upper-cross-line2 ^lower-box-line1 ^lower-box-line2 
+							^lower-box-line3 ^lower-box-line4 ^upper-box-line1 ^upper-box-line2 
+							^upper-box-line3 ^upper-box-line4 ^upper-cross-box-line1 ^upper-cross-box-line2 
+							^upper-cross-box-line3 ^upper-cross-box-line4 ^box-line1 ^box-line2 
+							^box-line3 ^box-line4						
 							)
 		
 		(start-mid-line :class 'line-object
@@ -155,105 +158,145 @@
 		)
 		
 		(lower-cross-line1 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-negative-direction  ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction  ^^damper-width))
 		)		
 		(lower-cross-line2 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
 		)		
 		(upper-cross-line1 :class 'line-object
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-negative-direction  ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-negative-direction  ^^damper-width))
 		)	
 		(upper-cross-line2 :class 'line-object
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
 		)
 		
 		
 		(lower-box-line1 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
 		)		
 		(lower-box-line2 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
 		)
 		(lower-box-line3 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
 		)		
 		(lower-box-line4 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-direction  ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
+			point2 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-direction  ^^damper-width))
 		)		
 
 		(upper-box-line1 :class 'line-object
-			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
+			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
 		)		                             
 		(upper-box-line2 :class 'line-object 
-			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
+			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
 		)                                    
 		(upper-box-line3 :class 'line-object 
-			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
+			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
 		)		                             
 		(upper-box-line4 :class 'line-object 
-			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar ^^x1-direction  ^^damper-width))
+			point1 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point (multiply-vector-by-scalar 
+				^^x1-direction  ^^damper-width))
 		)		
 		
 		(upper-cross-box-line1 :class 'line-object
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
 		)		                             
 		(upper-cross-box-line2 :class 'line-object 
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
 		)                                    
 		(upper-cross-box-line3 :class 'line-object 
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
 		)		                             
 		(upper-cross-box-line4 :class 'line-object 
-			point1 (add-points ^^cross-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-			point2 (add-points ^^cross-point (multiply-vector-by-scalar ^^x1-direction  ^^damper-width))
+			point1 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
+			point2 (add-points ^^cross-point (multiply-vector-by-scalar 
+				^^x1-direction  ^^damper-width))
 		)
 		
 		(box-line1 :class 'line-object
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar ^^x1-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar 
+				^^x1-direction ^^damper-width))
 		)		                                 
 		(box-line2 :class 'line-object           
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point	 (multiply-vector-by-scalar ^^x2-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point	 (multiply-vector-by-scalar 
+				^^x2-direction ^^damper-width))
 		)                                        
 		(box-line3 :class 'line-object           
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar ^^x1-negative-direction ^^damper-width))
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar 
+				^^x1-negative-direction ^^damper-width))
 		)		                                 
 		(box-line4 :class 'line-object           
-			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar ^^x2-negative-direction ^^damper-width))
-		)
-		color		'red
+			point1 (add-points ^^start-mid-point (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
+			point2 (add-points ^^end-mid-point 	 (multiply-vector-by-scalar 
+				^^x2-negative-direction ^^damper-width))
+		)	
+		color		'red		
 	)
 )
 
 (defun get-mid-point (p1 p2)
 	(list (/ (+ (nth 0 p1) (nth 0 p2)) 2) (/ (+ (nth 1 p1) (nth 1 p2)) 2) (/ (+ (nth 2 p1) (nth 2 p2)) 2))
 )
-;-------------------------------------------------------------------------------------------------------------
+;==========================
 ; END damper-geometry-class
-;-------------------------------------------------------------------------------------------------------------
+;==========================
 
-;-------------------------------------------------------------------------------------------------------------
+;=====================================================================
 ; Class: damper-model
 ; Specifies the damper implementation of a general-spring-damper-class
-;-------------------------------------------------------------------------------------------------------------
+;=====================================================================
 (define-class damper-model 
 	:inherit-from (general-spring-damper-class damper-geometry-class)
 	:properties (
@@ -265,14 +308,14 @@
 (define-method get-damping damper-model ()
 	!damping
 )
-;-------------------------------------------------------------------------------------------------------------
+;=======================
 ; END damper-model
-;-------------------------------------------------------------------------------------------------------------
+;=======================
 
-;-------------------------------------------------------------------------------------------------------------
+;=====================================================================
 ; Class: spring-model
 ; Specifies the spring implementation of a general-spring-damper-class
-;-------------------------------------------------------------------------------------------------------------
+;=====================================================================
 (define-class spring-model
 	:inherit-from (general-spring-damper-class spring-geometry-class)
 	:properties (
@@ -284,15 +327,15 @@
 (define-method get-stiffness spring-model ()
 	!stiffness
 )
-;-------------------------------------------------------------------------------------------------------------
+;=======================
 ; END spring-model
-;-------------------------------------------------------------------------------------------------------------
+;=======================
 
-;-------------------------------------------------------------------------------------------------------------
+;=========================================================================
 ; Class: mesh-query-nodes-with-label-class
-; Is a mesh-query-nodes-from-interface-class, but with additional information about which link mesh it is
-; connected to
-;-------------------------------------------------------------------------------------------------------------
+; Is a mesh-query-nodes-from-interface-class, 
+; but with additional information about which link mesh it is connected to
+;=========================================================================
 (define-class mesh-query-nodes-with-label-class
 	:inherit-from (mesh-query-nodes-from-interface-class)
 	:properties (
@@ -305,13 +348,13 @@
 	!owner-link
 )
 
-;---------------------------------------------------------------------
+;=====================================================================
 ; Returns the position this node has in the link mesh nodes query list
-;---------------------------------------------------------------------
+;=====================================================================
 (define-method get-node-position mesh-query-nodes-with-label-class ()
 	(first !mesh-entities-list)
 )
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 ; END mesh-query-nodes-with-label-class
-;-------------------------------------------------------------------------------------------------------------
+;======================================
 

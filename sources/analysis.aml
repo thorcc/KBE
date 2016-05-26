@@ -1,7 +1,7 @@
-;-------------------------------------------------------------------------------------------------------------
+;===========================================
 ; Class: RBE2-collection
 ; Instantiates every RBE2 as a series-object
-;------------------------------------------------------------------------------------------------------------- 
+;=========================================== 
 (define-class RBE2-collection
 	:inherit-from (series-object)
 	:properties (
@@ -17,20 +17,22 @@
 							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
 																	(nth ^index ^constraints-list))
 							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 create-new-independent-node? 		nil ;; The node is added in the node-set manually
-                             id 								(+ 1 ^index) ;; Have to set the id manually, as default is 1 for each instance
+							 ;; The node is added in the node-set manually
+							 create-new-independent-node? 		nil 
+							 ;; Have to set the id manually, as default is 1 for each instance
+                             id 								(+ 1 ^index) 
 							 )
 				 )
 	)
-;-------------------------------------------------------------------------------------------------------------
+;================================
 ; END RBE2-collection definitions
-;------------------------------------------------------------------------------------------------------------- 
+;================================
 
-;-------------------------------------------------------------------------------------------------------------
+;==================================================================
 ; Class: analysis-link-model-class
 ; Used for creating objects for writing to the nastran bdf file.
 ; Can also be used to set up a load case for use in an AML analysis
-;-------------------------------------------------------------------------------------------------------------
+;==================================================================
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
@@ -85,7 +87,7 @@
 				    material-name 			(write-to-string (the material-name (:from ^material-selection)))
 					)
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
-                   query-objects-list	(get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
+                   query-objects-list (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object 	^^link-2D-material-properties
 				   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
@@ -95,14 +97,14 @@
 			    (rbe2-list :class 'RBE2-collection
 				   link-mesh-object		^^mesh-model-object
 				   )
-			   ;; Example subobjects for analysis in AML:--------------------------->
+			   ;; Example subobjects for analysis in AML:----->
 			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
                    )
                (nodal-load :class 'analysis-load-force-nodal-class
                    )
                (load-case-1 :class 'analysis-load-case-class
 				   )
-               ;; <------------------------------------------------------------------
+               ;; <-----
 			   (nastran-interface :class 'nastran-analysis-class
                    analysis-model-object ^superior
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) 
@@ -128,11 +130,11 @@
 	)
 )
 
-;------------------------------------------------------------
+;============================================================
 ; Method for circumventing AML bug when writing to bdf.
 ; Manually overwriting all material-properties for steel, 
 ; as well as adding the yield strength for Steel, API 5L X65.
-;------------------------------------------------------------
+;============================================================
 (define-method change-steel-properties material-catalog-class ()
 	(unless (nth 1 (nth 4 (the steel material-properties)))
 		(change-value (the steel material-properties)
@@ -146,11 +148,11 @@
 	)
 )
 
-;-----------------------------------------------------------
+;===========================================================
 ; Method for circumventing AML bug when writing to bdf.
 ; Manually overwriting all material-properties for aluminum, 
 ; as well as adding the yield strength for Aluminum 6061-T6
-;-----------------------------------------------------------
+;===========================================================
 (define-method change-aluminum-properties material-catalog-class ()
 	(unless (nth 1 (nth 4 (the aluminum material-properties)))
 		(change-value (the aluminum material-properties)
@@ -173,6 +175,6 @@
          )
    )
   )
-;-------------------------------------------------------------------------------------------------------------
+;==========================================
 ; END analysis-link-model-class definitions
-;-------------------------------------------------------------------------------------------------------------
+;==========================================

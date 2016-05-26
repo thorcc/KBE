@@ -1,10 +1,10 @@
-;;;--------------------------------------------------------------------------
-;;; System : :mechanism-system
-;;; Purpose : AML Mechanism Model
-;;;
-;;;
-;;; Authors : Anders Kristiansen, Eivind Kristoffersen, Rasmus Korvald Skaare
-;;;--------------------------------------------------------------------------
+;==========================================================================
+; System : :mechanism-system
+; Purpose : AML Mechanism Model
+;
+;
+; Authors : Anders Kristiansen, Eivind Kristoffersen, Rasmus Korvald Skaare
+;==========================================================================
 
 (in-package :AML)
 
