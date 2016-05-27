@@ -312,17 +312,16 @@
 ; Defines geometry for the ball male element
 ;===========================================
 (define-class ball-male-element
-  :inherit-from (union-object joint-element-model)
+  :inherit-from (tagging-object blend-class joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
 			   tag-dimensions '(1 2 3)
-               tag-attributes (list ^^max-element-size ^^min-element-size
+               tag-attributes (list (/ ^^max-element-size 4)  ^^min-element-size
                                     0 0.1 0 20.0 1.0e-5)
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-                            (list ^imprinted-stud ^imprinted-ball ^plate)
-                            )
-			   object-list (list ^imprinted-stud ^imprinted-ball ^plate)
-
+                            (list !superior)
+							)
+			   
                (imprinted-stud :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^stud
                    tag-dimensions '(1 2 3)
@@ -370,8 +369,25 @@
                    color 				'green
 				   line-width			3
                    )       
-               )
+               
+			   
+			   
+			   ;;Properties used for blend-class:
+			   (union-element :class 'union-object
+				    object-list (list ^imprinted-stud ^imprinted-ball ^plate)
+					)
+			   all-edges 		(vgl::k-sub-geoms (the geom (:from ^union-element)) 1)
+			   source-object	^union-element
+			   edge-ids			(loop for edge in ^all-edges
+									when (and (vgl::intersect-geom-p edge (the geom (:from ^plate)) edge)
+									(vgl::intersect-geom-p edge (the geom (:from ^stud)) edge)) 
+									collect edge)
+			   radii			(list (/ ^max-width 5))
+			   )
   )
+
+
+  
 ;==================================
 ; END ball-male-element definitions
 ;==================================
