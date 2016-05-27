@@ -482,8 +482,7 @@
 			(change-value (the web-thickness dv-value) (nth 1 (nth 4 !final-result)))
 			(draw-sewn-wo-mesh !main-mech-ref)
 			(message-box "Final result!" 
-				(format nil "Width; ~d~%Height: ~d~%Flange: ~d~%Web: ~d~%Cross section area: ~d~%Max 
-					deformation: ~d~%" 
+				(format nil "Flange Width: ~d~%Web Height: ~d~%Flange Thickness: ~d~%Web Thickness: ~d~%Cross Section Area: ~d~%Max Deformation: ~d~%" 
 					(the width dv-value) (the height dv-value) (the flange-thickness dv-value) 
 					(the web-thickness dv-value) (nth 1 (nth 0 !final-result)) (nth 1 (nth 6 !final-result))) 
 					:mode :ok :width 400 :height 300)
@@ -495,7 +494,7 @@
 			(change-value (the web-thickness dv-value) (* 0.1 (nth 1 !init-values)))
 			(draw-sewn-wo-mesh !main-mech-ref)
 			(message-box "No result!" 
-				(format nil "None of the tested cross sections fulfilled the criterias for max stress and 
+				(format nil "None of the tested cross sections fulfilled the criterias for max stress and~%
 					deformation. Change the init values and try again." :mode :ok :width 400 :height 300))
 		)
 	)
