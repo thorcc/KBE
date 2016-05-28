@@ -266,7 +266,7 @@
                
                (pin-hole :class 'cylinder-object
                    reference-object ^^main-frame-object
-                   height (* 4 ^^max-height ^^scale-factor)
+                   height ^^max-height
                    diameter (/ ^^max-width 2)
                    )
                 
