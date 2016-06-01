@@ -273,8 +273,13 @@
   :inherit-from (tagging-object general-sweep-class)
   :properties(
               mesh-size-factor (default 0.25) ;;25% of the member's smallest dimension
+			  (mesh-element-size :class 'editable-data-property-class
+					formula (calculate-mesh-size (the superior))
+					label "Mesh element size"
+					)
+			  
 			  tag-dimensions '(1 2 3)
-              tag-attributes (list (calculate-mesh-size (the superior)) .1
+              tag-attributes (list ^mesh-element-size .1
                                    0 0.1 0 20.0 1.0e-5)
               
               (display? :class 'flag-property-class
@@ -298,7 +303,7 @@
 						(the z-vector-ref (:from ^frame_A))
 					)	
 					(the z-vector-ref (:from ^frame_D))
-				)	
+				)
 			  z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
               
               ;;cross section dimension, width 0.04 / height 0.04
@@ -369,13 +374,14 @@
                                      (the superior width-end self)
                                      (the superior height-end self)
                                      (list (the superior display? self)
-                                           '(automatic-apply? t)
-                                           )
+                                           '(automatic-apply? t))
                                      '("Draw..." (button1-parameters :draw button3-parameters :draw)
                                        ui-work-area-action-button-class)
                                      '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
                                        ui-work-area-action-button-class)
 									   ""
+									   (list (the superior mesh-element-size self)
+                                           '(automatic-apply? t))
                                      )
               )
   :subobjects (
