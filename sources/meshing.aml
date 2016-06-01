@@ -27,11 +27,11 @@
 			   (mesh-database :class 'mesh-database-class
 					)
 			   (surface-tri-mesh :class 'paver-mesh-class
-					object-to-mesh 			^^geometry-model-object
-					mesh-database-object	^^mesh-database
-					element-shape 			:tri
-					element-size-method (nth 2 '(0 1 2))
-					curvature-refinement-method :isotropic-relative
+					object-to-mesh 				^^geometry-model-object
+					mesh-database-object		^^mesh-database
+					element-shape 				:tri
+					surface-element-size-method	(nth 2 '(0 1 2))
+					curvature-refinement-method	:isotropic-relative
 				
 					)
 			   (tet-mesh :class 'tet-mesh-class

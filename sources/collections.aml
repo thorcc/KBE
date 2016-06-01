@@ -768,7 +768,7 @@
 		 (max-y 0)
 		 (max-z 0)
 		)
-	   (loop for point in !point-ref-list do
+	   (loop for point in (get-points !points) do
 		 (progn
 			 (if (> (abs (nth 0 (get-coordinates point))) max-x)
 				(setf max-x (abs (nth 0 (get-coordinates point))))
