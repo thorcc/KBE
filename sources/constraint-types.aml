@@ -462,28 +462,28 @@
 ;====================================
   
 ;==========================================================
-; Class: solid-knuckle-constraint-class
+; Class: knuckle-constraint-class
 ; Holding knuckle male and female elements on instantiation
 ;==========================================================
-(define-class solid-knuckle-constraint-class  
+(define-class knuckle-constraint-class  
 	:inherit-from (master-joint-model)
 	:properties (
 				 )
  )
 ;===============================================
-; END solid-knuckle-constraint-class definitions
+; END knuckle-constraint-class definitions
 ;===============================================  
  
 ;================================================
-; Class: solid-knuckle-female-element
+; Class: knuckle-female-element
 ; Defines geometry for the knuckle female element
 ;================================================
-(define-class solid-knuckle-female-element
+(define-class knuckle-female-element
 	:inherit-from (difference-object joint-element-model)
 	:properties (
-				  main-frame-object (get-main-frame (the superior))
-				  outer-radius (+ ^max-width (- ^max-width ^inner-radius))
-				  inner-radius (/ (* 2 ^max-width) ^scale-factor)
+				  main-frame-object	(get-main-frame (the superior))
+				  inner-radius 		(/ ^max-width (expt ^scale-factor 2))
+				  outer-radius 		^max-width
 				
 				  union-list (when (and (plusp ^max-width) (plusp ^max-height) )
 					   (list !superior)
@@ -502,7 +502,7 @@
 				   
 				  (pin-hole :class 'cylinder-object
 					   reference-object ^main-frame-object
-					   height (* ^^inner-radius 4)
+					   height ^^max-height
 					   diameter ^^inner-radius
 					   )
 								  
@@ -527,14 +527,14 @@
 				)
  )
 ;=============================================
-; END solid-knuckle-female-element definitions
+; END knuckle-female-element definitions
 ;=============================================
  
 ;==============================================
-; Class: solid-knuckle-male-element
+; Class: knuckle-male-element
 ; Defines geometry for the knuckle male element
 ;============================================== 
-(define-class solid-knuckle-male-element
+(define-class knuckle-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
 			   main-frame-object (get-main-frame (the superior))
@@ -568,9 +568,9 @@
 				
 			   (subtracted-box :class 'box-object
 					reference-object ^main-frame-object
-					width (* ^^outer-radius 1.5)
-					height ^^outer-radius
-					depth ^^max-width
+					width 	(* ^^outer-radius 1.5)
+					height 	^^outer-radius
+					depth 	^^max-width
 					orientation (list
                                 (translate (list (- (* 0.75 ^^outer-radius) ^^inner-radius) 0 0 ))
                                 )
@@ -578,9 +578,9 @@
 			   
 			   (box :class 'box-object
 					reference-object ^main-frame-object
-					width (* ^^outer-radius 2)
-					height ^^outer-radius
-					depth (* ^^outer-radius 1.5)
+					width 	(* ^^outer-radius 2)
+					height 	^^outer-radius
+					depth 	(* ^^outer-radius 1.5)
 					orientation (list
                                 (translate (list (- ^^outer-radius ^^inner-radius) 0 0 ))
                                 )
@@ -655,5 +655,5 @@
                )
   )
 ;===========================================
-; END solid-knuckle-male-element definitions
+; END knuckle-male-element definitions
 ;===========================================

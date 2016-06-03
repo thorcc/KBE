@@ -5,15 +5,16 @@
 (define-class surface-model
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
-               members 		nil
-			   mesh-size-factor (default 4) ;;4 times the thicknes of the surface
-			   tag-dimensions '(1 2 3)
-               tag-attributes (list (calculate-mesh-size (the superior)) .1
-                                   0 0.1 0 20.0 1.0e-5)
+               members 				nil
+			   (mesh-element-size	:class 'editable-data-property-class
+					formula 	(default ^thickness)
+					label "Mesh element size"
+					)
+			   tag-dimensions 		'(1 2 3)
+               tag-attributes 		(list ^mesh-element-size .1
+										0 0.1 0 20.0 1.0e-5)
 									
-               
-			   
-			 (display? :class 'flag-property-class
+			  (display? :class 'flag-property-class
                  formula  (loop for i in ^edge-combination
                             when (or (not (the display? (:from (nth i ^members)))) 
 								  (not (the geom (:from (get-connection (nth i ^members))))))
@@ -26,8 +27,8 @@
 			   ;; The source-object has to be nil when it can't be displayed. Else there will be a null geom
                source-object (if ^display? ^surface nil)
 
-               ;; Surface thickness 20% of smallest cross-section height
-               thickness (* 0.2 (loop for i in ^edge-combination
+               ;; Surface thickness 40% of smallest cross-section height
+               thickness (* 0.4 (loop for i in ^edge-combination
                            minimize (get-height (get-cross-section_D (nth i ^members)))
                            ))
                front-thickness (/ ^thickness 2)
@@ -38,9 +39,9 @@
 						^members)))))
                property-objects-list (list 
                                       (list (the superior display? self)
-                                            '(automatic-apply? t)
-                                            )
-                                      )
+                                            '(automatic-apply? t))
+                                      (the superior mesh-element-size self)
+									  )
                )
   :subobjects (
                (surface :class 'surface-from-uv-curves-class
@@ -52,9 +53,6 @@
 			   )
   )
   
-(define-method calculate-mesh-size surface-model ()
-	(* !thickness !mesh-size-factor)
-)  
 ;==============================
 ; END surface-model definitions
 ;==============================

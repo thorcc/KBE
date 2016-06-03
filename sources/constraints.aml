@@ -195,9 +195,12 @@
                incident-link		nil ;;link-model-class
 			   constraint-type		(get-constraint-type ^master-joint-object)
 			   direction			(get-direction ^master-joint-object)
-			   max-element-size 	(when (and ^max-width ^max-height)
-										(/ (min ^max-width ^max-height) 8)
-										)
+			   (max-element-size	:class 'editable-data-property-class
+					formula 	(when (and ^max-width ^max-height)
+									(/ (min ^max-width ^max-height) 8)
+									)
+					label 		"Mesh element size"
+					)
 			   min-element-size 	(when (and ^max-width ^max-height)
 										(/ (min ^max-width ^max-height) 16)
 										)
@@ -232,6 +235,9 @@
 										""
 										'("Undraw" (button1-parameters :undraw)
 											ui-work-area-action-button-class)
+										""	
+										(list (the superior max-element-size self) 
+											'(automatic-apply? t))
 										)
                )
   :subobjects (

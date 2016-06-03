@@ -36,8 +36,6 @@
 			   source-object 	(if ^blend? ^blend-object ^difference-element)
 			   
                max-element-size 0.02
-               tag-dimensions 	'(1 2 3)
-               tag-attributes 	(list ^max-element-size .01 0 0.1 0 20.0 1.0e-5)
                default-shape 	(let(
 										(def (loop for shape in (children ^^^shapes :class 'shape-model)
 											 when (and
@@ -106,6 +104,19 @@
                    )
 				render 'shaded
 				
+				(blend? :class 'option-property-class
+					mode 			'radio
+					options-list	(list t nil)
+					labels-list 	(list "Yes" "No")
+					formula 		(default t)
+					label 			"Automatic blending?"
+					)
+				
+				(blend-mesh-element-size :class 'editable-data-property-class
+					formula	(default (/ (the max-element-size (:from (first ^incident-constraints))) 2))
+					label	"Blend mesh element size"
+					)
+				
 				(blend-object :class '(tagging-object blend-class)
 				   source-object	^^difference-element
 				   edge-ids			(get-intersecting-edges-list ^superior)
@@ -114,7 +125,7 @@
 														5)))
 				   
 				   tag-dimensions 	'(1 2 3)
-				   tag-attributes 	(list (/ (the max-element-size (:from (first ^^incident-constraints))) 4)
+				   tag-attributes 	(list ^blend-mesh-element-size
 										0 0.1 0 20.0 1.0e-5) 
 				   )
 				
@@ -127,14 +138,6 @@
                 ;;; simplify? t removes common boundaries in the geometry
 			    ;;; simplify? nil keeps them
 			    simplify? 	nil
-				
-				(blend? :class 'option-property-class
-					mode 			'radio
-					options-list	(list t nil)
-					labels-list 	(list "Yes" "No")
-					formula 		(default t)
-					label 			"Automatic blending?"
-					)
 				
 				property-objects-list (list
 										"Link sewn with incident joint element"
@@ -152,6 +155,8 @@
 										ui-work-area-action-button-class)
 										""
 										(list (the superior blend? self)
+											'(automatic-apply? t))
+										(list (the superior blend-mesh-element-size self)
 											'(automatic-apply? t))
 										;'("Add/remove surface" (button1-parameters :set-surface)
 										;ui-work-area-action-button-class)
