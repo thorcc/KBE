@@ -1,0 +1,3 @@
+Type		Point-from	Point-to	Incident-links
+"Spring"	27			21			(2 nil)
+"Damper"	27			21			(2 nil)
