@@ -1,2 +1,2 @@
 Type		Point	Direction			Magnitude	Loaded-link
-"Torque"	0		(0.0 0.0 -1.0)		100			0
+Torque		0		(0.0 0.0 -1.0)		100			0

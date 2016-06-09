@@ -13,8 +13,11 @@
 				 start-point-data-model	nil
 				 end-point-data-model	nil
 				 incident-links			nil
-				 stiffness-damping		nil
 				 type					nil
+				 (stiffness-damping :class 'editable-data-property-class
+					formula	(default nil)
+					label	(format nil "~a coefficient" ^type)
+					)
 				 
 				 start-point			(get-coordinates ^start-point-data-model)
 				 end-point				(get-coordinates ^end-point-data-model)
@@ -42,6 +45,18 @@
 							  color							'green
 							  line-width					5
 							 )
+				 
+				 property-objects-list (list
+										'("Draw" (button1-parameters :draw)
+												ui-work-area-action-button-class)
+										'("Draw connection nodes" (button1-parameters :draw-nodes)
+												ui-work-area-action-button-class)
+										'("Undraw" (button1-parameters :undraw)
+												ui-work-area-action-button-class)
+										""
+										(list (the superior stiffness-damping self) 
+												'(automatic-apply? t))
+										)
 				 )
 )
 
@@ -56,8 +71,24 @@
 (define-method get-type general-spring-damper-class ()
 	!type
 )
+
+(define-method work-area-button1-action general-spring-damper-class (params)
+	(case params
+		(:draw
+			(draw self :draw-subobjects? nil)
+		)
+		(:draw-nodes
+			(loop for node in (children (the)) do
+				(draw node)
+			)
+		)
+		(:undraw 
+			(undraw self)
+		)
+	)
+)
 ;=========================
-; END main-mechanism-class
+; END general-spring-damper-class
 ;=========================
 
 ;=======================================================================

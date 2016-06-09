@@ -122,6 +122,11 @@
 					label 		"Scaling load"
 				 )				 
 				 property-objects-list (list
+										'("Draw geometry" (button1-parameters :draw)
+											ui-work-area-action-button-class)
+										'("Draw connection nodes" (button1-parameters :draw-node)
+												ui-work-area-action-button-class)
+										""
 										(list (the superior type self)
 											'(automatic-apply? t))
 										(list (the superior load-point self)
@@ -152,6 +157,20 @@
 					line-width						5
 					)
 				)
+)
+
+(define-method work-area-button1-action load-model (params)
+	(case params
+		(:draw
+			(draw self :draw-subobjects? nil)
+		)
+		(:draw-node
+			(draw !loaded-node)
+		)
+		(:undraw 
+			(undraw self)
+		)
+	)
 )
 
 (define-method get-load-point load-model ()
