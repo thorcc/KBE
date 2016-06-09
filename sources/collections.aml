@@ -683,6 +683,7 @@
 			   mechanism-type (the folder (:from ^mechanism-selection))
 			   mechanism-version (format nil "~a-~a" ^mechanism-type (the version-name 
 				   (:from ^version-selection)))
+			   fedem-model-file	(format nil "~a\\model.fmm" (get-version-path !version-selection))	
 			   (shapes :class 'shape-collection
                    )
 				   
@@ -877,8 +878,12 @@
 			(write-stl-files (the) (get-version-path !version-selection))
 		)
 		(:export-fedem
+			;(progn 
 			(write-nastran-bdf-files (the))
 			(write-fmm-model-file (the))
+		(run-program 	(format nil "start ~a" !fedem-model-file) :windows-batch-file? t :show-window :hide)
+			
+			;)
 		)
 	)
 )
