@@ -58,7 +58,7 @@
                visible-members-ref-list 			(children ^sweeps :class 'member-solid-model 
 														:test '!display?)
 
-               union-list 							(loop for constraint in ^incident-constraints
+			   union-list 							(loop for constraint in ^incident-constraints
 														append (get-joint-union-list constraint)
 														)
                difference-list 						(loop for constraint in ^incident-constraints
