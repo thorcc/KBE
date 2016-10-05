@@ -1,49 +1,96 @@
-About
-------
+AML Mechanism system (Updated 26.09.16)
+https://github.com/NTNU-IPM/KBE
+
+========
+
 The mechanism system is an application for automating mechanism design.
 It is written in the Adaptive Modeling Language (AML).
 
+Features
+========
 
-Integrating with AML (on Windows)
----------------------------------
-In the folder where AML is installed, usually:
-C:\Program Files\Technosoft\AML\"AML-version",
-add a line in logical.pth that looks like this:
-:mechanism-system	"path-to-the-mechanism-system-folder"
+- Automatic generation and meshing of 3D-models
+- Exports pre-processed files to FEDEM
 
-The system requires the module 
-aml-analysis-module-pack-type-3
 
-To load this module, write 
-(load-module "aml-analysis-module-pack-type-3" :path "path-to-the-module-folder")
-in aml-init.tsi, also found in the folder where AML is installed.
+Required software
+=========
 
-When in AML's Main Modeling Form, the new model from class has to be 
-main-mechanism-class
+AML 6.31
+Siemens PLM Software NX (with NX Nastran)
+Fedem
 
-If the paths from the :tmp and :temp entries in logical.pth does not exist,
-change the paths or create the subsequent folder
+Installation
+========
 
-For Nastran export:
+To install the AML mechanism system, the files logical.pth and aml-init.tsi
+have to be modified, they are placed in the root of the AML isntallation folder,
+usually:
+    "C:\Program Files\Technosoft\AML\AML6.31.1_x64\"
+
+
+In logical.pth add this line:
+    :mechanism-system "Path to the folder of the mechanism-system "
+
+e.g.:
+    :mechanism-system "C:\AML\NTNU-IPM-KBE-d87408d\"
+
+Create the folder "analysis" in the temp folder.
+    "C:\temp\analysis\"
+
+Note: If the paths from the :tmp and :temp entries in logical.pth does not exist,
+      change the paths or create the subsequent folder
+
+
+Modules
+--------
+Required modules:
+    aml-analysis-module-pack-type-3
+    aml-analysis-module-pack-type-3_ui
+    amsketcher-module
+
+
+To install, place the reqiured modules in the modules folder,
+and add these lines in aml-init.tsi:
+
+    (load-module "aml-analysis-module-pack-type-3")
+    (load-module "amsketcher-module")
+    (load-module "aml-analysis-module-pack-type-3_ui")
+
+
+Modules folder: "C:\Program Files\Technosoft\AML\AML6.31.1_x64\modules\"
+
+
+Nastran export
+-----------
 Add the following entries in logical.pth:
-1) :nastran-path, pointing to the \bin\ folder
-in your Nastran installation folder, e.g: 
-"C:\Program Files\Siemens\NX 10.0\NXNASTRAN\bin\"
 
-2) :nastran-data, pointing to wherever the nastran output files is to be stored
+    :nastran-path, pointing to the \bin\ folder in your Nastran installation folder
+    :nastran-data, pointing to wherever the nastran output files is to be stored
 
-For AMOpt:
+e.g.:
+    :nastran-path "C:\Program Files\Siemens\NX 10.0\NXNASTRAN\bin\"
+    :nastran-data "C:\AML\NTNU-IPM-KBE\nastran-data\"
 
 
-Optional:
-For automatic compilation of the system on AML startup, write
-(compile-system :mechanism-system)
+Automatic startup (optional)
+------------
+For automatic startup of the mechanism system on AML startup,
+add these lines in aml-init.tsi:
 
-in aml-init.tsi.
+    (compile-system :mechanism-system)
+    (create-model 'main-mechanism-class)
+    (display-sketcher-main-form)
+
+
+AMOpt
+------------
+???
+
 
 
 Authors
--------
+=======
 Anders Kristiansen
 Eivind Kristoffersen
 Rasmus Korvald Skaare
