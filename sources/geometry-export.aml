@@ -4,6 +4,10 @@
 (define-method write-nastran-bdf-files main-mechanism-class ()
 	(loop for link in !final-link-ref-list do
 		(write-nastran-bdf-file (the) link)
+		(run-program (format nil "pythonw.exe ~a ~a" (concatenate "\"" (logical-path :mechanism-system "bdf_fixer.py") "\"") (concatenate "\""
+              (logical-path :nastran-data)
+              (the analysis nastran-interface model-name (:from link)) "\\"
+              (the analysis nastran-interface nastran-file-name (:from link)) "\"")))
 	)
 )
 
