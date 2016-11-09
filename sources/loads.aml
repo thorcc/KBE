@@ -8,40 +8,40 @@
 				 load-point		nil
 				 mechanism-size	nil
 				 type 			nil
-				 direction		nil			 
+				 direction		nil
 				 ;;This defines the line length, controlled by the size of the mechanism
 				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^direction)
-									(/ ^mechanism-size 6))) 
+									(/ ^mechanism-size 6)))
 				 total-vector 	(subtract-points ^end-point ^load-point)
 				 translation	(/ ^mechanism-size 40)
-				 
+
 				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^direction))
 				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
-				 arrow-vector1 				(add-points 
-												(add-points ^load-point (multiply-vector-by-scalar 
+				 arrow-vector1 				(add-points
+												(add-points ^load-point (multiply-vector-by-scalar
 													^total-vector 0.2)) ;; Small portion of the total line
-												(multiply-vector-by-scalar ^random-direction-normal 
-													(/ ^mechanism-size 70)) ;; How far the arrow points 
-											)								;; move from the line 
-				 arrow-vector2 				(add-points 
-												(add-points ^load-point (multiply-vector-by-scalar 
-													^total-vector 0.2)) ;; This is the small portion 
+												(multiply-vector-by-scalar ^random-direction-normal
+													(/ ^mechanism-size 70)) ;; How far the arrow points
+											)								;; move from the line
+				 arrow-vector2 				(add-points
+												(add-points ^load-point (multiply-vector-by-scalar
+													^total-vector 0.2)) ;; This is the small portion
 																		;; of the total line
-												(multiply-vector-by-scalar ^negative-random 
-													(/ ^mechanism-size 70)) 
-											)			 
+												(multiply-vector-by-scalar ^negative-random
+													(/ ^mechanism-size 70))
+											)
 				 object-list (case ^type
 							  ('force (list ^line ^arrow1 ^arrow2 ))
 							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
-							  ) 
-				 
+							  )
+
 				 (line :class 'line-object
 					point1 ^^load-point
 					point2 ^^end-point
 					)
 				 (arrow1 :class 'line-object
 					point1 ^^load-point
-					point2 ^^arrow-vector1 
+					point2 ^^arrow-vector1
 					)
 				 (arrow2 :class 'line-object
 					point1 ^^load-point
@@ -65,7 +65,7 @@
 						('force 'orange)
 						('torque 'red)
 						)
-				 orientation (list (translate 
+				 orientation (list (translate
 									(multiply-vector-by-scalar (normalize ^direction) (* -1 ^translation))
 									))
 				 line-width 1
@@ -86,7 +86,7 @@
 				 mechanism-size		(default nil) ;;Greatest distance within the mechanism
 				 load-point-object	(default nil) ;;point-data-model
 				 mesh-model-object	(get-mesh-model-object ^loaded-link)
-				 
+
 				 (type :class 'option-property-class
 					mode 			'radio
 					options-list	(list 'force 'torque)
@@ -120,7 +120,7 @@
 					unit-in 	^current-load
 					unit 		^current-load
 					label 		"Scaling load"
-				 )				 
+				 )
 				 property-objects-list (list
 										'("Draw geometry" (button1-parameters :draw)
 											ui-work-area-action-button-class)
@@ -139,17 +139,17 @@
 										)
 										(list (the superior direction self)
 											'(automatic-apply? t))
-					)		 
+					)
 				)
 	:subobjects (
-				 (loaded-node :class 'mesh-query-nodes-with-label-class 
+				 (loaded-node :class 'mesh-query-nodes-with-label-class
 					label							"loaded-node"
 					owner-link						^^loaded-link
 					mesh-database-object 			(get-mesh-database ^^loaded-link)
 					interface-object 				^^load-point-object
 					subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
 															^^mesh-model-object)
-														(get-rbe2-independent-node-list 
+														(get-rbe2-independent-node-list
 															^^mesh-model-object))
 					tolerance						1.0e3
 					quantity						1
@@ -167,7 +167,7 @@
 		(:draw-node
 			(draw !loaded-node)
 		)
-		(:undraw 
+		(:undraw
 			(undraw self)
 		)
 	)

@@ -1,6 +1,6 @@
 ;===========================================================================
 ; Class: collection-class
-; Superclass for the different collection types, to let them have access to 
+; Superclass for the different collection types, to let them have access to
 ; the same read-from-file method
 ;==========================================================================
 (define-class collection-class
@@ -11,13 +11,13 @@
   )
 
 ;=====================================================
-; Checks whether a specific file is accessible or not, 
+; Checks whether a specific file is accessible or not,
 ; if so then the corresponding read method is executed
 ;=====================================================
 (define-method read-from-file collection-class ()
   (let (
         (file-name (write-to-string !collection-type ))
-        (file-path (logical-path (the version-path (:from ^version-selection)) 
+        (file-path (logical-path (the version-path (:from ^version-selection))
 			(concatenate file-name ".txt")))
         (function-name (read-from-string (concatenate "read-" file-name "-from-file")) )
         )
@@ -39,26 +39,26 @@
 ;================================
 ; END collecion-class definitions
 ;================================
-  
+
 ;================================================================================================
 ; Class: constraint-class
 ; Executes the read-from-file method and creates the corresponding subobjects for the constraints
-;================================================================================================ 
+;================================================================================================
 (define-class constraint-collection
   :inherit-from (series-object collection-class)
-  :properties (	
+  :properties (
                links-list 		nil ;;Set as link-model-class objects
 			   collection-type 	'constraints
                constraint-list 	(cdr (read-from-file !superior))
                quantity 		(length ^constraint-list)
                series-prefix 	'c
-               class-expression	'(read-from-string (concatenate 
-									(nth 1 (nth !index !constraint-list)) "-constraint-class")) 
+               class-expression	'(read-from-string (concatenate
+									(nth 1 (nth !index !constraint-list)) "-constraint-class"))
 									;;The "-constraint-classes" are master-joint-models
-			   
+
 			   init-form '(
                            point-ref 			(nth (nth 0 (nth !index ^constraint-list)) ^point-ref-list)
-                           label 				(concatenate (nth 1 (nth !index ^constraint-list)) " " 
+                           label 				(concatenate (nth 1 (nth !index ^constraint-list)) " "
 							   (write-to-string (nth 2 (nth !index ^constraint-list))))
 						   constraint-type 		(nth 1 (nth !index ^constraint-list))
                            link-incidence 		(nth 2 (nth !index ^constraint-list))
@@ -66,21 +66,21 @@
 						   degrees-of-freedom	(nth 4 (nth !index ^constraint-list))
                            constraint-variable	(nth 5 (nth !index ^constraint-list))
 						   incident-links		(let (
-													  (link1 (if (first (nth 2 
+													  (link1 (if (first (nth 2
 																(nth !index ^constraint-list)))
-															(nth (first (nth 2 
+															(nth (first (nth 2
 																(nth !index ^constraint-list))) ^links-list)
 															))
-													  (link2 (if (second (nth 2 
+													  (link2 (if (second (nth 2
 																(nth !index ^constraint-list)))
-															(nth (second (nth 2 
+															(nth (second (nth 2
 																(nth !index ^constraint-list))) ^links-list)
 															))
 													  )
 													  (remove nil (list link1 link2))
 												)
                            )
-						   
+
                property-objects-list (list
 									  '("Draw all joints" (button1-parameters :draw-joints )
                                         ui-work-area-action-button-class)
@@ -92,13 +92,13 @@
 									  )
 			   )
   )
-  
+
 (define-method get-constraints constraint-collection ()
 	(children (the) :class 'master-joint-model)
-)  
-  
+)
+
 ;================================================================
-; Reads each line of the constraints file and adds this to a list 
+; Reads each line of the constraints file and adds this to a list
 ;================================================================
 (defun read-constraints-from-file (stream)
   (when stream
@@ -111,23 +111,23 @@
       collect c-data
       )
     )
-  )  
+  )
 ;====================================================
 ; Left click button methods for constraint-collection
 ;====================================================
 (define-method work-area-button1-action constraint-collection (params)
 	(case params
 		(:draw-joints
-			(loop for constraint in (get-constraints (the)) do 
-				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+			(loop for constraint in (get-constraints (the)) do
+				(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string
 						(object-name constraint))) :show-system-error? nil)
 					(draw constraint))
 			)
 		)
 		(:draw-rbe2
-			(loop for constraint in (get-constraints (the)) do 
+			(loop for constraint in (get-constraints (the)) do
 				(loop for joint-element in (children constraint) do
-					(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string 
+					(with-error-handler (:error-message (concatenate "Error drawing " (write-to-string
 							(object-name constraint))) :show-system-error? t)
 						(draw (get-rbe2-dependent-nodes joint-element))
 						(draw (get-rbe2-independent-node joint-element))
@@ -136,7 +136,7 @@
 			)
 		)
 		(:undraw
-			(loop for constraint in (get-constraints (the)) do 
+			(loop for constraint in (get-constraints (the)) do
 				(loop for joint-element in (children constraint) do
 					(undraw (get-rbe2-dependent-nodes joint-element))
 					(undraw (get-rbe2-independent-node joint-element))
@@ -144,7 +144,7 @@
 			)
 			(undraw self)
 		)
-	)  
+	)
 )
 ;======================================
 ; END constraint-collection definitions
@@ -164,7 +164,7 @@
                series-prefix 	'p
                init-form '(
 						   label 		(nth 0 (nth ^index ^points-list))
-                           coordinates	(list (nth 1 (nth ^index ^points-list)) 
+                           coordinates	(list (nth 1 (nth ^index ^points-list))
 							   (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
 						   id 			^index
                            )
@@ -184,7 +184,7 @@
       until (equal line :eof)
 	  for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
 	  for coord-line = (list
-		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls)) 
+		(read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls))
 			(read-from-string (nth 6 ls)) (nth 7 ls) )
       collect coord-line
       )
@@ -193,7 +193,7 @@
 ;=================================
 ; END point-collection definitions
 ;=================================
-  
+
 ;===========================================================================================
 ; Class: shape-collection
 ; Executes the read-from-file method and creates the corresponding subobjects for the shapes
@@ -234,7 +234,7 @@
      until (equal line :eof)
      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
      for shape-data = (list
-                       (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls)) 
+                       (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls))
 					   (nth 4 ls) (nth 5 ls) (nth 6 ls)
                        )
      collect shape-data
@@ -258,7 +258,7 @@
                    label "Cross-section Type"
                    mode 'menu
                    formula (nth 0 !options-list)
-				   
+
 				   ;Returns all classes that inherits from cross-section-model, i.e. all cross-sections
                    options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
                    labels-list (loop for option in !options-list
@@ -268,19 +268,19 @@
                common-width 0.04
                common-height 0.04
                property-objects-list (list
-					(list (the superior cross-section-type self) 
+					(list (the superior cross-section-type self)
 					'(automatic-apply? t))
 					'("Set all cross-sections" (button1-parameters :set-c button3-parameters :unset)
 					ui-work-area-action-button-class)
-					
+
 					(list (the superior common-width self)
 					'(automatic-apply? t))
-					(list (the superior common-height self) 
+					(list (the superior common-height self)
 					'(automatic-apply? t))
 					'("Set all dimensions" (button1-parameters :set-d button3-parameters :unset)
 					ui-work-area-action-button-class)
 					""
-					'("Draw all link members" (button1-parameters :draw-without-mesh 
+					'("Draw all link members" (button1-parameters :draw-without-mesh
 						button3-parameters :draw-without-mesh)
 					ui-work-area-action-button-class)
 					""
@@ -289,16 +289,16 @@
 				)
 
 				;;Returns a sorted list of all link numbers in the mechanism. I.e: (0 1 2 3 4)
-				link-list (sort (remove nil (copy-seq (remove-duplicates (append-list 
+				link-list (sort (remove nil (copy-seq (remove-duplicates (append-list
 					(loop for constraint in ^constraints-list
-						 collect (the link-incidence (:from constraint)) 
+						 collect (the link-incidence (:from constraint))
 						 )
 					   ))
 					)) '<)
-										
+
                (init-default-shape :class 'shape-model
                    )
-               
+
 			   default-shape (let(
                                   (def (loop for shape in ^input-shapes-list
                                          when (equal 'default (the link-ref (:from shape)))
@@ -307,13 +307,13 @@
                                   )
                                (if def def ^init-default-shape)
                                )
-							   
+
                shape-list (remove-duplicates (loop for kid in (the shapes-ref-list)
 								collect (list (the label (:from kid)) (the link-ref (:from kid)))
 							))
-						
+
 			   opt-object 		(default nil)
-			   
+
 			   quantity 		(length ^link-list)
                class-expression 'link-model-class
                series-prefix 	'link
@@ -325,46 +325,46 @@
 											do (return (nth 0 shape)))
 									   )
 									 )
-									(if (equal shape-name nil) 
+									(if (equal shape-name nil)
 										(concatenate "Link-" (write-to-string !index))
-										(concatenate (write-to-string !index) " " 
+										(concatenate (write-to-string !index) " "
 											(write-to-string shape-name))
 									)
 							   )
 						   constraints-incident-on-link-list (loop for constraint in ^constraints-list
-                                                               for con = (get-constraint-incidence constraint 
+                                                               for con = (get-constraint-incidence constraint
 																   (the superior))
                                                                when con collect con
                                                                )
 						   optimization-object (if ^opt-object
-													(loop for link-index in (get-affected-links ^opt-object) 
+													(loop for link-index in (get-affected-links ^opt-object)
 														do
 															(if (= link-index ^index)
 																(return ^opt-object))))
                            )
                )
   )
-  
+
 (define-method get-links link-collection ()
 	(children (the) :class 'link-model-class)
 )
-  
+
 ;===============================================
 ; Gets the link reference from a link-collection
 ;===============================================
 (define-method get-link-ref link-collection (link-index)
   (nth (position link-index !link-list) ^link-ref-list)
   )
-  
+
 (define-method get-all-surface-meshes-list link-collection ()
 	(loop for link in (get-links (the))
 		append (get-link-surface-mesh-elements-query-objects-list (get-mesh-model-object link))
 	)
 )
-  
+
 ;====================================================================
 ; Button actions for drawing/undrawing links (with and without mesh),
-; setting cross-section-type and setting dimensions  
+; setting cross-section-type and setting dimensions
 ;====================================================================
 (define-method work-area-button1-action link-collection (params)
 	(case params
@@ -398,7 +398,7 @@
 			(undraw self)
 		)
 	)
-	
+
 )
 ;================================
 ; END link-collection definitions
@@ -416,7 +416,7 @@
 				 sd-list 			(cdr (read-from-file !superior)) ;;Called on the collection-class
 				 quantity			(length ^sd-list)
 				 class-expression	'(read-from-string (format nil "~a-model"
-										(nth 0 (nth !index !sd-list)))) 
+										(nth 0 (nth !index !sd-list))))
 				 init-form '(
 							 label 					(format nil "~a" (nth 0 (nth ^index ^sd-list)))
 							 start-point-data-model	(nth (nth 1 (nth ^index ^sd-list)) ^points-list)
@@ -427,10 +427,10 @@
 													)
 							 incident-links			(let (
 														(link1 (if (first (nth 3 (nth ^index ^sd-list)))
-															(nth (first (nth 3 (nth ^index ^sd-list))) 
+															(nth (first (nth 3 (nth ^index ^sd-list)))
 																^links-list)))
 														(link2 (if (second (nth 3 (nth ^index ^sd-list)))
-															(nth (second (nth 3 (nth ^index ^sd-list))) 
+															(nth (second (nth 3 (nth ^index ^sd-list)))
 																^links-list)))
 														)
 														(remove nil (list link1 link2))
@@ -475,13 +475,13 @@
 				 mech-size 			(default nil)
 				 points-list 		(default nil)
 				 links-list 		(default nil)
-				 
+
 				 collection-type	'loads
 				 loads-list 		(cdr (read-from-file !superior)) ;;Called on the collecion-class
 				 quantity 			(length ^loads-list)
 				 class-expression	'load-model
 				 series-prefix		'load
-				 
+
 				 init-form '(
 							type 				(nth 0 (nth ^index ^loads-list))
 							load-point-object 	(nth (nth 1 (nth ^index ^loads-list)) ^points-list)
@@ -489,7 +489,7 @@
 							magnitude 			(if (numberp (nth 3 (nth ^index ^loads-list)))
 													(nth 3 (nth ^index ^loads-list))
 													nil)
-							scale-load			(unless ^magnitude (read-from-string (remove "scale" 
+							scale-load			(unless ^magnitude (read-from-string (remove "scale"
 													(format nil "~a" (nth 3 (nth ^index ^loads-list))))))
 							loaded-link 		(nth (nth 4 (nth ^index ^loads-list)) ^^links-list)
 							mechanism-size		^mech-size
@@ -520,7 +520,7 @@
 
 ;=====================================================================================
 ; Class: folder-collection
-; Reads all subfolders of the library folder in the file system and 
+; Reads all subfolders of the library folder in the file system and
 ; creates a subobject for each folder as a series-object of the type folder-info-model
 ;=====================================================================================
 (define-class folder-collection
@@ -540,7 +540,7 @@
 ;==================================
 ; END folder-collection definitions
 ;==================================
- 
+
 ;===================================
 ; Class: folder-info-model
 ; Defines the data-model for folders
@@ -559,7 +559,7 @@
                               name
                               )
                             )
-				
+
 				version-list (rest (rest (directory ^path)))
 				class-expression 'mechanism-version-info
 				series-prefix 'version
@@ -577,14 +577,14 @@
 ;==============================
 ; Class: mechanism-version-info
 ;==============================
-(define-class mechanism-version-info 
+(define-class mechanism-version-info
 	:inherit-from (object)
 	:properties (
-				 version-path	nil				 
+				 version-path	nil
 				 version-name 	nil
 				 )
 )
-	
+
 (define-method get-version-path mechanism-version-info ()
 	!version-path
 )
@@ -594,15 +594,15 @@
 
 (defun get-new-dv-coords-from-line (fixed-point dv1 dv2 direction)
 	(if (= (nth 0 direction) 1)
-		(list 
-		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1))) 
+		(list
+		 (+ (nth 0 dv1) (* (/ (- (nth 0 fixed-point) (nth 0 dv1)) (- (nth 1 fixed-point) (nth 1 dv1)))
 			 (- (nth 1 dv2) (nth 1 dv1)) ))
 		 (nth 1 dv2)
 		 (nth 2 dv2)
 		)
 		(list
 		 (nth 0 dv2)
-		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) ) 
+		 (+ (nth 1 dv1) (* (/ (- (nth 1 fixed-point) (nth 1 dv1)) (- (nth 0 fixed-point) (nth 0 dv1)) )
 			 (- (nth 0 dv2) (nth 0 dv1)) ))
 		 (nth 2 dv2)
 		)
@@ -617,15 +617,15 @@
   :inherit-from (series-object)
   :properties (
 			   point-ref-list (children ^points :class 'point-data-model )
-					
+
 			   constraints-ref-list (children ^constraints :class 'master-joint-model)
 			   shapes-ref-list (children ^shapes :class 'shape-model)
                link-ref-list (children ^links :class 'link-model-class)
-			   
+
 			   final-link-ref-list (loop for link in ^link-ref-list
 										if (are-all-members-displayed? link)
 											collect link)
-			   		   
+
 			   ;; mechanism-selection contains a list of folder-info-models to choose from
                (mechanism-selection :class 'option-property-class
                    labels-list (loop for subfolder in (children ^folders :class 'folder-info-model)
@@ -637,7 +637,7 @@
                    formula (nth (position "four bar" !labels-list) !options-list)
 				   label "Select Mechanism"
                    )
-				   
+
 			   (version-selection :class 'option-property-class
 					options-list (children ^^mechanism-selection :class 'mechanism-version-info)
 					labels-list (loop for version in !options-list
@@ -647,20 +647,20 @@
 					formula (nth 0 !options-list)
 					label "Select Version"
 					)
-			   
-			   property-objects-list (list 
-											(list (the superior mechanism-selection self) 
+
+			   property-objects-list (list
+											(list (the superior mechanism-selection self)
 												'(automatic-apply? t))
-											(list (the superior version-selection self) 
+											(list (the superior version-selection self)
 												'(automatic-apply? t))
 											""
 											'("Draw mechanism" (button1-parameters :draw-sewn-wo-mesh)
 											ui-work-area-action-button-class)
 											""
-											'("Draw mechanism with 3D mesh" 
+											'("Draw mechanism with 3D mesh"
 												(button1-parameters :draw-sewn-with-tet-mesh)
 												ui-work-area-action-button-class)
-											'("Draw mechanism with 2D mesh" 
+											'("Draw mechanism with 2D mesh"
 												(button1-parameters :draw-sewn-with-tri-mesh)
 												ui-work-area-action-button-class)
 											""
@@ -673,42 +673,42 @@
 												ui-work-area-action-button-class)
 											'("Export to FEDEM" (button1-parameters :export-fedem)
 												ui-work-area-action-button-class)
-											
+
                                      )
-               
+
                ;;Property storing folders from library
                (folders :class 'folder-collection
                    )
-			   
+
 			   mechanism-type (the folder (:from ^mechanism-selection))
-			   mechanism-version (format nil "~a-~a" ^mechanism-type (the version-name 
+			   mechanism-version (format nil "~a-~a" ^mechanism-type (the version-name
 				   (:from ^version-selection)))
-			   fedem-model-file	(format nil "~a\\model.fmm" (get-version-path !version-selection))	
+			   fedem-model-file	(format nil "~a\\model.fmm" (get-version-path !version-selection))
 			   (shapes :class 'shape-collection
                    )
-				   
+
 			   ;; Optimization defintions. If the optimization.txt file is empty, no optimization models
 			   ;; will be added
 			   opt-file-path 	(concatenate (get-version-path ^version-selection) "\\optimization.txt")
 			   opt-list 		(cdr (read-opt-from-file !superior))
-			   
-			   class-expression	'(read-from-string (format nil "~a-optimization-model" 
+
+			   class-expression	'(read-from-string (format nil "~a-optimization-model"
 									(nth 0 (nth !index !opt-list))))
 			   quantity 		(length ^opt-list)
-			   
+
 			   init-form '(
 						   affected-links			(nth 1 (nth ^index ^opt-list))
 						   init-values				(nth 2 (nth ^index ^opt-list))
 						   constraint-type			(nth 3 (nth ^index ^opt-list))
 						   max-allowed-deformation	(nth 4 (nth ^index ^opt-list))
-						   load-objects				(get-loads ^^loads)	
+						   load-objects				(get-loads ^^loads)
 						   links 					(get-links ^^links)
 						   current-path				(get-version-path ^^version-selection)
 						   main-mech-ref			(the superior superior)
-						   label					(format nil "~a-optimization"  
+						   label					(format nil "~a-optimization"
 														(nth 0 (nth ^index ^opt-list)))
 						   )
-			   
+
 			   )
   :subobjects (
                (constraints :class 'constraint-collection
@@ -794,7 +794,7 @@
 
 (define-method get-all-joint-elements main-mechanism-class ()
 	(remove nil
-		(loop for constraint in (get-constraints !constraints) 
+		(loop for constraint in (get-constraints !constraints)
 			append (list (get-male-element constraint) (get-female-element constraint))
 		)
 	)
@@ -810,7 +810,7 @@
 (define-method get-constraint main-mechanism-class (constraint-number)
 	(nth constraint-number !constraints-ref-list)
 )
- 
+
 (define-method get-mechanism-type main-mechanism-class ()
 	(the mechanism-selection label)
 )
@@ -829,7 +829,7 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (first (get-link-solid-mesh-elements-query-objects-list 
+			(draw (first (get-link-solid-mesh-elements-query-objects-list
 				(get-mesh-model-object link))))
 		)
 	)
@@ -839,14 +839,14 @@
 	(loop for link in !final-link-ref-list do
 		(with-error-handler (:error-message (concatenate "Error drawing "
 			(write-to-string (object-name link))) :show-system-error? t)
-			(draw (first (get-link-surface-mesh-elements-query-objects-list 
+			(draw (first (get-link-surface-mesh-elements-query-objects-list
 				(get-mesh-model-object link))))
 		)
 	)
 )
 
 ;=================================================
-; Creates buttons to draw and export the mechanism 
+; Creates buttons to draw and export the mechanism
 ;=================================================
 (define-method work-area-button1-action main-mechanism-class (params)
 	(case params
@@ -878,11 +878,11 @@
 			(write-stl-files (the) (get-version-path !version-selection))
 		)
 		(:export-fedem
-			;(progn 
+			;(progn
 			(write-nastran-bdf-files (the))
 			(write-fmm-model-file (the))
 		(run-program 	(format nil "start ~a" !fedem-model-file) :windows-batch-file? t :show-window :hide)
-			
+
 			;)
 		)
 	)

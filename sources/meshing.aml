@@ -8,15 +8,15 @@
                 link-model 					nil ;;link-model-class
                 geometry-model-object 		nil ;;link-geometry-class
 			    joint-elements 				nil ;;joint-element-models
-			   
+
 			    mesh-object 					(the (:from (the surface-tri-mesh)))
-			   			   
+
 				rbe2-independent-node-list	(loop for element in ^joint-elements
 												collect (get-rbe2-independent-node element)
 				)
 
 				(node-set :class 'analysis-node-set-class
-                   query-objects-list (append (if (get-export-surface ^link-model) 
+                   query-objects-list (append (if (get-export-surface ^link-model)
 												(list (the nodes-query (:from ^^mesh-object)))
 												(list (the nodes-query (:from ^^tet-mesh))))
 											^rbe2-independent-node-list
@@ -32,11 +32,11 @@
 					element-shape 				:tri
 					surface-element-size-method	(nth 2 '(0 1 2))
 					curvature-refinement-method	:isotropic-relative
-				
+
 					)
 			   (tet-mesh :class 'tet-mesh-class
 					mesh-database-object	^^mesh-database
-					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
+					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list
 														^superior))
 					)
 			   ;; Example subobjects for analysis in AML:----->
@@ -51,11 +51,11 @@
 (define-method get-surface-mesh link-mesh-class ()
 	!mesh-object
 )
-  
+
 (define-method get-mesh-database link-mesh-class ()
 	!mesh-database
 )
-  
+
 (define-method get-mesh-entities-list link-mesh-class ()
 	(if (get-export-surface !link-model)
 		(the nodes-query mesh-entities-list (:from !mesh-object))
@@ -77,7 +77,7 @@
   (when (the elements-query (:from !tet-mesh :error nil :relation nil))
     (list (the elements-query (:from !tet-mesh))))
   )
-  
+
 (define-method get-rbe2-constraints-list link-mesh-class ()
 	!joint-elements
 )

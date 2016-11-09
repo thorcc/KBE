@@ -13,10 +13,10 @@
 			   degrees-of-freedom	(default nil) ;;Only applicable for free joints
 			   incident-links		(default nil) ;;Ref to the link-model-class objects
                constraint-type		(default nil)
-			   
+
 			   gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
 											(list (if (nth 1 ^link-incidence) "female" nil))))
-			   
+
                joint-elements		(when (children (the superior)) (children (the superior)))
 			   male-joint-element	(loop for element in ^joint-elements
 										when (equal 'male (get-gender element)) do
@@ -24,7 +24,7 @@
 			   female-joint-element	(loop for element in ^joint-elements
 										when (equal 'female (get-gender element)) do
 											(return element))
-			   
+
 			   point-ref 			(default nil)
                direction 			(default nil)
                (z-vector-ref :class 'vector-data-model
@@ -33,9 +33,9 @@
                (x-vector-ref :class 'vector-data-model
                    direction (arbitrary-normal-to-vector ^^direction)
                    )
-               
+
 			   dimensions 		(calculate-dimensions (the superior))
-			   
+
 			   (max-width :class 'editable-data-property-class
 				    label 	"Joint width"
 					formula	(nth 0 ^dimensions)
@@ -44,21 +44,21 @@
 					label 	"Joint height"
 					formula	(nth 1 ^dimensions)
 					)
-			   
+
 			   quantity			(length ^gender-list)
-			   class-expression '(read-from-string (concatenate !constraint-type "-" 
+			   class-expression '(read-from-string (concatenate !constraint-type "-"
 									(nth !index ^gender-list) "-element"))
-			  
+
 			   init-form '(
 						   master-joint-object	(the superior superior) ;;Reference to the master-joint-model
 						   gender 				(read-from-string (nth !index ^gender-list))
 						   incident-link 		(nth !index (remove nil ^incident-links))
 						   label				(concatenate (nth !index ^gender-list) "-joint-element")
 						   )
-					
+
 			   ;;Only display properties for non-free constraints
-			   property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))  
-				(list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type)) 
+			   property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))
+				(list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type))
 				(list
 					'("Draw joint" (button1-parameters :draw-joint)
                                         ui-work-area-action-button-class)
@@ -71,17 +71,17 @@
 				)
 			   )
   )
- 
+
 (define-method get-constraint-type master-joint-model ()
 	!constraint-type
-) 
- 
+)
+
 (define-method get-incident-links master-joint-model ()
 	!incident-links
 )
 
 ;=======================================================================
-; Calculates the dimensions by retrieving the biggest width and height  
+; Calculates the dimensions by retrieving the biggest width and height
 ; from the incident members. Dimensions are scaled with the scale-factor
 ;=======================================================================
 (define-method calculate-dimensions master-joint-model ()
@@ -108,16 +108,16 @@
 		)
 	)
 )
- 
+
 (define-method get-female-element master-joint-model ()
 	!female-joint-element
 )
- 
+
 (define-method get-male-element master-joint-model ()
 	!male-joint-element
 )
- 
-(define-method get-joint-direction-vector master-joint-model () 
+
+(define-method get-joint-direction-vector master-joint-model ()
 	!direction
 )
 
@@ -139,12 +139,12 @@
 (define-method is-free-constraint master-joint-model ()
 	(equal "free" !constraint-type)
  )
- 
- 
+
+
 (define-method get-link-incidence master-joint-model ()
 	!link-incidence
 )
-  
+
 (define-method get-constraint-incidence master-joint-model (link)
   (let (
         (pos (position link !incident-links) )
@@ -184,13 +184,13 @@
   :inherit-from (frame-data-model)
   :properties (
 			   label nil
-			   
-			   ;;; union-list is the list used for a union with the incident link. 
+
+			   ;;; union-list is the list used for a union with the incident link.
 			   ;;; different-list is the list of objects that are to be subtracted from the final geometry.
 			   ;;; See link-geometry-class in links.aml for the use
                union-list 			nil
                difference-list 		nil
-			   
+
                master-joint-object	nil
                incident-link		nil ;;link-model-class
 			   constraint-type		(get-constraint-type ^master-joint-object)
@@ -204,15 +204,15 @@
 			   min-element-size 	(when (and ^max-width ^max-height)
 										(/ (min ^max-width ^max-height) 16)
 										)
-			   
+
                display? 			t
-               gender 				nil 
+               gender 				nil
                gender_int 			(case ^gender ('male 0) ('female 1) )
                link-incidence 		(nth ^gender_int (get-link-incidence ^master-joint-object))
-			   
+
 			   link-mesh-model-object (get-mesh-model-object ^incident-link)
-			   
-			   members-connected-to-joint-element (loop for member in (get-members 
+
+			   members-connected-to-joint-element (loop for member in (get-members
 														(get-link-geometry ^incident-link))
                                                     when (position !superior (get-joints-on-member member))
                                                     collect member
@@ -226,7 +226,7 @@
 				   color		'red
 				   line-width	3
                    )
-			    property-objects-list (list 
+			    property-objects-list (list
 										'("Draw joint element geometry" (button1-parameters :draw-joint)
 											ui-work-area-action-button-class)
 										""
@@ -235,8 +235,8 @@
 										""
 										'("Undraw" (button1-parameters :undraw)
 											ui-work-area-action-button-class)
-										""	
-										(list (the superior max-element-size self) 
+										""
+										(list (the superior max-element-size self)
 											'(automatic-apply? t))
 										)
                )
@@ -247,14 +247,14 @@
 						direction (let (
 										(first-sweep (nth 0 ^members-connected-to-joint-element))
 										(x-dir  (subtract-vectors
-													(the coordinates (:from (the point-ref (:from (nth 0 
+													(the coordinates (:from (the point-ref (:from (nth 0
 														(get-joints-on-member first-sweep)
 														)))))
-													(the coordinates (:from (the point-ref (:from (nth 1 
+													(the coordinates (:from (the point-ref (:from (nth 1
 														(get-joints-on-member first-sweep)
 														))))))
 											)
-										(x-dir-normal (cross-product ^^direction 
+										(x-dir-normal (cross-product ^^direction
 											(cross-product ^^direction x-dir)))
 									   )
 									   (if (equal 0 (vector-length x-dir-normal))
@@ -281,11 +281,11 @@
 (define-method get-gender joint-element-model ()
 	!gender
 )
-	
+
 (define-method get-max-height joint-element-model ()
 	(when !max-height !max-height)
 )
- 
+
 (define-method get-main-frame joint-element-model ()
 	!main-frame
 )
@@ -301,11 +301,11 @@
 (define-method get-rbe2-dependent-nodes joint-element-model ()
 	!rbe2-dependent-nodes
 )
- 
+
 (define-method is-free-constraint joint-element-model ()
 	(equal "free" !constraint-type)
- ) 
- 
+ )
+
 (define-method get-joint-union-list joint-element-model ()
 	!union-list
 )
@@ -313,7 +313,7 @@
 (define-method get-joint-difference-list joint-element-model ()
 	!difference-list
 )
- 
+
 (define-method get-main-frame-coords joint-element-model (&optional params)
 	(if params
 		(nth params (the main-frame origin))

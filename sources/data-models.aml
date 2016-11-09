@@ -13,9 +13,9 @@
 			   id 			nil
 			   line-width 	4
 			   color 		'green
-				
+
 			   property-objects-list (list
-										(list (the superior coordinates self) 
+										(list (the superior coordinates self)
                                             '(apply-formula? t))
 					)
                )
@@ -27,7 +27,7 @@
 ;=================================
 ; END point-data-model definitions
 ;=================================
- 
+
 ;=====================================
 ; Class: vector-data-model
 ; Used for defining a direction vector
@@ -46,14 +46,14 @@
                length 0.2
 
                base-point (the coordinates (:from (the superior point-ref)))
-               
-               property-objects-list (list 
-                                      (list (the coordinates self (:from (the superior point-ref)) ) 
+
+               property-objects-list (list
+                                      (list (the coordinates self (:from (the superior point-ref)) )
                                             '(apply-formula? t))
                                       (list (the superior direction self)
                                             '(apply-formula? t))
                                       )
-               
+
 
                )
   )
@@ -83,7 +83,7 @@
                origin (the coordinates (:from ^point-ref))
                vector-j (cross-product ^vector-k ^vector-i)
                length 0.1
-               
+
                property-objects-list (list
                                       "Coordinates:"
                                       (list  (the coordinates self (:from ^point-ref) )
@@ -92,22 +92,22 @@
                                       (list (the direction self (:from ^z-vector-ref) )
                                             '(apply-formula? t))
                                       "X Axis:"
-                                      (list  (the direction self (:from ^x-vector-ref) )    
+                                      (list  (the direction self (:from ^x-vector-ref) )
                                             '(apply-formula? t))
                                       )
                )
   )
- 
+
 (define-method get-coordinates frame-data-model ()
 	!origin
 )
-  
+
 ;========================================
 ; Should only be called on a spline-frame
 ;========================================
 (define-method get-direction-along-member frame-data-model ()
 	!vector-i
-)  
+)
 ;=================================
 ; END frame-data-model definitions
 ;=================================
@@ -130,7 +130,7 @@
 ;======================================================
 ; Class: sub-frame-data-model
 ; Explicit sub-frame class
-; When a sub-point-ref is specified in a joint element, 
+; When a sub-point-ref is specified in a joint element,
 ; its sub-frame will be placed accordingly
 ;======================================================
 (define-class sub-frame-data-model

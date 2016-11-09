@@ -8,14 +8,14 @@
 			   optimization-object	(default nil)
 			   type 				(default nil)
                area 				(get-area !superior ^type)
-			   
+
 			   max-element-size		0.004
                tag-dimensions 		'(1 2)
                tag-attributes 		(list ^max-element-size .1
 										0 0.1 0 20.0 1.0e-5)
                )
   )
-  
+
 (define-method get-width cross-section-model ()
   !width
 )
@@ -26,7 +26,7 @@
 
 
 (define-method get-area cross-section-model (type)
-	(case type 
+	(case type
 		('circular 			(* pi (/ (expt !diameter 2) 4)))
 		('circular-tube		(* pi 0.25 (- (expt !outer-diameter 2) (expt !inner-diameter 2))))
 		('rectangular		(* !width !height))
@@ -40,7 +40,7 @@
 ;========================
 ; END cross-section-model
 ;========================
-  
+
 ;========================
 ; Class: circular-section
 ;========================
@@ -68,7 +68,7 @@
 ;=====================
 ; END circular-section
 ;=====================
-  
+
 ;=============================
 ; Class: circular-tube-section
 ;=============================
@@ -78,7 +78,7 @@
                type 			'circular-tube
 			   target-object 	^diff-object
                tool-object-list	(list ^p1 ^p2)
-               
+
                outer-diameter 	(average ^width ^height)
                thickness 		(* 0.2 ^outer-diameter)
 			   inner-diameter	(- ^outer-diameter ^thickness)
@@ -112,7 +112,7 @@
 ;==========================
 ; END circular-tube-section
 ;==========================
-  
+
 ;===========================
 ; Class: rectangular-section
 ;===========================
@@ -122,10 +122,10 @@
                type 			'rectangular
 			   width 			(default 0.04)
                height 			(default 0.01)
-               
+
                target-object 	^sheet
                tool-object-list	(list ^p1)
-			   
+
                (p1 :class 'point-object
                    coordinates (list (/ ^width 2) 0 0)
                    )
@@ -144,7 +144,7 @@
 ;========================
 ; END rectangular-section
 ;========================
-  
+
 ;================================
 ; Class: rectangular-tube-section
 ;================================
@@ -152,12 +152,12 @@
   :inherit-from (cross-section-model difference-object)
   :properties (
                type 		'rectangular-tube
-			   
+
 			   width 		(default 0.04)
                height 		(default 0.01)
 			   inner-width	(- ^^width ^thickness)
 			   inner-height	(- ^^height ^thickness)
-               
+
                object-list 	(list ^outer-rectangle ^inner-rectangle)
                thickness 	(* 0.2 (average ^width ^height) )
                simplify? 	t
@@ -175,14 +175,14 @@
 (define-method get-width rectangular-tube-section ()
   !width
   )
-  
+
 (define-method get-height rectangular-tube-section ()
   !height
   )
 ;=============================
 ; END rectangular-tube-section
 ;=============================
-  
+
 ;================================
 ; Class: line-section definitions
 ;================================
@@ -190,7 +190,7 @@
   :inherit-from (line-object cross-section-model)
   :properties (
                type 	'line
-			   
+
 			   height 	(default 0.04)
                point1 	(list 0 (- (/ ^height 2)) 0)
                point2 	(list 0 (/ ^height 2) 0)
@@ -207,7 +207,7 @@
 ;=============================
 ; END line-section definitions
 ;=============================
-  
+
 ;======================
 ; Class: H-beam-section
 ;======================
@@ -215,21 +215,21 @@
   :inherit-from (union-object cross-section-model)
   :properties (
                type 			'h-beam
-			   
-			   width 			(if ^optimization-object 
+
+			   width 			(if ^optimization-object
 									(get-width ^optimization-object)
 									(default 0.04)
 								)
-               height 			(if ^optimization-object 
+               height 			(if ^optimization-object
 									(get-height ^optimization-object)
 									(default 0.04)
 								)
-               
-               flange-thickness	(if ^optimization-object 
+
+               flange-thickness	(if ^optimization-object
 									(get-flange ^optimization-object)
 									(* 0.1 ^height)
 								)
-               web-thickness 	(if ^optimization-object 
+               web-thickness 	(if ^optimization-object
 									(get-web ^optimization-object)
 									(* 0.1 ^width)
 								)
@@ -254,7 +254,7 @@
 									(translate (list 0 (- (half ^^height)) 0))
 									)
                    )
-               
+
                )
   )
 (define-method get-width H-beam-section ()
@@ -266,7 +266,7 @@
 ;===============================
 ; END H-beam-section definitions
 ;===============================
-  
+
 ;======================
 ; Class: I-beam-section
 ;======================
@@ -274,30 +274,30 @@
   :inherit-from (union-object cross-section-model)
   :properties (
                type 			'I-beam
-			   
-			   width 			(if ^optimization-object 
+
+			   width 			(if ^optimization-object
 									(get-width ^optimization-object)
 									(default 0.04)
 								)
-               height 			(if ^optimization-object 
+               height 			(if ^optimization-object
 									(get-height ^optimization-object)
 									(default 0.04)
 								)
-               flange-thickness	(if ^optimization-object 
+               flange-thickness	(if ^optimization-object
 									(get-flange ^optimization-object)
 									(* 0.1 ^width)
 								)
-               web-thickness 	(if ^optimization-object 
+               web-thickness 	(if ^optimization-object
 									(get-web ^optimization-object)
 									(* 0.1 ^height)
 								)
-               
+
 			   second-moment-of-area	(calculate-second-moment-of-area-about-z-axis !superior)
-			   
+
 			   object-list 		(list ^left-flange ^web ^right-flange)
                simplify? 		t
 
-               
+
                (right-flange :class 'sheet-object
                    width 		^^flange-thickness
                    height 		^^width
@@ -324,24 +324,24 @@
 (define-method get-height I-beam-section ()
 	!width
 )
- 
+
 (define-method calculate-second-moment-of-area-about-z-axis I-beam-section ()
 	(+
-		(+ (/ (* !width (expt !flange-thickness 3)) 6) 
+		(+ (/ (* !width (expt !flange-thickness 3)) 6)
 			(* 0.5 !flange-thickness !width (expt !height 2))
 			(* (expt !flange-thickness 2) !width !height)
 			(* 0.5 (expt !flange-thickness 3) !width))
 		(/ (* !web-thickness (expt !height 3)) 12)
 	)
 )
- 
+
 (define-method get-second-moment-of-area-about-z-axis I-beam-section ()
 	!second-moment-of-area
 )
 ;===============================
 ; END I-beam-section definitions
 ;===============================
-  
+
 ;=========================
 ; Class: hexagonal-section
 ;=========================
@@ -349,7 +349,7 @@
   :inherit-from (imprint-class cross-section-model)
   :properties (
                type 			'hexagonal
-			   
+
 			   target-object 	^poly
                tool-object-list	(list ^p1)
                R 				(/ (average ^width ^height) 2)
@@ -367,7 +367,7 @@
                (p1 :class 'point-object
                    coordinates (list 0 (/ (* ^R (sqrt 3)) 2) 0)
                    )
-               
+
                )
   )
 
