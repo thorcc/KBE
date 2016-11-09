@@ -879,7 +879,6 @@
 		)
 		(:export-fedem
 			;(progn
-			(write-nastran-bdf-files (the))
 			(write-fmm-model-file (the))
 		(run-program 	(format nil "start ~a" !fedem-model-file) :windows-batch-file? t :show-window :hide)
 
