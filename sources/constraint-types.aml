@@ -14,28 +14,28 @@
 
 ;============================================
 ; Class: free-male-element
-; Female element of an free constraint type. 
+; Female element of an free constraint type.
 ; As this element is free, it has no geometry
 ;============================================
 (define-class free-male-element
   :inherit-from (joint-element-model)
   :properties (
-			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
-				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
-					point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
-					plane-normal-vector				(get-direction-along-member 
-														(get-spline-frame-at-joint-element (first 
-															(get-displayed-members-connected-to-joint-element 
-																^superior)) ^superior))
-					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
-					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
-														^^link-mesh-model-object)
-					color 							'green
-					line-width						3
-					)
-			   )
+               ;; Retrieve all nodes from the cross-section from the end/start of a link member
+               (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+                   mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
+                   point-in-plane-coords			(get-rbe2-independent-node-coordinates ^superior)
+                   plane-normal-vector				(get-direction-along-member
+                                                 (get-spline-frame-at-joint-element (first
+                                                                                     (get-displayed-members-connected-to-joint-element
+                                                                                      ^superior)) ^superior))
+                   tolerance						1.0e-3;;Max allowable distance from plane to nodes
+                   quantity						nil;;Get all nodes in the plane
+                   subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list
+                                                    ^^link-mesh-model-object)
+                   color 							'green
+                   line-width						3
+                   )
+               )
   )
 ;==================================
 ; END free-male-element definitions
@@ -43,40 +43,40 @@
 
 ;============================================
 ; Class: free-female-element
-; Female element of an free constraint type. 
+; Female element of an free constraint type.
 ; As this element is free, it has no geometry
 ;============================================
 (define-class free-female-element
   :inherit-from (joint-element-model)
   :properties (
-			   ;; A free female joint could initially be placed at the wrong place, 
-			   ;; depending on the topology of the mechanism. Its sub-frame should
-			   ;; then be placed accordingly. The local z coordinate is translated,
-			   ;; as that's the direction from the main-frame to the sub-frame.
+               ;; A free female joint could initially be placed at the wrong place,
+               ;; depending on the topology of the mechanism. Its sub-frame should
+               ;; then be placed accordingly. The local z coordinate is translated,
+               ;; as that's the direction from the main-frame to the sub-frame.
                z-translation (get-translational-z-value (the superior))
-			   (sub-point-ref :class 'sub-point-data-model
+               (sub-point-ref :class 'sub-point-data-model
                    orientation (list
-								(translate (list 0 0 ^z-translation))
+                                (translate (list 0 0 ^z-translation))
                                 )
                    )
 
-			    ;; Retrieve all nodes from the cross-section from the end/start of a link member
-				(rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
-					mesh-database-object	(get-mesh-database ^^link-mesh-model-object)
-					point-in-plane-coords	(get-rbe2-independent-node-coordinates ^superior)
-					plane-normal-vector		(get-direction-along-member 
-												(get-spline-frame-at-joint-element
-													(first 
-														(get-displayed-members-connected-to-joint-element 
-															^superior)) ^superior))
-					tolerance						1.0e-3 ;;Max allowable distance from plane to nodes
-					quantity						nil ;;Get all nodes in the plane
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
-														^^link-mesh-model-object)
-					color 							'green
-					line-width						3
-					)
-			   )
+               ;; Retrieve all nodes from the cross-section from the end/start of a link member
+               (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-plane-class
+                   mesh-database-object	(get-mesh-database ^^link-mesh-model-object)
+                   point-in-plane-coords	(get-rbe2-independent-node-coordinates ^superior)
+                   plane-normal-vector		(get-direction-along-member
+                                           (get-spline-frame-at-joint-element
+                                            (first
+                                             (get-displayed-members-connected-to-joint-element
+                                              ^superior)) ^superior))
+                   tolerance						1.0e-3;;Max allowable distance from plane to nodes
+                   quantity						nil;;Get all nodes in the plane
+                   subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list
+                                                    ^^link-mesh-model-object)
+                   color 							'green
+                   line-width						3
+                   )
+               )
   )
 
 ;=========================================================================
@@ -85,18 +85,18 @@
 ; on that member and moves the free joint's sub-frame to match the other's
 ;=========================================================================
 (define-method get-translational-z-value joint-element-model ()
-	(let (
+  (let (
 		  (displayed-member
 			(loop for member in !members-connected-to-joint-element
-				when (the display? (:from member)) do
-				(return member)))
+           when (the display? (:from member)) do
+           (return member)))
 		  )
-		 (loop for joint in (get-joints-on-member displayed-member)
-			when (not (eq (the) joint)) do
-			(return (-(get-max-height joint)))
-		  )
-	)
-)
+    (loop for joint in (get-joints-on-member displayed-member)
+      when (not (eq (the) joint)) do
+      (return (-(get-max-height joint)))
+      )
+    )
+  )
 ;====================================
 ; END free-female-element definitions
 ;====================================
@@ -120,7 +120,7 @@
   :inherit-from (master-joint-model)
   :properties (
                )
-  
+
   )
 ;=========================================
 ; END helical-constraint-class definitions
@@ -136,11 +136,11 @@
   )
 ;===========================================
 ; END prismatic-constraint-class definitions
-;=========================================== 
+;===========================================
 
 ;==================================
 ; Class: cylindric-constraint-class
-;================================== 
+;==================================
 (define-class cylindric-constraint-class
   :inherit-from (master-joint-model)
   :properties (
@@ -149,7 +149,7 @@
 
 ;===========================================
 ; END cylindric-constraint-class definitions
-;=========================================== 
+;===========================================
 
 ;===============================
 ; Class: planar-constraint-class
@@ -167,7 +167,7 @@
 ;===========================================================
 ; Class: revolute-constraint-class
 ; Holding revolute male and female elements on instantiation
-;=========================================================== 
+;===========================================================
 (define-class revolute-constraint-class
   :inherit-from (master-joint-model)
   :properties (
@@ -175,26 +175,26 @@
   )
 ;==========================================
 ; END revolute-constraint-class definitions
-;========================================== 
+;==========================================
 
 ;===============================================
 ; Class: revolute-male-element
 ; Defines geometry for the revolute male element
-;=============================================== 
+;===============================================
 (define-class revolute-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
-			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-pin ^eye)
                             )
-               
-			   object-list (list ^imprinted-pin ^eye)
-               
-			   simplify? nil
 
-			   mating-nodes-distance (/ ^^max-width 2)
-			   
+               object-list (list ^imprinted-pin ^eye)
+
+               simplify? nil
+
+               mating-nodes-distance (/ ^^max-width 2)
+
 			   ;;; Imprinted objects are objects that will receive surface nodes, used for meshing
                (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^pin
@@ -202,7 +202,7 @@
                    tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
-               
+
                (pin :class 'cylinder-object
                    reference-object ^main-frame-object
                    height (* 2 ^^max-height ^^scale-factor)
@@ -225,79 +225,79 @@
                                 )
                    )
                (rbe2-dependent-nodes :class 'mesh-query-nodes-from-interface-class
-					mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
-					interface-object 				(the point-ref (:from ^^main-frame-object))
-					tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2) 
-														(expt (/ (the diameter (:from ^^pin)) 2) 2)))
-					quantity 						nil ;;Collect all nodes within the tolerance
-					subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list 
-														^^link-mesh-model-object)
-					color 							'green
-					line-width						3
-					)
+                   mesh-database-object			(get-mesh-database ^^link-mesh-model-object)
+                   interface-object 				(the point-ref (:from ^^main-frame-object))
+                   tolerance 						(sqrt (+ (expt (/ (the height (:from ^^pin)) 4) 2)
+                                                      (expt (/ (the diameter (:from ^^pin)) 2) 2)))
+                   quantity 						nil;;Collect all nodes within the tolerance
+                   subset-mesh-query-object-list	(get-link-surface-mesh-elements-query-objects-list
+                                                    ^^link-mesh-model-object)
+                   color 							'green
+                   line-width						3
+                   )
                )
   )
 ;======================================
 ; END revolute-male-element definitions
 ;======================================
-  
+
 ;=================================================
 ; Class: revolute-female-element
 ; Defines geometry for the revolute female element
-;=================================================   
+;=================================================
 (define-class revolute-female-element
   :inherit-from (difference-object joint-element-model)
   :properties(
-               main-frame-object (get-main-frame (the superior))
-			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-							(list ^fork)
+              main-frame-object (get-main-frame (the superior))
+              union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+                           (list ^fork)
                            )
-               difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
+              difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
                                 (list ^imprinted-pin-hole)
                                 )
-               object-list (list ^fork ^imprinted-pin-hole)
-			   
-			   (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
-                   source-object ^^pin-hole
-                   tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size ^^min-element-size
-                                        0 0.1 0 20.0 1.0e-5)
-                   )
-               
-               (pin-hole :class 'cylinder-object
-                   reference-object ^^main-frame-object
-                   height ^^max-height
-                   diameter (/ ^^max-width 2)
-                   )
-                
-               (fork :class '(tagging-object cylinder-object)
-                   tag-dimensions '(1 2 3)
-                   tag-attributes (list ^^max-element-size ^^min-element-size
-                                        0 0.1 0 20.0 1.0e-5)
-                   reference-object ^sub-frame
-                   height ^^max-height
-                   diameter ^^max-width
-                   )
+              object-list (list ^fork ^imprinted-pin-hole)
 
-               (sub-point-ref :class 'sub-point-data-model
-                   )
-               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-                   tagged-object-list	(list ^^imprinted-pin-hole)
-				   mesh-object 			(get-surface-mesh (get-mesh-model-object 
-											(get-incident-link ^superior)))
-                   color 				'green
-				   line-width			3
-                   )
-               )
+              (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
+                  source-object ^^pin-hole
+                  tag-dimensions '(1 2 3)
+                  tag-attributes (list ^^max-element-size ^^min-element-size
+                                       0 0.1 0 20.0 1.0e-5)
+                  )
+
+              (pin-hole :class 'cylinder-object
+                  reference-object ^^main-frame-object
+                  height ^^max-height
+                  diameter (/ ^^max-width 2)
+                  )
+
+              (fork :class '(tagging-object cylinder-object)
+                  tag-dimensions '(1 2 3)
+                  tag-attributes (list ^^max-element-size ^^min-element-size
+                                       0 0.1 0 20.0 1.0e-5)
+                  reference-object ^sub-frame
+                  height ^^max-height
+                  diameter ^^max-width
+                  )
+
+              (sub-point-ref :class 'sub-point-data-model
+                  )
+              (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+                  tagged-object-list	(list ^^imprinted-pin-hole)
+                  mesh-object 			(get-surface-mesh (get-mesh-model-object
+                                                          (get-incident-link ^superior)))
+                  color 				'green
+                  line-width			3
+                  )
+              )
   )
 ;========================================
 ; END revolute-female-element definitions
 ;========================================
-  
+
 ;=======================================================
 ; Class: ball-constraint-class
 ; Holding ball male and female elements on instantiation
-;======================================================= 
+;=======================================================
 (define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
@@ -306,7 +306,7 @@
 ;======================================
 ; END ball-constraint-class definitions
 ;======================================
-  
+
 ;===========================================
 ; Class: ball-male-element
 ; Defines geometry for the ball male element
@@ -315,13 +315,13 @@
   :inherit-from (tagging-object blend-class joint-element-model)
   :properties (
                main-frame-object (get-main-frame (the superior))
-			   tag-dimensions '(1 2 3)
+               tag-dimensions '(1 2 3)
                tag-attributes (list (/ ^^max-element-size 4)  ^^min-element-size
                                     0 0.1 0 20.0 1.0e-5)
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list !superior)
-							)
-			   
+                            )
+
                (imprinted-stud :class '(tagging-object geometry-with-split-periodic-faces-class)
                    source-object ^^stud
                    tag-dimensions '(1 2 3)
@@ -330,8 +330,8 @@
                    )
                (stud :class 'cylinder-object
                    reference-object ^sub-frame
-                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame)) 
-					   (the origin (:from ^main-frame-object)) ) )
+                   height (vector-length (subtract-vectors (the origin (:from ^sub-frame))
+                                                           (the origin (:from ^main-frame-object)) ) )
                    diameter (/ (the diameter (:from ^ball)) 2)
                    orientation (list
                                 (translate (list 0 0 (/ ^height 2)) )
@@ -358,40 +358,40 @@
 
                (sub-point-ref :class 'sub-point-data-model
                    orientation (list
-                                (translate (list 0 0  (- 0 (/ ^^max-height 2) (* 1 (the diameter 
-									(:from ^^ball))) )) )
+                                (translate (list 0 0  (- 0 (/ ^^max-height 2) (* 1 (the diameter
+                                                                                     (:from ^^ball))) )) )
                                 )
                    )
                (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list	(list ^^imprinted-ball)
-                   mesh-object 			(get-surface-mesh (get-mesh-model-object 
-											(get-incident-link ^superior)))
+                   mesh-object 			(get-surface-mesh (get-mesh-model-object
+                                                          (get-incident-link ^superior)))
                    color 				'green
-				   line-width			3
-                   )       
-               
-			   
-			   
-			   ;;Properties used for blend-class:
-			   (union-element :class 'union-object
-				    object-list (list ^imprinted-stud ^imprinted-ball ^plate)
-					)
-			   all-edges 		(vgl::k-sub-geoms (the geom (:from ^union-element)) 1)
-			   source-object	^union-element
-			   edge-ids			(loop for edge in ^all-edges
-									when (and (vgl::intersect-geom-p edge (the geom (:from ^plate)) edge)
-									(vgl::intersect-geom-p edge (the geom (:from ^stud)) edge)) 
-									collect edge)
-			   radii			(list (/ ^max-width 5))
-			   )
+                   line-width			3
+                   )
+
+
+
+               ;;Properties used for blend-class:
+               (union-element :class 'union-object
+                   object-list (list ^imprinted-stud ^imprinted-ball ^plate)
+                   )
+               all-edges 		(vgl::k-sub-geoms (the geom (:from ^union-element)) 1)
+               source-object	^union-element
+               edge-ids			(loop for edge in ^all-edges
+                                when (and (vgl::intersect-geom-p edge (the geom (:from ^plate)) edge)
+                                          (vgl::intersect-geom-p edge (the geom (:from ^stud)) edge))
+                                collect edge)
+               radii			(list (/ ^max-width 5))
+               )
   )
 
 
-  
+
 ;==================================
 ; END ball-male-element definitions
 ;==================================
-  
+
 ;=============================================
 ; Class: ball-female-element
 ; Defines geometry for the ball female element
@@ -400,8 +400,8 @@
   :inherit-from (difference-object joint-element-model)
   :properties (
                joint-variable 	nil
-			   
-			   union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+
+               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
                             (list ^imprinted-socket)
                             )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
@@ -425,7 +425,7 @@
                    tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
                    )
-                             
+
                (socket :class 'intersection-object
                    object-list (list ^sphere ^cyl)
                    reference-object ^sub-frame
@@ -437,221 +437,221 @@
 
                (cyl :class 'cylinder-object
                    height ^^max-height
-                   diameter ^^max-width             
+                   diameter ^^max-width
                    )
-				   
-			   orientation (list
-							(rotate
-							 (angle-between-2-vectors ^direction ^constraint-variable)
-							 (cross-product ^direction ^constraint-variable) 
-							 :axis-point (the coordinates (:from ^point-ref) )
-							 )
-							)
-               
-			   (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+
+               orientation (list
+                            (rotate
+                             (angle-between-2-vectors ^direction ^constraint-variable)
+                             (cross-product ^direction ^constraint-variable)
+                             :axis-point (the coordinates (:from ^point-ref) )
+                             )
+                            )
+
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
                    tagged-object-list 	(list ^^imprinted-hole)
-                   mesh-object 			(get-surface-mesh (get-mesh-model-object 
-											(get-incident-link ^superior)))
+                   mesh-object 			(get-surface-mesh (get-mesh-model-object
+                                                          (get-incident-link ^superior)))
                    color 				'green
-				   line-width			3
+                   line-width			3
                    )
-				)
+               )
   )
 ;====================================
 ; END ball-female-element definitions
 ;====================================
-  
+
 ;==========================================================
 ; Class: knuckle-constraint-class
 ; Holding knuckle male and female elements on instantiation
 ;==========================================================
-(define-class knuckle-constraint-class  
-	:inherit-from (master-joint-model)
-	:properties (
-				 )
- )
+(define-class knuckle-constraint-class
+  :inherit-from (master-joint-model)
+  :properties (
+               )
+  )
 ;===============================================
 ; END knuckle-constraint-class definitions
-;===============================================  
- 
+;===============================================
+
 ;================================================
 ; Class: knuckle-female-element
 ; Defines geometry for the knuckle female element
 ;================================================
 (define-class knuckle-female-element
-	:inherit-from (difference-object joint-element-model)
-	:properties (
-				  main-frame-object	(get-main-frame (the superior))
-				  inner-radius 		(/ ^max-width (expt ^scale-factor 2))
-				  outer-radius 		^max-width
-				
-				  union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-					   (list !superior)
-					   )
-				  difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
-									(list ^imprinted-pin-hole)
-									)
-				  object-list (list ^eye ^imprinted-pin-hole)
+  :inherit-from (difference-object joint-element-model)
+  :properties (
+               main-frame-object	(get-main-frame (the superior))
+               inner-radius 		(/ ^max-width (expt ^scale-factor 2))
+               outer-radius 		^max-width
 
-				  (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
-					   source-object ^^pin-hole
-					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size ^^min-element-size
-											0 0.1 0 20.0 1.0e-5)
-					   )
-				   
-				  (pin-hole :class 'cylinder-object
-					   reference-object ^main-frame-object
-					   height ^^max-height
-					   diameter ^^inner-radius
-					   )
-								  
-				  (eye :class '(tagging-object cylinder-object)
-					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size ^^min-element-size
-											0 0.1 0 20.0 1.0e-5)
-					   reference-object ^sub-frame
-					   height ^^max-height
-					   diameter ^^outer-radius
-					   )
+               union-list (when (and (plusp ^max-width) (plusp ^max-height) )
+                            (list !superior)
+                            )
+               difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
+                                 (list ^imprinted-pin-hole)
+                                 )
+               object-list (list ^eye ^imprinted-pin-hole)
 
-				  (sub-point-ref :class 'sub-point-data-model
-					   )
-				 (rbe2-dependent-nodes :class 'mesh-nodes-query-class
-					tagged-object-list 	(list ^^imprinted-pin-hole)
-					mesh-object 		(get-surface-mesh (get-mesh-model-object 
-											(get-incident-link ^superior)))
-					color 				'green
-					line-width			3
-					)
-				)
- )
+               (imprinted-pin-hole :class '(tagging-object geometry-with-split-periodic-faces-class)
+                   source-object ^^pin-hole
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^^max-element-size ^^min-element-size
+                                        0 0.1 0 20.0 1.0e-5)
+                   )
+
+               (pin-hole :class 'cylinder-object
+                   reference-object ^main-frame-object
+                   height ^^max-height
+                   diameter ^^inner-radius
+                   )
+
+               (eye :class '(tagging-object cylinder-object)
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^^max-element-size ^^min-element-size
+                                        0 0.1 0 20.0 1.0e-5)
+                   reference-object ^sub-frame
+                   height ^^max-height
+                   diameter ^^outer-radius
+                   )
+
+               (sub-point-ref :class 'sub-point-data-model
+                   )
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list 	(list ^^imprinted-pin-hole)
+                   mesh-object 		(get-surface-mesh (get-mesh-model-object
+                                                       (get-incident-link ^superior)))
+                   color 				'green
+                   line-width			3
+                   )
+               )
+  )
 ;=============================================
 ; END knuckle-female-element definitions
 ;=============================================
- 
+
 ;==============================================
 ; Class: knuckle-male-element
 ; Defines geometry for the knuckle male element
-;============================================== 
+;==============================================
 (define-class knuckle-male-element
   :inherit-from (union-object joint-element-model)
   :properties (
-			   main-frame-object (get-main-frame (the superior))
+               main-frame-object (get-main-frame (the superior))
 			   ;;; Helping variables
-			   outer-radius (* ^max-width ^scale-factor)
-			   inner-radius (* ^outer-radius 0.6)
-			   
+               outer-radius (* ^max-width ^scale-factor)
+               inner-radius (* ^outer-radius 0.6)
+
 			   ;;; Lists sent to link-geometry-class =======>
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-                            (list !superior) 
+                            (list !superior)
                             )
                difference-list (when (and (plusp ^max-width) (plusp ^max-height) )
-                                (list ^subtracted-box)
-                                )
+                                 (list ^subtracted-box)
+                                 )
 			   ;;; <=======
-			   
-			   object-list (list ^pin ^fork)
+
+               object-list (list ^pin ^fork)
                simplify? t
-			   
-			   (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
-				   source-object ^^pin
-					   tag-dimensions '(1 2 3)
-					   tag-attributes (list ^^max-element-size ^^min-element-size
-											0 0.1 0 20.0 1.0e-5)
-					)
-			   
+
+               (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
+                   source-object ^^pin
+                   tag-dimensions '(1 2 3)
+                   tag-attributes (list ^^max-element-size ^^min-element-size
+                                        0 0.1 0 20.0 1.0e-5)
+                   )
+
 			   ;;; Objects used to create the male joint geometry ====>
-			   (fork :class 'difference-object
-					object-list (list ^^box ^^subtracted-box ^^trim-object ^^sphere)
-					)
-				
-			   (subtracted-box :class 'box-object
-					reference-object ^main-frame-object
-					width 	(* ^^outer-radius 1.5)
-					height 	^^outer-radius
-					depth 	^^max-width
-					orientation (list
+               (fork :class 'difference-object
+                   object-list (list ^^box ^^subtracted-box ^^trim-object ^^sphere)
+                   )
+
+               (subtracted-box :class 'box-object
+                   reference-object ^main-frame-object
+                   width 	(* ^^outer-radius 1.5)
+                   height 	^^outer-radius
+                   depth 	^^max-width
+                   orientation (list
                                 (translate (list (- (* 0.75 ^^outer-radius) ^^inner-radius) 0 0 ))
                                 )
-					)
-			   
-			   (box :class 'box-object
-					reference-object ^main-frame-object
-					width 	(* ^^outer-radius 2)
-					height 	^^outer-radius
-					depth 	(* ^^outer-radius 1.5)
-					orientation (list
+                   )
+
+               (box :class 'box-object
+                   reference-object ^main-frame-object
+                   width 	(* ^^outer-radius 2)
+                   height 	^^outer-radius
+                   depth 	(* ^^outer-radius 1.5)
+                   orientation (list
                                 (translate (list (- ^^outer-radius ^^inner-radius) 0 0 ))
                                 )
-					)
-                   
+                   )
+
                (pin :class 'cylinder-object
                    reference-object ^main-frame-object
                    diameter ^^inner-radius
                    height (* ^^outer-radius 2)
                    )
-				
-			   (trim-box :class 'box-object
-					reference-object ^main-frame-object
-					width ^^inner-radius
-					height ^^outer-radius
-					depth (* ^^outer-radius 1.5)
-					orientation (list 
-								(translate (list (* ^^inner-radius -0.5) 0 0))
-								)
-					)
-				
-			   (trim-cyl :class 'cylinder-object
-					reference-object ^main-frame-object
-					diameter ^^outer-radius
-					height (* ^^outer-radius 1.5)
-					)
-				
-			    (trim-object :class 'difference-object
-					object-list (list ^^trim-box ^^trim-cyl)
-					)
-			    
-				
-				(difference-sphere :class 'sphere-object
-					reference-object ^main-frame-object
-					diameter (* ^^outer-radius 3)
-					)
-					
-				(trim-sphere :class 'sphere-object
-					reference-object ^main-frame-object
-					diameter (* ^^outer-radius 4)
-					)
-					
-				(sphere :class 'difference-object
-					object-list (list ^^trim-sphere ^^difference-sphere)
-					)
+
+               (trim-box :class 'box-object
+                   reference-object ^main-frame-object
+                   width ^^inner-radius
+                   height ^^outer-radius
+                   depth (* ^^outer-radius 1.5)
+                   orientation (list
+                                (translate (list (* ^^inner-radius -0.5) 0 0))
+                                )
+                   )
+
+               (trim-cyl :class 'cylinder-object
+                   reference-object ^main-frame-object
+                   diameter ^^outer-radius
+                   height (* ^^outer-radius 1.5)
+                   )
+
+               (trim-object :class 'difference-object
+                   object-list (list ^^trim-box ^^trim-cyl)
+                   )
+
+
+               (difference-sphere :class 'sphere-object
+                   reference-object ^main-frame-object
+                   diameter (* ^^outer-radius 3)
+                   )
+
+               (trim-sphere :class 'sphere-object
+                   reference-object ^main-frame-object
+                   diameter (* ^^outer-radius 4)
+                   )
+
+               (sphere :class 'difference-object
+                   object-list (list ^^trim-sphere ^^difference-sphere)
+                   )
 				;;; <=======
-				
+
 				;;; Used as the difference-list in link-geometry-class ===>
                (difference-box :class 'difference-object
-					object-list(list ^^subtracted-box ^^eye)
-					)
-			   (eye :class '(cylinder-object)
-					   reference-object ^main-frame-object
-					   height ^^max-height
-					   diameter ^^outer-radius
-					   )
-			   ;;; <=====	 
-				
+                   object-list(list ^^subtracted-box ^^eye)
+                   )
+               (eye :class '(cylinder-object)
+                   reference-object ^main-frame-object
+                   height ^^max-height
+                   diameter ^^outer-radius
+                   )
+			   ;;; <=====
+
 			   ;;; Defines where the sub-frame should be placed
-			   (sub-point-ref :class 'sub-point-data-model
-					orientation
-							(list (translate (list (- (* ^^outer-radius 2) ^^inner-radius) 0 0)))
-							
-					)
-				(rbe2-dependent-nodes :class 'mesh-nodes-query-class
-					tagged-object-list	(list ^^imprinted-pin)
-					mesh-object 		(get-surface-mesh (get-mesh-model-object 
-											(get-incident-link ^superior)))
-					color 				'green
-					line-width			3
-				)
+               (sub-point-ref :class 'sub-point-data-model
+                   orientation
+                   (list (translate (list (- (* ^^outer-radius 2) ^^inner-radius) 0 0)))
+
+                   )
+               (rbe2-dependent-nodes :class 'mesh-nodes-query-class
+                   tagged-object-list	(list ^^imprinted-pin)
+                   mesh-object 		(get-surface-mesh (get-mesh-model-object
+                                                       (get-incident-link ^superior)))
+                   color 				'green
+                   line-width			3
+                   )
                )
   )
 ;===========================================

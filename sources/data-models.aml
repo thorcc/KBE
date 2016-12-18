@@ -6,28 +6,28 @@
   :inherit-from (point-object create-event)
   :properties (
                (coordinates :class 'editable-data-property-class
-                    label "Coordinates"
+                   label "Coordinates"
                    )
-			   coord-ref	(nth 1 ^coordinates)
-			   label 		nil
-			   id 			nil
-			   line-width 	4
-			   color 		'green
-				
-			   property-objects-list (list
-										(list (the superior coordinates self) 
+               coord-ref	(nth 1 ^coordinates)
+               label 		nil
+               id 			nil
+               line-width 	4
+               color 		'green
+
+               property-objects-list (list
+                                      (list (the superior coordinates self)
                                             '(apply-formula? t))
-					)
+                                      )
                )
   )
 
 (define-method get-coordinates point-data-model ()
-	!coordinates
-)
+  !coordinates
+  )
 ;=================================
 ; END point-data-model definitions
 ;=================================
- 
+
 ;=====================================
 ; Class: vector-data-model
 ; Used for defining a direction vector
@@ -46,14 +46,14 @@
                length 0.2
 
                base-point (the coordinates (:from (the superior point-ref)))
-               
-               property-objects-list (list 
-                                      (list (the coordinates self (:from (the superior point-ref)) ) 
+
+               property-objects-list (list
+                                      (list (the coordinates self (:from (the superior point-ref)) )
                                             '(apply-formula? t))
                                       (list (the superior direction self)
                                             '(apply-formula? t))
                                       )
-               
+
 
                )
   )
@@ -83,31 +83,31 @@
                origin (the coordinates (:from ^point-ref))
                vector-j (cross-product ^vector-k ^vector-i)
                length 0.1
-               
+
                property-objects-list (list
                                       "Coordinates:"
                                       (list  (the coordinates self (:from ^point-ref) )
-                                            '(apply-formula? t))
+                                             '(apply-formula? t))
                                       "Z Axis:"
                                       (list (the direction self (:from ^z-vector-ref) )
                                             '(apply-formula? t))
                                       "X Axis:"
-                                      (list  (the direction self (:from ^x-vector-ref) )    
-                                            '(apply-formula? t))
+                                      (list  (the direction self (:from ^x-vector-ref) )
+                                             '(apply-formula? t))
                                       )
                )
   )
- 
+
 (define-method get-coordinates frame-data-model ()
-	!origin
-)
-  
+  !origin
+  )
+
 ;========================================
 ; Should only be called on a spline-frame
 ;========================================
 (define-method get-direction-along-member frame-data-model ()
-	!vector-i
-)  
+  !vector-i
+  )
 ;=================================
 ; END frame-data-model definitions
 ;=================================
@@ -130,13 +130,13 @@
 ;======================================================
 ; Class: sub-frame-data-model
 ; Explicit sub-frame class
-; When a sub-point-ref is specified in a joint element, 
+; When a sub-point-ref is specified in a joint element,
 ; its sub-frame will be placed accordingly
 ;======================================================
 (define-class sub-frame-data-model
   :inherit-from (frame-data-model)
   :properties (
-			   (point-ref :class 'point-data-model
+               (point-ref :class 'point-data-model
                    coordinates (convert-coords ^sub-point-ref (the coordinates (:from ^sub-point-ref)))
                    )
                )

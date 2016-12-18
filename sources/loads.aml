@@ -3,74 +3,74 @@
 ; Creates the geometry for a load
 ;================================
 (define-class load-geometry-class
-	:inherit-from (union-object)
-	:properties (
-				 load-point		nil
-				 mechanism-size	nil
-				 type 			nil
-				 direction		nil			 
-				 ;;This defines the line length, controlled by the size of the mechanism
-				 end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^direction)
-									(/ ^mechanism-size 6))) 
-				 total-vector 	(subtract-points ^end-point ^load-point)
-				 translation	(/ ^mechanism-size 40)
-				 
-				 random-direction-normal	(normalize (arbitrary-normal-to-vector ^direction))
-				 negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
-				 arrow-vector1 				(add-points 
-												(add-points ^load-point (multiply-vector-by-scalar 
-													^total-vector 0.2)) ;; Small portion of the total line
-												(multiply-vector-by-scalar ^random-direction-normal 
-													(/ ^mechanism-size 70)) ;; How far the arrow points 
-											)								;; move from the line 
-				 arrow-vector2 				(add-points 
-												(add-points ^load-point (multiply-vector-by-scalar 
-													^total-vector 0.2)) ;; This is the small portion 
-																		;; of the total line
-												(multiply-vector-by-scalar ^negative-random 
-													(/ ^mechanism-size 70)) 
-											)			 
-				 object-list (case ^type
-							  ('force (list ^line ^arrow1 ^arrow2 ))
-							  ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
-							  ) 
-				 
-				 (line :class 'line-object
-					point1 ^^load-point
-					point2 ^^end-point
-					)
-				 (arrow1 :class 'line-object
-					point1 ^^load-point
-					point2 ^^arrow-vector1 
-					)
-				 (arrow2 :class 'line-object
-					point1 ^^load-point
-					point2 ^^arrow-vector2
-					)
-				 (arrow3 :class 'line-object
-					point1 		^^load-point
-					point2 		^^arrow-vector1
-					orientation	(list (translate
-										(multiply-vector-by-scalar ^total-vector 0.1)
-										))
-					)
-				 (arrow4 :class 'line-object
-					point1 		^^load-point
-					point2 		^^arrow-vector2
-					orientation	(list (translate
-										(multiply-vector-by-scalar ^total-vector 0.1)
-										))
-					)
-				 color (case ^type
-						('force 'orange)
-						('torque 'red)
-						)
-				 orientation (list (translate 
-									(multiply-vector-by-scalar (normalize ^direction) (* -1 ^translation))
-									))
-				 line-width 1
-				)
-)
+  :inherit-from (union-object)
+  :properties (
+               load-point		nil
+               mechanism-size	nil
+               type 			nil
+               direction		nil
+               ;;This defines the line length, controlled by the size of the mechanism
+               end-point		(subtract-points ^load-point (multiply-vector-by-scalar (normalize ^direction)
+                                                                                      (/ ^mechanism-size 6)))
+               total-vector 	(subtract-points ^end-point ^load-point)
+               translation	(/ ^mechanism-size 40)
+
+               random-direction-normal	(normalize (arbitrary-normal-to-vector ^direction))
+               negative-random 			(multiply-vector-by-scalar ^random-direction-normal -1)
+               arrow-vector1 				(add-points
+                                        (add-points ^load-point (multiply-vector-by-scalar
+                                                                 ^total-vector 0.2));; Small portion of the total line
+                                        (multiply-vector-by-scalar ^random-direction-normal
+                                                                   (/ ^mechanism-size 70));; How far the arrow points
+                                        );; move from the line
+               arrow-vector2 				(add-points
+                                        (add-points ^load-point (multiply-vector-by-scalar
+                                                                 ^total-vector 0.2));; This is the small portion
+                                        ;; of the total line
+                                        (multiply-vector-by-scalar ^negative-random
+                                                                   (/ ^mechanism-size 70))
+                                        )
+               object-list (case ^type
+                             ('force (list ^line ^arrow1 ^arrow2 ))
+                             ('torque (list ^line ^arrow1 ^arrow2 ^arrow3 ^arrow4))
+                             )
+
+               (line :class 'line-object
+                   point1 ^^load-point
+                   point2 ^^end-point
+                   )
+               (arrow1 :class 'line-object
+                   point1 ^^load-point
+                   point2 ^^arrow-vector1
+                   )
+               (arrow2 :class 'line-object
+                   point1 ^^load-point
+                   point2 ^^arrow-vector2
+                   )
+               (arrow3 :class 'line-object
+                   point1 		^^load-point
+                   point2 		^^arrow-vector1
+                   orientation	(list (translate
+                                        (multiply-vector-by-scalar ^total-vector 0.1)
+                                        ))
+                   )
+               (arrow4 :class 'line-object
+                   point1 		^^load-point
+                   point2 		^^arrow-vector2
+                   orientation	(list (translate
+                                        (multiply-vector-by-scalar ^total-vector 0.1)
+                                        ))
+                   )
+               color (case ^type
+                       ('force 'orange)
+                       ('torque 'red)
+                       )
+               orientation (list (translate
+                                  (multiply-vector-by-scalar (normalize ^direction) (* -1 ^translation))
+                                  ))
+               line-width 1
+               )
+  )
 ;========================
 ; END load-geometry-class
 ;========================
@@ -80,130 +80,130 @@
 ; Holds load parameters
 ;======================
 (define-class load-model
-	:inherit-from (load-geometry-class)
-	:properties (
-				 loaded-link		(default nil) ;;link-model-class
-				 mechanism-size		(default nil) ;;Greatest distance within the mechanism
-				 load-point-object	(default nil) ;;point-data-model
-				 mesh-model-object	(get-mesh-model-object ^loaded-link)
-				 
-				 (type :class 'option-property-class
-					mode 			'radio
-					options-list	(list 'force 'torque)
-					formula 		(default 'torque)
-					label 			"Load type"
-					)
-				 (load-point :class 'editable-data-property-class
-					formula	(get-coordinates ^load-point-object)
-					label 	"Load point"
-					)
-			     (direction :class 'editable-data-property-class
-					formula 	(default '(0 0 1))
-					label 		"Load direction vector"
-					)
-				 (magnitude :class 'var-unit-data-property-class
-					current-load (case ^^type
-									('force 'N)
-									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
-								  )
-					value-in 	(default ^magnitude)
-					unit-in 	^current-load
-					unit 		^current-load
-					label 		"Magntitude"
-					)
-				 (scale-load :class 'var-unit-data-property-class
-					current-load (case ^^type
-									('force 'N)
-									('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
-								  )
-					value-in 	(default ^scale-load)
-					unit-in 	^current-load
-					unit 		^current-load
-					label 		"Scaling load"
-				 )				 
-				 property-objects-list (list
-										'("Draw geometry" (button1-parameters :draw)
-											ui-work-area-action-button-class)
-										'("Draw connection nodes" (button1-parameters :draw-node)
-												ui-work-area-action-button-class)
-										""
-										(list (the superior type self)
-											'(automatic-apply? t))
-										(list (the superior load-point self)
-											'(automatic-apply? t))
-										(if ^magnitude
-											(list (the superior magnitude self)
-												'(automatic-apply? t))
-											(list (the superior scale-load self)
-												'(automatic-apply? t))
-										)
-										(list (the superior direction self)
-											'(automatic-apply? t))
-					)		 
-				)
-	:subobjects (
-				 (loaded-node :class 'mesh-query-nodes-with-label-class 
-					label							"loaded-node"
-					owner-link						^^loaded-link
-					mesh-database-object 			(get-mesh-database ^^loaded-link)
-					interface-object 				^^load-point-object
-					subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
-															^^mesh-model-object)
-														(get-rbe2-independent-node-list 
-															^^mesh-model-object))
-					tolerance						1.0e3
-					quantity						1
-					color							'green
-					line-width						5
-					)
-				)
-)
+  :inherit-from (load-geometry-class)
+  :properties (
+               loaded-link		(default nil);;link-model-class
+               mechanism-size		(default nil);;Greatest distance within the mechanism
+               load-point-object	(default nil);;point-data-model
+               mesh-model-object	(get-mesh-model-object ^loaded-link)
+
+               (type :class 'option-property-class
+                   mode 			'radio
+                   options-list	(list 'force 'torque)
+                   formula 		(default 'torque)
+                   label 			"Load type"
+                   )
+               (load-point :class 'editable-data-property-class
+                   formula	(get-coordinates ^load-point-object)
+                   label 	"Load point"
+                   )
+               (direction :class 'editable-data-property-class
+                   formula 	(default '(0 0 1))
+                   label 		"Load direction vector"
+                   )
+               (magnitude :class 'var-unit-data-property-class
+                   current-load (case ^^type
+                                  ('force 'N)
+                                  ('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
+                                  )
+                   value-in 	(default ^magnitude)
+                   unit-in 	^current-load
+                   unit 		^current-load
+                   label 		"Magntitude"
+                   )
+               (scale-load :class 'var-unit-data-property-class
+                   current-load (case ^^type
+                                  ('force 'N)
+                                  ('torque (progn (add-unit 'Nm 1.0 '(N m)) 'Nm))
+                                  )
+                   value-in 	(default ^scale-load)
+                   unit-in 	^current-load
+                   unit 		^current-load
+                   label 		"Scaling load"
+                   )
+               property-objects-list (list
+                                      '("Draw geometry" (button1-parameters :draw)
+                                        ui-work-area-action-button-class)
+                                      '("Draw connection nodes" (button1-parameters :draw-node)
+                                        ui-work-area-action-button-class)
+                                      ""
+                                      (list (the superior type self)
+                                            '(automatic-apply? t))
+                                      (list (the superior load-point self)
+                                            '(automatic-apply? t))
+                                      (if ^magnitude
+                                          (list (the superior magnitude self)
+                                                '(automatic-apply? t))
+                                        (list (the superior scale-load self)
+                                              '(automatic-apply? t))
+                                        )
+                                      (list (the superior direction self)
+                                            '(automatic-apply? t))
+                                      )
+               )
+  :subobjects (
+               (loaded-node :class 'mesh-query-nodes-with-label-class
+                   label							"loaded-node"
+                   owner-link						^^loaded-link
+                   mesh-database-object 			(get-mesh-database ^^loaded-link)
+                   interface-object 				^^load-point-object
+                   subset-mesh-query-object-list	(append (get-link-mesh-node-query-objects-list
+                                                            ^^mesh-model-object)
+                                                           (get-rbe2-independent-node-list
+                                                            ^^mesh-model-object))
+                   tolerance						1.0e3
+                   quantity						1
+                   color							'green
+                   line-width						5
+                   )
+               )
+  )
 
 (define-method work-area-button1-action load-model (params)
-	(case params
-		(:draw
-			(draw self :draw-subobjects? nil)
-		)
-		(:draw-node
-			(draw !loaded-node)
-		)
-		(:undraw 
-			(undraw self)
-		)
-	)
-)
+  (case params
+    (:draw
+     (draw self :draw-subobjects? nil)
+     )
+    (:draw-node
+     (draw !loaded-node)
+     )
+    (:undraw
+     (undraw self)
+     )
+    )
+  )
 
 (define-method get-load-point load-model ()
-	!load-point
-)
+  !load-point
+  )
 
 (define-method get-load-type load-model ()
-	!type
-)
+  !type
+  )
 
 (define-method get-loaded-link load-model ()
-	!loaded-link
-)
+  !loaded-link
+  )
 
 (define-method get-magnitude load-model ()
-	(the magnitude value-in)
-)
+  (the magnitude value-in)
+  )
 
 (define-method get-scale-load load-model ()
-	(the scale-load value-in)
-)
+  (the scale-load value-in)
+  )
 
 (define-method get-direction load-model ()
-	!direction
-)
+  !direction
+  )
 
 (define-method get-loaded-node load-model ()
-	!loaded-node
-)
+  !loaded-node
+  )
 
 (define-method get-load-ID load-model ()
-	(1+ !index)
-)
+  (1+ !index)
+  )
 ;===========================
 ; END load-model definitions
 ;===========================

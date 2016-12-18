@@ -6,74 +6,74 @@
   :inherit-from (object)
   :properties (
                label 				nil
-			   link-ref 			(default 'default)
+               link-ref 			(default 'default)
                sweep-index 			(default 'default)
-               cross-section-type	(read-from-string (remove "-section" (write-to-string 
-										(default 'circular-section))))
+               cross-section-type	(read-from-string (remove "-section" (write-to-string
+                                                                          (default 'circular-section))))
                solid-dimensions 	'(0.04 0.04)
                point-list 			nil
                weight-list 			nil
                )
   )
-  
+
 (define-method get-cs-type shape-model ()
-	!cross-section-type
-)
+  !cross-section-type
+  )
 ;============================
 ; END shape-model definitions
 ;============================
 
 ;====================================================
-; Class: link-geometry-class 
+; Class: link-geometry-class
 ; Generates a link's total geometry, including joints
 ;====================================================
 (define-class link-geometry-class
   :inherit-from (tagging-object geometry-with-split-periodic-faces-class)
   :properties (
-  			   incident-constraints	nil
-											
-               ;source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
-			   source-object 	(if ^blend? ^blend-object ^difference-element)
-			   
+               incident-constraints	nil
+
+                                        ;source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
+               source-object 	(if ^blend? ^blend-object ^difference-element)
+
                max-element-size 0.02
                default-shape 	(let(
-										(def (loop for shape in (children ^^^shapes :class 'shape-model)
-											 when (and
-												   (equal 'default (the sweep-index (:from shape)))
-												   (equal ^link-index (the link-ref (:from shape)))
-												   ) do
-											 (return shape)
-											 )
-										   )
-									 )
-									(if def def ^^default-shape)
-								)
+                                   (def (loop for shape in (children ^^^shapes :class 'shape-model)
+                                          when (and
+                                                (equal 'default (the sweep-index (:from shape)))
+                                                (equal ^link-index (the link-ref (:from shape)))
+                                                ) do
+                                          (return shape)
+                                          )
+                                        )
+                                   )
+                                (if def def ^^default-shape)
+                                )
 
                constraint-connection-combination	(connection-combinations (length ^incident-constraints))
-               
-               surfaces-ref-list 					(children ^surfaces :class 'surface-model 
-														:test '(and !geom !display?))
-			   
-               members-ref-list						(children ^sweeps :class 'member-solid-model)
-               visible-members-ref-list 			(children ^sweeps :class 'member-solid-model 
-														:test '!display?)
 
-			   union-list 							(loop for constraint in ^incident-constraints
-														append (get-joint-union-list constraint)
-														)
+               surfaces-ref-list 					(children ^surfaces :class 'surface-model
+                                                          :test '(and !geom !display?))
+
+               members-ref-list						(children ^sweeps :class 'member-solid-model)
+               visible-members-ref-list 			(children ^sweeps :class 'member-solid-model
+                                                          :test '!display?)
+
+               union-list 							(loop for constraint in ^incident-constraints
+                                               append (get-joint-union-list constraint)
+                                               )
                difference-list 						(loop for constraint in ^incident-constraints
-														append (get-joint-difference-list constraint)
-														)
+                                                  append (get-joint-difference-list constraint)
+                                                  )
 			   ;;; List of the final geometry
                object-list 							(append
-														(list ^imprint-union-element)
-														^difference-list
-														)
-               
+                                                 (list ^imprint-union-element)
+                                                 ^difference-list
+                                                 )
+
                (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
                    tag-dimensions 	'(1 2 3)
                    tag-attributes 	(list ^max-element-size .01
-                                        0 0.1 0 20.0 1.0e-5)
+                                          0 0.1 0 20.0 1.0e-5)
                    source-object 	^^union-element
                    )
 			   ;;; Imprints the union-element with the point reference
@@ -84,210 +84,210 @@
                                       )
                    )
                ;;The final sewn geometry of members, surfaces and joints
-			   (difference-element :class '(tagging-object difference-object)
+               (difference-element :class '(tagging-object difference-object)
                    tag-dimensions 	'(1 2 3)
                    tag-attributes 	(list ^max-element-size .01
-                                        0 0.1 0 20.0 1.0e-5)
-				   object-list 		(append (list ^union-element) ^difference-list)
+                                          0 0.1 0 20.0 1.0e-5)
+                   object-list 		(append (list ^union-element) ^difference-list)
                    simplify? 		t
                    )
-                
-			   ;;Union of surfaces, members and joint geometry without difference objects
-               (union-element :class '(tagging-object union-object) 
+
+               ;;Union of surfaces, members and joint geometry without difference objects
+               (union-element :class '(tagging-object union-object)
                    tag-dimensions	'(1 2 3)
                    tag-attributes 	(list ^max-element-size .01
-                                        0 0.1 0 20.0 1.0e-5)
+                                          0 0.1 0 20.0 1.0e-5)
                    object-list 		(append  (if ^surfaces-ref-list ^surfaces-ref-list nil)
-                                        ^visible-members-ref-list
-                                        ^^union-list)
-				   simplify? 		t
+                                             ^visible-members-ref-list
+                                             ^^union-list)
+                   simplify? 		t
                    )
-				render 'shaded
-				
-				(blend? :class 'option-property-class
-					mode 			'radio
-					options-list	(list t nil)
-					labels-list 	(list "Yes" "No")
-					formula 		(default t)
-					label 			"Automatic blending?"
-					)
-				
-				(blend-mesh-element-size :class 'editable-data-property-class
-					formula	(default (/ (the max-element-size (:from (first ^incident-constraints))) 2))
-					label	"Blend mesh element size"
-					)
-				
-				(blend-object :class '(tagging-object blend-class)
-				   source-object	^^difference-element
-				   edge-ids			(get-intersecting-edges-list ^superior)
-				   radii			(loop for edge in ^edge-ids 
-										append (list (/ (the max-width (:from (first ^^incident-constraints)))
-														5)))
-				   
-				   tag-dimensions 	'(1 2 3)
-				   tag-attributes 	(list ^blend-mesh-element-size
-										0 0.1 0 20.0 1.0e-5) 
-				   )
-				
-				;; This list collects the members that can be drawn.
-				;; If it is empty, this links will not be considered in the mesh or analysis
-				drawable-members-ref-list 	(loop for member in ^members-ref-list 
-												if (the geom (:from member)) 
-													collect member
-												)
+               render 'shaded
+
+               (blend? :class 'option-property-class
+                   mode 			'radio
+                   options-list	(list t nil)
+                   labels-list 	(list "Yes" "No")
+                   formula 		(default t)
+                   label 			"Automatic blending?"
+                   )
+
+               (blend-mesh-element-size :class 'editable-data-property-class
+                   formula	(default (/ (the max-element-size (:from (first ^incident-constraints))) 2))
+                   label	"Blend mesh element size"
+                   )
+
+               (blend-object :class '(tagging-object blend-class)
+                   source-object	^^difference-element
+                   edge-ids			(get-intersecting-edges-list ^superior)
+                   radii			(loop for edge in ^edge-ids
+                                   append (list (/ (the max-width (:from (first ^^incident-constraints)))
+                                                   5)))
+
+                   tag-dimensions 	'(1 2 3)
+                   tag-attributes 	(list ^blend-mesh-element-size
+                                          0 0.1 0 20.0 1.0e-5)
+                   )
+
+               ;; This list collects the members that can be drawn.
+               ;; If it is empty, this links will not be considered in the mesh or analysis
+               drawable-members-ref-list 	(loop for member in ^members-ref-list
+                                            if (the geom (:from member))
+                                            collect member
+                                            )
                 ;;; simplify? t removes common boundaries in the geometry
 			    ;;; simplify? nil keeps them
-			    simplify? 	nil
-				
-				property-objects-list (list
-										"Link sewn with incident joint element"
-										(list (the superior cross-section-type self) 
-										'(automatic-apply? t))
-										'("Set all cross-sections" (button1-parameters :set-c)
-										ui-work-area-action-button-class)
-										""
-										
-										'("Draw" (button1-parameters :draw-sewn-geometry)
-										ui-work-area-action-button-class)
-										'("Draw with mesh" (button1-parameters :draw-with-mesh)
-										ui-work-area-action-button-class)
-										'("Undraw" (button1-parameters :undraw-sewn)
-										ui-work-area-action-button-class)
-										""
-										(list (the superior blend? self)
-											'(automatic-apply? t))
-										(list (the superior blend-mesh-element-size self)
-											'(automatic-apply? t))
-										;'("Add/remove surface" (button1-parameters :set-surface)
-										;ui-work-area-action-button-class)
-										)
-										
-				optimization-object	nil
-			   )
+               simplify? 	nil
+
+               property-objects-list (list
+                                      "Link sewn with incident joint element"
+                                      (list (the superior cross-section-type self)
+                                            '(automatic-apply? t))
+                                      '("Set all cross-sections" (button1-parameters :set-c)
+                                        ui-work-area-action-button-class)
+                                      ""
+
+                                      '("Draw" (button1-parameters :draw-sewn-geometry)
+                                        ui-work-area-action-button-class)
+                                      '("Draw with mesh" (button1-parameters :draw-with-mesh)
+                                        ui-work-area-action-button-class)
+                                      '("Undraw" (button1-parameters :undraw-sewn)
+                                        ui-work-area-action-button-class)
+                                      ""
+                                      (list (the superior blend? self)
+                                            '(automatic-apply? t))
+                                      (list (the superior blend-mesh-element-size self)
+                                            '(automatic-apply? t))
+                                        ;'("Add/remove surface" (button1-parameters :set-surface)
+                                        ;ui-work-area-action-button-class)
+                                      )
+
+               optimization-object	nil
+               )
   :subobjects (
                (surfaces :class 'surfaces-on-link-collection
-				   members-list ^^members-ref-list
+                   members-list ^^members-ref-list
                    )
                (sweeps :class 'members-on-link-collection
-				   shapes-on-link		(get-shapes-on-link (the superior superior))
-				   optimization-object 	^^optimization-object
+                   shapes-on-link		(get-shapes-on-link (the superior superior))
+                   optimization-object 	^^optimization-object
                    )
                )
   )
 
 
 (define-method get-intersecting-edges-list link-geometry-class ()
-	(let* (
+  (let* (
 			(difference-egde-list (vgl::k-sub-geoms (the geom (:from !difference-element)) 1))
-			(member-geom-list (loop for member in !visible-members-ref-list 
-									append (list (copy-geom (the geom (:from member))))))
-			(members-diff-intersection (loop for geom in member-geom-list 
-											append (list (vgl::intersection-geoms (list (copy-geom (the geom 
-														(:from !difference-element)))
-												geom)))))
+			(member-geom-list (loop for member in !visible-members-ref-list
+                             append (list (copy-geom (the geom (:from member))))))
+			(members-diff-intersection (loop for geom in member-geom-list
+                                      append (list (vgl::intersection-geoms (list (copy-geom (the geom
+                                                                                               (:from !difference-element)))
+                                                                                  geom)))))
 			(non-free-joints (remove nil (loop for joint in !incident-constraints
-					when (not (is-free-constraint joint)) collect joint)))
-		)
-		(remove nil (loop for edge in difference-egde-list 
-			append (loop for member in members-diff-intersection
-				append (loop for joint in non-free-joints
-					collect (when (and (vgl::intersect-geom-p member edge)
-								(< (points-distance (get-sub-frame-coords joint) (geom-center edge)) 
-									(* (the max-width (:from joint)) 0.75)))
-							edge)
-						)
-				)
-		))
-	)
-)
-  
+                                        when (not (is-free-constraint joint)) collect joint)))
+         )
+    (remove nil (loop for edge in difference-egde-list
+                  append (loop for member in members-diff-intersection
+                           append (loop for joint in non-free-joints
+                                    collect (when (and (vgl::intersect-geom-p member edge)
+                                                       (< (points-distance (get-sub-frame-coords joint) (geom-center edge))
+                                                          (* (the max-width (:from joint)) 0.75)))
+                                              edge)
+                                    )
+                           )
+                  ))
+    )
+  )
+
 (define-method get-shapes-on-link link-geometry-class ()
-	(let (
-			(shape-list (make-sequence 'list (length !constraint-connection-combination) 
-				:initial-element !default-shape))
-		 )
-		(loop for shape in (children ^^shapes :class 'shape-model)
-			when (and (equal !link-index (the link-ref (:from shape))) 
-					(not (equal 'default (the sweep-index (:from shape)))) ) do
-				(replace shape-list (list shape) :start1 (the sweep-index (:from shape)))
-			finally (return shape-list)
+  (let (
+        (shape-list (make-sequence 'list (length !constraint-connection-combination)
+                                   :initial-element !default-shape))
+        )
+    (loop for shape in (children ^^shapes :class 'shape-model)
+      when (and (equal !link-index (the link-ref (:from shape)))
+                (not (equal 'default (the sweep-index (:from shape)))) ) do
+      (replace shape-list (list shape) :start1 (the sweep-index (:from shape)))
+      finally (return shape-list)
 		)
-	)
-)
-  
+    )
+  )
+
 (define-method get-surface link-geometry-class (index)
-	(nth index !surfaces-ref-list)
-)
-  
+  (nth index !surfaces-ref-list)
+  )
+
 (define-method has-line-cross-section link-geometry-class ()
-	(loop for shape in (get-shapes-on-link (the)) do
-		(if (equal 'line (the cross-section-type (:from shape))) 
-			(return t)
+  (loop for shape in (get-shapes-on-link (the)) do
+    (if (equal 'line (the cross-section-type (:from shape)))
+        (return t)
 		)
-		finally (return nil)
-	)
-)
+    finally (return nil)
+    )
+  )
 
 (define-method get-members link-geometry-class ()
-	!members-ref-list
-)
+  !members-ref-list
+  )
 
 (define-method get-visible-members link-geometry-class ()
-	!visible-members-ref-list
-)
+  !visible-members-ref-list
+  )
 
 (define-method get-rbe2-dependent-nodes-list link-geometry-class ()
-	(loop for c in !incident-constraints
-		collect (get-rbe2-dependent-nodes c)
-		)
-)
+  (loop for c in !incident-constraints
+    collect (get-rbe2-dependent-nodes c)
+    )
+  )
 
 ;==========================================================
 ; Returns all possible connections with all incident joints
 ; Input: Number of incident joints
 ;==========================================================
 (defun connection-combinations (n)
-	(loop for j from 0 to (- n 2)
-     append (loop for k from (1+ j) to (1- n)
+  (loop for j from 0 to (- n 2)
+    append (loop for k from (1+ j) to (1- n)
              collect (list j k)
-          )
-     )
-   )
+             )
+    )
+  )
 
 ;=================================================
 ; Left-click button methods for member-solid-model
 ;=================================================
 (define-method work-area-button1-action link-geometry-class (params)
   (case params
-	(:set-c
-		(loop for m in (the members-ref-list (:from self)) do
-				(change-value (the cross-section-type self (:from m)) !cross-section-type)
-			)	
-	)
+    (:set-c
+     (loop for m in (the members-ref-list (:from self)) do
+       (change-value (the cross-section-type self (:from m)) !cross-section-type)
+       )
+     )
 	;;; Sewn geometry refers to the union of a member and a joint
     (:draw-sewn-geometry
-		(draw self :draw-subobjects? nil)
+     (draw self :draw-subobjects? nil)
      )
     (:undraw-sewn
-		 (undraw self :subobjects? t)
-		 (undraw (the superior link-mesh-model))
+     (undraw self :subobjects? t)
+     (undraw (the superior link-mesh-model))
      )
-	(:draw-with-mesh
-		(draw self :draw-subobjects? nil)
-		(with-error-handler (:show-system-error? t)
-			(draw (the superior link-mesh-model))
-		)
-	 )
-	(:set-surface
-		(let (
+    (:draw-with-mesh
+     (draw self :draw-subobjects? nil)
+     (with-error-handler (:show-system-error? t)
+                         (draw (the superior link-mesh-model))
+                         )
+     )
+    (:set-surface
+     (let (
 			  (display-value? (the display? (:from (nth 0 (the surfaces-ref-list)))))
+           )
+       (if display-value?
+           (change-value (the display? (:from (get-surface (the) 0))) nil)
+         (change-value (the display? (:from (get-surface (the) 0))) t)
 			)
-			(if display-value? 
-				(change-value (the display? (:from (get-surface (the) 0))) nil)
-				(change-value (the display? (:from (get-surface (the) 0))) t)
-			)
-		)
-	 )
+       )
+     )
     )
   )
 ;====================================
@@ -295,7 +295,7 @@
 ;====================================
 
 ;========================================================================
-; Class: link-model-class 
+; Class: link-model-class
 ; Used to hold the link geometry, its mesh and the analysis as subobjects
 ;========================================================================
 (define-class link-model-class
@@ -303,87 +303,87 @@
   :properties (
                ;; properties set from parent init-form
                label											nil
-			   constraints-incident-on-link-list 				nil ;;List of joint-element-models
-               connection-between-2-constraints-combinations 	
+               constraints-incident-on-link-list 				nil;;List of joint-element-models
+               connection-between-2-constraints-combinations
 					(list-combinations ^constraints-incident-on-link-list)
                link-index 										nil
-			   
-			   optimization-object								(default nil)
-			   has-line-cross-section?							(has-line-cross-section ^link-geometry)
-			   )
+
+               optimization-object								(default nil)
+               has-line-cross-section?							(has-line-cross-section ^link-geometry)
+               )
   :subobjects (
                (link-geometry :class 'link-geometry-class
-				   incident-constraints ^^constraints-incident-on-link-list
-				   optimization-object	^^optimization-object
+                   incident-constraints ^^constraints-incident-on-link-list
+                   optimization-object	^^optimization-object
                    )
-			   (link-mesh-model :class 'link-mesh-class
+               (link-mesh-model :class 'link-mesh-class
                    geometry-model-object	^link-geometry
-				   link-model 				^superior
-				   joint-elements			^^constraints-incident-on-link-list
+                   link-model 				^superior
+                   joint-elements			^^constraints-incident-on-link-list
                    )
                (analysis :class 'analysis-link-model-class
                    mesh-model-object	^^link-mesh-model
-				   link-model			^superior
+                   link-model			^superior
                    )
                )
   )
 
 (defun get-blend-mesh-size (dimensions-list)
-	(loop for dim in dimensions-list do
-		minimize dim into min-size
-		finally (return (/ min-size 16))
-	)
-)
+  (loop for dim in dimensions-list do
+    minimize dim into min-size
+    finally (return (/ min-size 16))
+    )
+  )
 
 (define-method get-non-free-constraints-incident-on-link-list link-model-class ()
-	(when !constraints-incident-on-link-list
-		(loop for joint-element in !constraints-incident-on-link-list do
-			if (not (string-equal "free" (get-constraint-type joint-element)))
-				collect joint-element
+  (when !constraints-incident-on-link-list
+    (loop for joint-element in !constraints-incident-on-link-list do
+      if (not (string-equal "free" (get-constraint-type joint-element)))
+      collect joint-element
 		)
-	)
-)
+    )
+  )
 
 (define-method get-shapes-on-link link-model-class ()
-	(get-shapes-on-link !link-geometry)
-)
+  (get-shapes-on-link !link-geometry)
+  )
 
 (define-method get-smallest-mesh-size link-model-class ()
-	(loop for member in (get-visible-members !link-geometry) do
-		minimize (calculate-mesh-size member) into min-mesh
-		finally (return min-mesh)
-	)
-)
+  (loop for member in (get-visible-members !link-geometry) do
+    minimize (calculate-mesh-size member) into min-mesh
+    finally (return min-mesh)
+    )
+  )
 
 (define-method get-link-geometry link-model-class ()
-	!link-geometry
-)
+  !link-geometry
+  )
 
 (define-method get-joint-elements-on-link link-model-class ()
-	!constraints-incident-on-link-list
-)
- 
+  !constraints-incident-on-link-list
+  )
+
 (define-method are-all-members-displayed? link-model-class ()
- 	(> (length (the visible-members-ref-list (:from !link-geometry))) 0)
-)
+  (> (length (the visible-members-ref-list (:from !link-geometry))) 0)
+  )
 
 (define-method get-mesh-model-object link-model-class ()
- 	!link-mesh-model
-)
+  !link-mesh-model
+  )
 
 (define-method get-mesh-database link-model-class ()
-	(get-mesh-database !link-mesh-model)
-)
+  (get-mesh-database !link-mesh-model)
+  )
 
 
 (define-method get-material-type link-model-class ()
-	(get-material-type !analysis)
-)
+  (get-material-type !analysis)
+  )
 
 (define-method get-export-surface link-model-class ()
-	(the export-surface? (:from !analysis))
-)
- 
+  (the export-surface? (:from !analysis))
+  )
+
 ;=================================================================
 ; Returns all possible connections with all incident joints
 ; Input: List of incident joints, OR the number of incident joints
@@ -395,7 +395,7 @@
         )
     (loop for j from 0 to (- n 2)
       append (loop for k from (1+ j) to (1- n)
-               collect (list (nth j l) (nth k l))                 
+               collect (list (nth j l) (nth k l))
                )
       )
     )

@@ -5,94 +5,94 @@
 (define-class link-mesh-class
   :inherit-from (object)
   :properties (
-                link-model 					nil ;;link-model-class
-                geometry-model-object 		nil ;;link-geometry-class
-			    joint-elements 				nil ;;joint-element-models
-			   
-			    mesh-object 					(the (:from (the surface-tri-mesh)))
-			   			   
-				rbe2-independent-node-list	(loop for element in ^joint-elements
-												collect (get-rbe2-independent-node element)
-				)
+               link-model 					nil;;link-model-class
+               geometry-model-object 		nil;;link-geometry-class
+               joint-elements 				nil;;joint-element-models
 
-				(node-set :class 'analysis-node-set-class
-                   query-objects-list (append (if (get-export-surface ^link-model) 
-												(list (the nodes-query (:from ^^mesh-object)))
-												(list (the nodes-query (:from ^^tet-mesh))))
-											^rbe2-independent-node-list
-											)
-                   ) ;;Contains all the nodes used for the bdf file
+               mesh-object 					(the (:from (the surface-tri-mesh)))
+
+               rbe2-independent-node-list	(loop for element in ^joint-elements
+                                            collect (get-rbe2-independent-node element)
+                                            )
+
+               (node-set :class 'analysis-node-set-class
+                   query-objects-list (append (if (get-export-surface ^link-model)
+                                                  (list (the nodes-query (:from ^^mesh-object)))
+                                                (list (the nodes-query (:from ^^tet-mesh))))
+                                              ^rbe2-independent-node-list
+                                              )
+                   );;Contains all the nodes used for the bdf file
                )
   :subobjects (
-			   (mesh-database :class 'mesh-database-class
-					)
-			   (surface-tri-mesh :class 'paver-mesh-class
-					object-to-mesh 				^^geometry-model-object
-					mesh-database-object		^^mesh-database
-					element-shape 				:tri
-					surface-element-size-method	(nth 2 '(0 1 2))
-					curvature-refinement-method	:isotropic-relative
-				
-					)
-			   (tet-mesh :class 'tet-mesh-class
-					mesh-database-object	^^mesh-database
-					object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list 
-														^superior))
-					)
-			   ;; Example subobjects for analysis in AML:----->
-			   (fixed-nodes :class 'mesh-nodes-query-class
+               (mesh-database :class 'mesh-database-class
+                   )
+               (surface-tri-mesh :class 'paver-mesh-class
+                   object-to-mesh 				^^geometry-model-object
+                   mesh-database-object		^^mesh-database
+                   element-shape 				:tri
+                   surface-element-size-method	(nth 2 '(0 1 2))
+                   curvature-refinement-method	:isotropic-relative
+
+                   )
+               (tet-mesh :class 'tet-mesh-class
+                   mesh-database-object	^^mesh-database
+                   object-to-mesh 			(first (get-link-surface-mesh-elements-query-objects-list
+                                                  ^superior))
+                   )
+               ;; Example subobjects for analysis in AML:----->
+               (fixed-nodes :class 'mesh-nodes-query-class
                    )
                (loaded-nodes :class 'mesh-query-nodes-from-interface-class
                    )
-               ; <-----
-			   )
+                                        ; <-----
+               )
   )
 
 (define-method get-surface-mesh link-mesh-class ()
-	!mesh-object
-)
-  
+  !mesh-object
+  )
+
 (define-method get-mesh-database link-mesh-class ()
-	!mesh-database
-)
-  
+  !mesh-database
+  )
+
 (define-method get-mesh-entities-list link-mesh-class ()
-	(if (get-export-surface !link-model)
+  (if (get-export-surface !link-model)
 		(the nodes-query mesh-entities-list (:from !mesh-object))
-		(the tet-mesh nodes-query mesh-entities-list)
-	)
-)
+    (the tet-mesh nodes-query mesh-entities-list)
+    )
+  )
 
 (define-method get-link-mesh-node-query-objects-list link-mesh-class ()
-	(list (the nodes-query (:from !mesh-object)))
-)
+  (list (the nodes-query (:from !mesh-object)))
+  )
 
 (define-method get-link-surface-mesh-elements-query-objects-list link-mesh-class ()
-	(when (the surface-elements-query (:from !mesh-object :error nil :relation nil))
-		(list (the surface-elements-query (:from !mesh-object)))
-	)
-)
+  (when (the surface-elements-query (:from !mesh-object :error nil :relation nil))
+    (list (the surface-elements-query (:from !mesh-object)))
+    )
+  )
 
 (define-method get-link-solid-mesh-elements-query-objects-list link-mesh-class ()
   (when (the elements-query (:from !tet-mesh :error nil :relation nil))
     (list (the elements-query (:from !tet-mesh))))
   )
-  
+
 (define-method get-rbe2-constraints-list link-mesh-class ()
-	!joint-elements
-)
+  !joint-elements
+  )
 
 (define-method get-rbe2-independent-node-list link-mesh-class ()
-	!rbe2-independent-node-list
-)
+  !rbe2-independent-node-list
+  )
 
 (define-method get-all-node-objects-list link-mesh-class ()
-	(list !node-set)
-)
+  (list !node-set)
+  )
 
 (define-method get-node-position-in-query-list link-mesh-class (node-query-object)
-	(1+ (position node-query-object (the node-set query-objects-list)))
-)
+  (1+ (position node-query-object (the node-set query-objects-list)))
+  )
 ;================================
 ; END link-mesh-class definitions
 ;================================

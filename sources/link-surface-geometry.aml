@@ -6,53 +6,53 @@
   :inherit-from (tagging-object surface-thickened-class)
   :properties (
                members 				nil
-			   (mesh-element-size	:class 'editable-data-property-class
-					formula 	(default ^thickness)
-					label "Mesh element size"
-					)
-			   tag-dimensions 		'(1 2 3)
+               (mesh-element-size	:class 'editable-data-property-class
+                   formula 	(default ^thickness)
+                   label "Mesh element size"
+                   )
+               tag-dimensions 		'(1 2 3)
                tag-attributes 		(list ^mesh-element-size .1
-										0 0.1 0 20.0 1.0e-5)
-									
-			  (display? :class 'flag-property-class
-                 formula  (loop for i in ^edge-combination
-                            when (or (not (the display? (:from (nth i ^members)))) 
-								  (not (the geom (:from (get-connection (nth i ^members))))))
-                            do (return nil)
-                            finally (return t) 
-                            )
-                 )
+                                          0 0.1 0 20.0 1.0e-5)
+
+               (display? :class 'flag-property-class
+                   formula  (loop for i in ^edge-combination
+                              when (or (not (the display? (:from (nth i ^members))))
+                                       (not (the geom (:from (get-connection (nth i ^members))))))
+                              do (return nil)
+                              finally (return t)
+                              )
+                   )
                edge-combination nil
-			   
-			   ;; The source-object has to be nil when it can't be displayed. Else there will be a null geom
+
+               ;; The source-object has to be nil when it can't be displayed. Else there will be a null geom
                source-object (if ^display? ^surface nil)
 
                ;; Surface thickness 40% of smallest cross-section height
                thickness (* 0.4 (loop for i in ^edge-combination
-                           minimize (get-height (get-cross-section_D (nth i ^members)))
-                           ))
+                                  minimize (get-height (get-cross-section_D (nth i ^members)))
+                                  ))
                front-thickness (/ ^thickness 2)
                back-thickness (/ ^thickness 2)
                render 'shaded
-			   (start-point :class 'point-object
-					coordinates (nth 0 (get-start-weight (get-connection (nth (nth 0 ^edge-combination) 
-						^members)))))
-               property-objects-list (list 
+               (start-point :class 'point-object
+                   coordinates (nth 0 (get-start-weight (get-connection (nth (nth 0 ^edge-combination)
+                                                                             ^members)))))
+               property-objects-list (list
                                       (list (the superior display? self)
                                             '(automatic-apply? t))
                                       (the superior mesh-element-size self)
-									  )
+                                      )
                )
   :subobjects (
                (surface :class 'surface-from-uv-curves-class
-					u-curves-objects-list (list ^start-point 
-							(get-connection (nth (nth 2 ^edge-combination) ^members)))					
-					v-curves-objects-list (list (get-connection (nth (nth 0 ^edge-combination) ^members)) 
-							(get-connection (nth (nth 1 ^edge-combination) ^members))) 
+                   u-curves-objects-list (list ^start-point
+                                               (get-connection (nth (nth 2 ^edge-combination) ^members)))
+                   v-curves-objects-list (list (get-connection (nth (nth 0 ^edge-combination) ^members))
+                                               (get-connection (nth (nth 1 ^edge-combination) ^members)))
                    )
-			   )
+               )
   )
-  
+
 ;==============================
 ; END surface-model definitions
 ;==============================
@@ -65,19 +65,19 @@
   :inherit-from (series-object)
   :properties (
                members-list					nil
-               closed-loops-combinations	(sweep-loop-combinations 
-												(length ^constraints-incident-on-link-list))
-			   visible-members-index 		(loop for mem in ^visible-members-ref-list
-											   collect (the index (:from mem))
-											   )
-               valid-surface-loops 			(intersection ^closed-loops-combinations 
-												(list-3-subset-combinations ^visible-members-index))
+               closed-loops-combinations	(sweep-loop-combinations
+                                           (length ^constraints-incident-on-link-list))
+               visible-members-index 		(loop for mem in ^visible-members-ref-list
+                                            collect (the index (:from mem))
+                                            )
+               valid-surface-loops 			(intersection ^closed-loops-combinations
+                                                        (list-3-subset-combinations ^visible-members-index))
                quantity 					(length ^valid-surface-loops)
                class-expression 			'surface-model
                series-prefix 				'surface
                init-form '(
                            edge-combination	(nth ^index ^valid-surface-loops)
-						   members			^members-list
+                           members			^members-list
                            )
                )
   )
@@ -95,30 +95,30 @@
       )
     )
   )
-  
+
 ;===========================================================
-; C(n,3) = 3! / ( 3! (n - 3)! 
+; C(n,3) = 3! / ( 3! (n - 3)!
 ; Output: List unique combinations of three, given n numbers
 ;===========================================================
 (defun 3-edge-loop-combinations (n)
-   (loop for i from 0 to (- n 3)   
-     append (loop for j from (1+ i) to (- n 2)
-              append (loop for k from (1+ j) to (1- n)
-                       collect (list i j k)
-                       )
-              )
-     )
-   )
- 
+  (loop for i from 0 to (- n 3)
+    append (loop for j from (1+ i) to (- n 2)
+             append (loop for k from (1+ j) to (1- n)
+                      collect (list i j k)
+                      )
+             )
+    )
+  )
+
 (defun list-3-subset-combinations (p)
   (let (
         (l (if (typep p 'list) p (if (typep p 'fixnum) (loop for i from 0 to (1- p) collect i) (list ) ) ) )
         (n (length l))
         )
-    (loop for i from 0 to (- n 3)   
+    (loop for i from 0 to (- n 3)
       append (loop for j from (1+ i) to (- n 2)
                append (loop for k from (1+ j) to (1- n)
-                        collect (list (nth i l) (nth j l) (nth k l))                   
+                        collect (list (nth i l) (nth j l) (nth k l))
                         )
                )
       )

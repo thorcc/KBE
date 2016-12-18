@@ -1,29 +1,29 @@
 ;===========================================
 ; Class: RBE2-collection
 ; Instantiates every RBE2 as a series-object
-;=========================================== 
+;===========================================
 (define-class RBE2-collection
-	:inherit-from (series-object)
-	:properties (
-				 link-mesh-object 	nil ;;link-mesh-class
-				 constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
-				 
-				 class-expression 	'analysis-rigid-body-element-type-1-class
-				 series-prefix 		'rbe2
-				 quantity 			(length ^constraints-list)
-				 init-form '(
-							 independent-node-query-object 		(get-rbe2-independent-node 
-																	(nth ^index ^constraints-list))
-							 dependent-nodes-query-object 		(get-rbe2-dependent-nodes 
-																	(nth ^index ^constraints-list))
-							 dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
-							 ;; The node is added in the node-set manually
-							 create-new-independent-node? 		nil 
-							 ;; Have to set the id manually, as default is 1 for each instance
-                             id 								(+ 1 ^index) 
-							 )
-				 )
-	)
+  :inherit-from (series-object)
+  :properties (
+               link-mesh-object 	nil;;link-mesh-class
+               constraints-list 	(get-rbe2-constraints-list ^link-mesh-object)
+
+               class-expression 	'analysis-rigid-body-element-type-1-class
+               series-prefix 		'rbe2
+               quantity 			(length ^constraints-list)
+               init-form '(
+                           independent-node-query-object 		(get-rbe2-independent-node
+                                                                (nth ^index ^constraints-list))
+                           dependent-nodes-query-object 		(get-rbe2-dependent-nodes
+                                                             (nth ^index ^constraints-list))
+                           dependent-degrees-of-freedom-list 	'(1 2 3 4 5 6)
+                           ;; The node is added in the node-set manually
+                           create-new-independent-node? 		nil
+                           ;; Have to set the id manually, as default is 1 for each instance
+                           id 								(+ 1 ^index)
+                           )
+               )
+  )
 ;================================
 ; END RBE2-collection definitions
 ;================================
@@ -36,142 +36,142 @@
 (define-class analysis-link-model-class
   :inherit-from (analysis-model-class)
   :properties (
-               mesh-model-object 				nil ;;This property is set as a link-mesh-class
-			   link-model						nil ;;link-model-class
+               mesh-model-object 				nil;;This property is set as a link-mesh-class
+               link-model						nil;;link-model-class
                mesh-database-object 			(get-mesh-database ^mesh-model-object)
-			   export-surface? 					(default t)
+               export-surface? 					(default t)
 
                material-catalog-object 			^material-catalog
                materials-list 					(list (the material-name (:from ^material-selection)))
-               property-set-objects-list 		(progn 
-													(change-aluminum-properties !material-catalog)
-													(change-steel-properties !material-catalog)
-													(if ^export-surface?
-														(list ^link-2D-material-properties)
-														(list ^link-3D-material-properties)
-													)
-												)
-               
-			   element-set-2d-objects-list 		(if ^export-surface? 
-													(list ^link-analysis-surface-elements) nil)
-			   element-set-3d-objects-list 		(if ^export-surface? 
-													nil (list ^link-analysis-solid-elements))
-				
+               property-set-objects-list 		(progn
+                                               (change-aluminum-properties !material-catalog)
+                                               (change-steel-properties !material-catalog)
+                                               (if ^export-surface?
+                                                   (list ^link-2D-material-properties)
+                                                 (list ^link-3D-material-properties)
+                                                 )
+                                               )
+
+               element-set-2d-objects-list 		(if ^export-surface?
+                                                    (list ^link-analysis-surface-elements) nil)
+               element-set-3d-objects-list 		(if ^export-surface?
+                                                    nil (list ^link-analysis-solid-elements))
+
                mesh-object 						(get-surface-mesh  ^mesh-model-object)
                node-set-objects-list 			(get-all-node-objects-list ^mesh-model-object)
-			   
-			   rigid-body-element-objects-list	(children ^rbe2-list 
-													:class 'analysis-rigid-body-element-type-1-class)
-			   
-			   (material-selection :class 'option-property-class
-					options-list	(children ^^material-catalog)
-					labels-list 	(loop for material in (children ^^material-catalog)
-										collect (the material-name (:from material))
-										)
-					mode 			'menu
-					formula 		(default (the material-catalog steel))
-					label 			"Select Material"
-					)
-				
+
+               rigid-body-element-objects-list	(children ^rbe2-list
+                                                          :class 'analysis-rigid-body-element-type-1-class)
+
+               (material-selection :class 'option-property-class
+                   options-list	(children ^^material-catalog)
+                   labels-list 	(loop for material in (children ^^material-catalog)
+                                   collect (the material-name (:from material))
+                                   )
+                   mode 			'menu
+                   formula 		(default (the material-catalog steel))
+                   label 			"Select Material"
+                   )
+
                )
   :subobjects (
                (material-catalog :class 'material-catalog-class
                    )
                (link-2D-material-properties :class 'analysis-property-set-2d-type-1-class
                    material-catalog-object	^^material-catalog
-				   material-name 			(write-to-string (the material-name (:from ^material-selection)))
+                   material-name 			(write-to-string (the material-name (:from ^material-selection)))
                    thickness				(/ (get-smallest-mesh-size ^^link-model) 2.5)
-				   )
+                   )
                (link-3D-material-properties :class 'analysis-property-set-3d-type-1-class
-					material-catalog-object	^^material-catalog
-				    material-name 			(write-to-string (the material-name (:from ^material-selection)))
-					)
+                   material-catalog-object	^^material-catalog
+                   material-name 			(write-to-string (the material-name (:from ^material-selection)))
+                   )
                (link-analysis-surface-elements :class 'analysis-element-set-2d-type-1-class
                    query-objects-list (get-link-surface-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object 	^^link-2D-material-properties
-				   )
+                   )
                (link-analysis-solid-elements :class 'analysis-element-set-3d-type-1-class
                    query-objects-list	(get-link-solid-mesh-elements-query-objects-list ^^mesh-model-object)
                    property-set-object 	^^link-3D-material-properties
                    )
-			    (rbe2-list :class 'RBE2-collection
-				   link-mesh-object		^^mesh-model-object
-				   )
-			   ;; Example subobjects for analysis in AML:----->
-			   (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
+               (rbe2-list :class 'RBE2-collection
+                   link-mesh-object		^^mesh-model-object
+                   )
+               ;; Example subobjects for analysis in AML:----->
+               (fixed-nodes-constraint :class 'analysis-constraint-displacement-class
                    )
                (nodal-load :class 'analysis-load-force-nodal-class
                    )
                (load-case-1 :class 'analysis-load-case-class
-				   )
+                   )
                ;; <-----
-			   (nastran-interface :class 'nastran-analysis-class
+               (nastran-interface :class 'nastran-analysis-class
                    analysis-model-object ^superior
-                   model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection)) 
-								(the version-name (:from ^^version-selection)))
+                   model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection))
+                                      (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string (object-name ^^superior)) ".bdf")
-                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran)) 
-				   ;; could write 'nastran-version :nx-nastran' but this also shows the available versions
+                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
+                   ;; could write 'nastran-version :nx-nastran' but this also shows the available versions
                    )
                )
   )
-  
+
 (define-method get-material-type analysis-link-model-class ()
-	!material-selection
-)
+  !material-selection
+  )
 
 (define-method get-yield-strength material-class ()
-	(if (nth 4 !material-properties)
+  (if (nth 4 !material-properties)
 		(nth 1 (nth 4 !material-properties))
-		(progn 
-			(change-steel-properties !superior)
-			(nth 1 (nth 4 !material-properties))
+    (progn
+      (change-steel-properties !superior)
+      (nth 1 (nth 4 !material-properties))
 		)
-	)
-)
+    )
+  )
 
 ;============================================================
 ; Method for circumventing AML bug when writing to bdf.
-; Manually overwriting all material-properties for steel, 
+; Manually overwriting all material-properties for steel,
 ; as well as adding the yield strength for Steel, API 5L X65.
 ;============================================================
 (define-method change-steel-properties material-catalog-class ()
-	(unless (nth 1 (nth 4 (the steel material-properties)))
-		(change-value (the steel material-properties)
-					(list (list 'elastic-modulus 9.9E7 (list 'N (list 'm -2)) "youngs modulus") 
-						(list 'poissons-ratio 0.29 'nil "") 
-						(list 'mass-density 7.85 (list 'kg (list 'cm -3)) "") 
-						(list 'shear-modulus 7.7E7 (list 'N (list 'm -2)) "")
-						(list 'yield-strength 4.48E5 (list 'N (list 'm -2)) "")
-					)
-		)
-	)
-)
+  (unless (nth 1 (nth 4 (the steel material-properties)))
+    (change-value (the steel material-properties)
+                  (list (list 'elastic-modulus 2.1E11 (list 'N (list 'm -2)) "youngs modulus")
+                        (list 'poissons-ratio 0.29 'nil "")
+                        (list 'mass-density 7850 (list 'kg (list 'm -3)) "")
+                        (list 'shear-modulus 8.1E10 (list 'N (list 'm -2)) "")
+                        (list 'yield-strength 4.48E8 (list 'N (list 'm -2)) "")
+                        )
+                  )
+    )
+  )
 
 ;===========================================================
 ; Method for circumventing AML bug when writing to bdf.
-; Manually overwriting all material-properties for aluminum, 
+; Manually overwriting all material-properties for aluminum,
 ; as well as adding the yield strength for Aluminum 6061-T6
 ;===========================================================
 (define-method change-aluminum-properties material-catalog-class ()
-	(unless (nth 1 (nth 4 (the aluminum material-properties)))
-		(change-value (the aluminum material-properties)
-					(list (list 'elastic-modulus 6.89E7 (list 'N (list 'm -2)) "youngs modulus") 
-						(list 'poissons-ratio 0.33 'nil "") 
-						(list 'mass-density 2.72 (list 'kg (list 'cm -3)) "") 
-						(list 'shear-modulus 2.6E7 (list 'N (list 'm -2)) "")
-						(list 'yield-strength 2.76E5 (list 'N (list 'm -2)) "")
-					)
-		)
-	)
-)
-  
+  (unless (nth 1 (nth 4 (the aluminum material-properties)))
+    (change-value (the aluminum material-properties)
+                  (list (list 'elastic-modulus 6.89E11 (list 'N (list 'm -2)) "youngs modulus")
+                        (list 'poissons-ratio 0.33 'nil "")
+                        (list 'mass-density 2720 (list 'kg (list 'cm -3)) "")
+                        (list 'shear-modulus 2.6E10 (list 'N (list 'm -2)) "")
+                        (list 'yield-strength 2.76E8 (list 'N (list 'm -2)) "")
+                        )
+                  )
+    )
+  )
+
 (define-method property-classification-list analysis-link-model-class ()
   (list
    (list "Input Properties"
          '(
-			material-selection
-           ) 
+           material-selection
+           )
          )
    )
   )
