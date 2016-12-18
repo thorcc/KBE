@@ -5,27 +5,27 @@
 (define-class master-joint-model
   :inherit-from (series-object frame-data-model)
   :properties (
-			   link-incidence 		(default nil)
-			   max-element-size 	(default 0.04)
-			   min-element-size 	(default 0.01)
-               scale-factor 		(default 1.2) ;;Scaling of the constraint dimensions
-			   constraint-variable	(default nil)
-			   degrees-of-freedom	(default nil) ;;Only applicable for free joints
-			   incident-links		(default nil) ;;Ref to the link-model-class objects
+               link-incidence 		(default nil)
+               max-element-size 	(default 0.04)
+               min-element-size 	(default 0.01)
+               scale-factor 		(default 1.2);;Scaling of the constraint dimensions
+               constraint-variable	(default nil)
+               degrees-of-freedom	(default nil);;Only applicable for free joints
+               incident-links		(default nil);;Ref to the link-model-class objects
                constraint-type		(default nil)
 
-			   gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
-											(list (if (nth 1 ^link-incidence) "female" nil))))
+               gender-list			(remove nil (append (list (if (nth 0 ^link-incidence) "male" nil))
+                                                     (list (if (nth 1 ^link-incidence) "female" nil))))
 
                joint-elements		(when (children (the superior)) (children (the superior)))
-			   male-joint-element	(loop for element in ^joint-elements
-										when (equal 'male (get-gender element)) do
-											(return element))
-			   female-joint-element	(loop for element in ^joint-elements
-										when (equal 'female (get-gender element)) do
-											(return element))
+               male-joint-element	(loop for element in ^joint-elements
+                                      when (equal 'male (get-gender element)) do
+                                      (return element))
+               female-joint-element	(loop for element in ^joint-elements
+                                      when (equal 'female (get-gender element)) do
+                                      (return element))
 
-			   point-ref 			(default nil)
+               point-ref 			(default nil)
                direction 			(default nil)
                (z-vector-ref :class 'vector-data-model
                    direction ^^direction
@@ -34,116 +34,116 @@
                    direction (arbitrary-normal-to-vector ^^direction)
                    )
 
-			   dimensions 		(calculate-dimensions (the superior))
+               dimensions 		(calculate-dimensions (the superior))
 
-			   (max-width :class 'editable-data-property-class
-				    label 	"Joint width"
-					formula	(nth 0 ^dimensions)
-					)
+               (max-width :class 'editable-data-property-class
+                   label 	"Joint width"
+                   formula	(nth 0 ^dimensions)
+                   )
                (max-height :class 'editable-data-property-class
-					label 	"Joint height"
-					formula	(nth 1 ^dimensions)
-					)
+                   label 	"Joint height"
+                   formula	(nth 1 ^dimensions)
+                   )
 
-			   quantity			(length ^gender-list)
-			   class-expression '(read-from-string (concatenate !constraint-type "-"
-									(nth !index ^gender-list) "-element"))
+               quantity			(length ^gender-list)
+               class-expression '(read-from-string (concatenate !constraint-type "-"
+                                                                (nth !index ^gender-list) "-element"))
 
-			   init-form '(
-						   master-joint-object	(the superior superior) ;;Reference to the master-joint-model
-						   gender 				(read-from-string (nth !index ^gender-list))
-						   incident-link 		(nth !index (remove nil ^incident-links))
-						   label				(concatenate (nth !index ^gender-list) "-joint-element")
-						   )
+               init-form '(
+                           master-joint-object	(the superior superior);;Reference to the master-joint-model
+                           gender 				(read-from-string (nth !index ^gender-list))
+                           incident-link 		(nth !index (remove nil ^incident-links))
+                           label				(concatenate (nth !index ^gender-list) "-joint-element")
+                           )
 
-			   ;;Only display properties for non-free constraints
-			   property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))
-				(list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type))
-				(list
-					'("Draw joint" (button1-parameters :draw-joint)
-                                        ui-work-area-action-button-class)
-					""
-					'("Undraw" (button1-parameters :undraw)
-                                        ui-work-area-action-button-class)
-					(the superior max-width self)
-					(the superior max-height self)
-					)
-				)
-			   )
+               ;;Only display properties for non-free constraints
+               property-objects-list (if (or (equal "free" ^constraint-type) (equal "fixed" ^constraint-type))
+                                         (list (format nil "This is a ~a constraint. No properties can be edited." ^constraint-type))
+                                       (list
+                                        '("Draw joint" (button1-parameters :draw-joint)
+                                          ui-work-area-action-button-class)
+                                        ""
+                                        '("Undraw" (button1-parameters :undraw)
+                                          ui-work-area-action-button-class)
+                                        (the superior max-width self)
+                                        (the superior max-height self)
+                                        )
+                                       )
+               )
   )
 
 (define-method get-constraint-type master-joint-model ()
-	!constraint-type
-)
+  !constraint-type
+  )
 
 (define-method get-incident-links master-joint-model ()
-	!incident-links
-)
+  !incident-links
+  )
 
 ;=======================================================================
 ; Calculates the dimensions by retrieving the biggest width and height
 ; from the incident members. Dimensions are scaled with the scale-factor
 ;=======================================================================
 (define-method calculate-dimensions master-joint-model ()
-	(let (
-		(max-w 0)
-		(max-h 0)
-		)
-	   (loop for joint-elem in !joint-elements do
-		   (loop for link in !incident-links do
-			 (loop for member in (get-members (get-link-geometry link)) do
-				(let (
-					  (dimensions (get-max-dimensions member joint-elem))
-					  )
-					  (progn
-						(if (> (nth 0 dimensions) max-w)
-							(setf max-w (nth 0 dimensions)))
-						(if (> (nth 1 dimensions) max-h)
-							(setf max-h (nth 1 dimensions)))
-					  )
+  (let (
+        (max-w 0)
+        (max-h 0)
+        )
+    (loop for joint-elem in !joint-elements do
+      (loop for link in !incident-links do
+        (loop for member in (get-members (get-link-geometry link)) do
+          (let (
+                (dimensions (get-max-dimensions member joint-elem))
+                )
+            (progn
+              (if (> (nth 0 dimensions) max-w)
+                  (setf max-w (nth 0 dimensions)))
+              (if (> (nth 1 dimensions) max-h)
+                  (setf max-h (nth 1 dimensions)))
+              )
 				)
 			 )
-		   )
-		   finally (return (list (* max-w !scale-factor) (* max-h !scale-factor)))
+        )
+      finally (return (list (* max-w !scale-factor) (* max-h !scale-factor)))
 		)
-	)
-)
+    )
+  )
 
 (define-method get-female-element master-joint-model ()
-	!female-joint-element
-)
+  !female-joint-element
+  )
 
 (define-method get-male-element master-joint-model ()
-	!male-joint-element
-)
+  !male-joint-element
+  )
 
 (define-method get-joint-direction-vector master-joint-model ()
-	!direction
-)
+  !direction
+  )
 
 (define-method get-main-frame-coords master-joint-model (&optional params)
-	(if params
+  (if params
 		(nth params !origin)
-		!origin
-	)
-)
+    !origin
+    )
+  )
 
 (define-method get-direction master-joint-model ()
-	!direction
-)
+  !direction
+  )
 
 (define-method get-degrees-of-freedom master-joint-model ()
-	!degrees-of-freedom
-)
+  !degrees-of-freedom
+  )
 
 (define-method is-free-constraint master-joint-model ()
-	(equal "free" !constraint-type)
- )
+  (equal "free" !constraint-type)
+  )
 
 
 (define-method get-link-incidence master-joint-model ()
-	!link-incidence
-)
+  !link-incidence
+  )
 
 (define-method get-constraint-incidence master-joint-model (link)
   (let (
@@ -158,20 +158,20 @@
 ; Left-click button methods for master-joint-model
 ;=================================================
 (define-method work-area-button1-action master-joint-model (params)
-	(case params
-		(:draw-joint
-			(when !female-joint-element
-				(draw !female-joint-element :draw-subobjects? nil)
-			)
-			(when !male-joint-element
-				(draw !male-joint-element :draw-subobjects? nil)
-			)
-		)
-		(:undraw
-			(undraw self)
-		)
-	)
-)
+  (case params
+    (:draw-joint
+     (when !female-joint-element
+       (draw !female-joint-element :draw-subobjects? nil)
+       )
+     (when !male-joint-element
+       (draw !male-joint-element :draw-subobjects? nil)
+       )
+     )
+    (:undraw
+     (undraw self)
+     )
+    )
+  )
 ;===================================
 ; END master-joint-model definitions
 ;===================================
@@ -183,7 +183,7 @@
 (define-class joint-element-model
   :inherit-from (frame-data-model)
   :properties (
-			   label nil
+               label nil
 
 			   ;;; union-list is the list used for a union with the incident link.
 			   ;;; different-list is the list of objects that are to be subtracted from the final geometry.
@@ -192,177 +192,177 @@
                difference-list 		nil
 
                master-joint-object	nil
-               incident-link		nil ;;link-model-class
-			   constraint-type		(get-constraint-type ^master-joint-object)
-			   direction			(get-direction ^master-joint-object)
-			   (max-element-size	:class 'editable-data-property-class
-					formula 	(when (and ^max-width ^max-height)
-									(/ (min ^max-width ^max-height) 8)
-									)
-					label 		"Mesh element size"
-					)
-			   min-element-size 	(when (and ^max-width ^max-height)
-										(/ (min ^max-width ^max-height) 16)
-										)
+               incident-link		nil;;link-model-class
+               constraint-type		(get-constraint-type ^master-joint-object)
+               direction			(get-direction ^master-joint-object)
+               (max-element-size	:class 'editable-data-property-class
+                   formula 	(when (and ^max-width ^max-height)
+                                (/ (min ^max-width ^max-height) 8)
+                                )
+                   label 		"Mesh element size"
+                   )
+               min-element-size 	(when (and ^max-width ^max-height)
+                                   (/ (min ^max-width ^max-height) 16)
+                                   )
 
                display? 			t
                gender 				nil
                gender_int 			(case ^gender ('male 0) ('female 1) )
                link-incidence 		(nth ^gender_int (get-link-incidence ^master-joint-object))
 
-			   link-mesh-model-object (get-mesh-model-object ^incident-link)
+               link-mesh-model-object (get-mesh-model-object ^incident-link)
 
-			   members-connected-to-joint-element (loop for member in (get-members
-														(get-link-geometry ^incident-link))
+               members-connected-to-joint-element (loop for member in (get-members
+                                                                       (get-link-geometry ^incident-link))
                                                     when (position !superior (get-joints-on-member member))
                                                     collect member
                                                     )
 
                (sub-point-ref :class 'sub-point-data-model
                    )
-			   (rbe2-independent-node :class 'mesh-node-class
+               (rbe2-independent-node :class 'mesh-node-class
                    coordinates 	(get-rbe2-independent-node-coordinates ^superior)
                    mesh-object	(get-surface-mesh (get-mesh-model-object ^^incident-link))
-				   color		'red
-				   line-width	3
+                   color		'red
+                   line-width	3
                    )
-			    property-objects-list (list
-										'("Draw joint element geometry" (button1-parameters :draw-joint)
-											ui-work-area-action-button-class)
-										""
-										'("Draw RBE2 nodes" (button1-parameters :draw-nodes)
-											ui-work-area-action-button-class)
-										""
-										'("Undraw" (button1-parameters :undraw)
-											ui-work-area-action-button-class)
-										""
-										(list (the superior max-element-size self)
-											'(automatic-apply? t))
-										)
+               property-objects-list (list
+                                      '("Draw joint element geometry" (button1-parameters :draw-joint)
+                                        ui-work-area-action-button-class)
+                                      ""
+                                      '("Draw RBE2 nodes" (button1-parameters :draw-nodes)
+                                        ui-work-area-action-button-class)
+                                      ""
+                                      '("Undraw" (button1-parameters :undraw)
+                                        ui-work-area-action-button-class)
+                                      ""
+                                      (list (the superior max-element-size self)
+                                            '(automatic-apply? t))
+                                      )
                )
   :subobjects (
-                (main-frame :class 'frame-data-model
-					; Inherited frame properties used in main-frame and sub-frame
-					(x-vector-ref :class 'vector-data-model
-						direction (let (
-										(first-sweep (nth 0 ^members-connected-to-joint-element))
-										(x-dir  (subtract-vectors
-													(the coordinates (:from (the point-ref (:from (nth 0
-														(get-joints-on-member first-sweep)
-														)))))
-													(the coordinates (:from (the point-ref (:from (nth 1
-														(get-joints-on-member first-sweep)
-														))))))
-											)
-										(x-dir-normal (cross-product ^^direction
-											(cross-product ^^direction x-dir)))
-									   )
-									   (if (equal 0 (vector-length x-dir-normal))
-											x-dir-normal
-											(arbitrary-normal-to-vector ^^direction)
-										)
-									)
-                    )
-                )
-				; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
+               (main-frame :class 'frame-data-model
+                                        ; Inherited frame properties used in main-frame and sub-frame
+                   (x-vector-ref :class 'vector-data-model
+                                 direction (let (
+                                                 (first-sweep (nth 0 ^members-connected-to-joint-element))
+                                                 (x-dir  (subtract-vectors
+                                                          (the coordinates (:from (the point-ref (:from (nth 0
+                                                                                                             (get-joints-on-member first-sweep)
+                                                                                                             )))))
+                                                          (the coordinates (:from (the point-ref (:from (nth 1
+                                                                                                             (get-joints-on-member first-sweep)
+                                                                                                             ))))))
+                                                         )
+                                                 (x-dir-normal (cross-product ^^direction
+                                                                              (cross-product ^^direction x-dir)))
+                                                 )
+                                             (if (equal 0 (vector-length x-dir-normal))
+                                                 x-dir-normal
+                                               (arbitrary-normal-to-vector ^^direction)
+                                               )
+                                             )
+                                 )
+                   )
+                                        ; An element's sub-frame is placed by specifying the sub-point-ref in the element's properties
                (sub-frame :class 'sub-frame-data-model
                    )
                )
-)
+  )
 
 (define-method get-constraint-type joint-element-model ()
-	!constraint-type
-)
+  !constraint-type
+  )
 
 (define-method get-incident-link joint-element-model ()
-	!incident-link
-)
+  !incident-link
+  )
 
 (define-method get-gender joint-element-model ()
-	!gender
-)
+  !gender
+  )
 
 (define-method get-max-height joint-element-model ()
-	(when !max-height !max-height)
-)
+  (when !max-height !max-height)
+  )
 
 (define-method get-main-frame joint-element-model ()
-	!main-frame
-)
+  !main-frame
+  )
 
 (define-method get-sub-frame joint-element-model ()
-	!sub-frame
-)
+  !sub-frame
+  )
 
 (define-method get-rbe2-independent-node joint-element-model ()
-	!rbe2-independent-node
-)
+  !rbe2-independent-node
+  )
 
 (define-method get-rbe2-dependent-nodes joint-element-model ()
-	!rbe2-dependent-nodes
-)
+  !rbe2-dependent-nodes
+  )
 
 (define-method is-free-constraint joint-element-model ()
-	(equal "free" !constraint-type)
- )
+  (equal "free" !constraint-type)
+  )
 
 (define-method get-joint-union-list joint-element-model ()
-	!union-list
-)
+  !union-list
+  )
 
 (define-method get-joint-difference-list joint-element-model ()
-	!difference-list
-)
+  !difference-list
+  )
 
 (define-method get-main-frame-coords joint-element-model (&optional params)
-	(if params
+  (if params
 		(nth params (the main-frame origin))
-		(the main-frame origin)
-	)
-)
+    (the main-frame origin)
+    )
+  )
 
 (define-method get-sub-frame-coords joint-element-model (&optional params)
-	(if params
+  (if params
 		(nth params (the sub-frame origin))
-		(the sub-frame origin)
-	)
-)
+    (the sub-frame origin)
+    )
+  )
 
 (define-method get-displayed-members-connected-to-joint-element joint-element-model ()
-	(loop for member in !members-connected-to-joint-element
-		if (is-displayed? member)
-			collect member
-	)
-)
+  (loop for member in !members-connected-to-joint-element
+    if (is-displayed? member)
+    collect member
+    )
+  )
 
 (define-method get-rbe2-independent-node-coordinates joint-element-model ()
-	(if (or (equal "free" (get-constraint-type !master-joint-object))
-			(equal "fixed" (get-constraint-type !master-joint-object)))
+  (if (or (equal "free" (get-constraint-type !master-joint-object))
+          (equal "fixed" (get-constraint-type !master-joint-object)))
 		(get-coordinates (get-sub-frame (the)))
-		(get-coordinates (get-main-frame (the)))
-	)
-)
+    (get-coordinates (get-main-frame (the)))
+    )
+  )
 
 (define-method get-constraint-incidence joint-element-model (link-index)
- (when (member link-index ^link-incidence) (the self))
- )
+  (when (member link-index ^link-incidence) (the self))
+  )
 
 (define-method work-area-button1-action joint-element-model (params)
-	(case params
-		(:draw-joint
-			(draw self)
-		)
-		(:draw-nodes
-			(draw !rbe2-independent-node)
-			(draw !rbe2-dependent-nodes)
-		)
-		(:undraw
-			(undraw self)
-			(undraw !rbe2-independent-node)
-			(undraw !rbe2-dependent-nodes)
-		)
-	)
-)
+  (case params
+    (:draw-joint
+     (draw self)
+     )
+    (:draw-nodes
+     (draw !rbe2-independent-node)
+     (draw !rbe2-dependent-nodes)
+     )
+    (:undraw
+     (undraw self)
+     (undraw !rbe2-independent-node)
+     (undraw !rbe2-dependent-nodes)
+     )
+    )
+  )
 ;====================================
 ; END joint-element-model definitions
 ;====================================

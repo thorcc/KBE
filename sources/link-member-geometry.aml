@@ -13,61 +13,61 @@
 
                weight-points (append (the weight-list (:from ^shape-ref))
                                      (make-sequence 'list (- (length (the point-list (:from ^shape-ref)))
-										 (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
+                                                             (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
                                      )
                start-point (the origin (:from ^frame_D))
                end-point (the origin (:from ^frame_A))
 
                middle-points (case ^line-config
                                ('paralell (let (
-									(start-tangent (add-vectors ^start-point (multiply-vector-by-scalar
-										(normalize ^perpendicular-dir) (half ^param_b) ) ))
-									(end-tangent (add-vectors ^end-point (multiply-vector-by-scalar
-										(normalize ^perpendicular-dir) (- (half ^param_b)) ) ))
-									(start-weight (list 0.5))
-									(end-weight (list 0.5))
-									)
-								(if (roughly-same-point start-tangent end-tangent)
-									(list (append start-tangent start-weight) )
-								  (list (append start-tangent start-weight) (append end-tangent end-weight) )
-								  )
-								) )
+                                                (start-tangent (add-vectors ^start-point (multiply-vector-by-scalar
+                                                                                          (normalize ^perpendicular-dir) (half ^param_b) ) ))
+                                                (end-tangent (add-vectors ^end-point (multiply-vector-by-scalar
+                                                                                      (normalize ^perpendicular-dir) (- (half ^param_b)) ) ))
+                                                (start-weight (list 0.5))
+                                                (end-weight (list 0.5))
+                                                )
+                                            (if (roughly-same-point start-tangent end-tangent)
+                                                (list (append start-tangent start-weight) )
+                                              (list (append start-tangent start-weight) (append end-tangent end-weight) )
+                                              )
+                                            ) )
                                ('intersecting (let (
-									(center (nth 0 ^inter_points ))
+                                                    (center (nth 0 ^inter_points ))
 
-									(middle-point (add-vectors center (multiply-vector-by-scalar (normalize
-										(add-vectors (subtract-vectors ^start-point center)
-											(subtract-vectors ^end-point center ))) ^param_a) ) )
-									(angle-start-middle (/ (angle-between-2-vectors
-										(subtract-vectors ^start-point center)
-										(subtract-vectors middle-point center )) 2 ))
-									(start-tangent (add-vectors center (multiply-vector-by-scalar
-										(normalize (add-vectors (subtract-vectors ^start-point center)
-											(subtract-vectors middle-point center )))
-											(/ ^param_a (cosd angle-start-middle))) ) )
+                                                    (middle-point (add-vectors center (multiply-vector-by-scalar (normalize
+                                                                                                                  (add-vectors (subtract-vectors ^start-point center)
+                                                                                                                               (subtract-vectors ^end-point center ))) ^param_a) ) )
+                                                    (angle-start-middle (/ (angle-between-2-vectors
+                                                                            (subtract-vectors ^start-point center)
+                                                                            (subtract-vectors middle-point center )) 2 ))
+                                                    (start-tangent (add-vectors center (multiply-vector-by-scalar
+                                                                                        (normalize (add-vectors (subtract-vectors ^start-point center)
+                                                                                                                (subtract-vectors middle-point center )))
+                                                                                        (/ ^param_a (cosd angle-start-middle))) ) )
 
-									(angle-middle-end (/ (angle-between-2-vectors
-										(subtract-vectors middle-point center)
-										(subtract-vectors ^end-point center )) 2))
-									(end-tangent (add-vectors center (multiply-vector-by-scalar
-										(normalize (add-vectors (subtract-vectors middle-point center)
-											(subtract-vectors ^end-point center )))
-											(/ ^param_a (cosd angle-middle-end))) ) )
+                                                    (angle-middle-end (/ (angle-between-2-vectors
+                                                                          (subtract-vectors middle-point center)
+                                                                          (subtract-vectors ^end-point center )) 2))
+                                                    (end-tangent (add-vectors center (multiply-vector-by-scalar
+                                                                                      (normalize (add-vectors (subtract-vectors middle-point center)
+                                                                                                              (subtract-vectors ^end-point center )))
+                                                                                      (/ ^param_a (cosd angle-middle-end))) ) )
 
-									(start-weight (list (sind (/ (angle-between-2-vectors
-															(subtract-vectors start-tangent ^start-point)
-															(subtract-vectors start-tangent middle-point)
-															) 2) ) ) )
-									(middle-weight (list 1))
-									(end-weight (list (sind (/ (angle-between-2-vectors
-															(subtract-vectors end-tangent middle-point)
-															(subtract-vectors end-tangent ^end-point)
-															) 2) ) ) )
-									)
-								 (list (append start-tangent start-weight) (append middle-point middle-weight)
-									 (append end-tangent end-weight) )
-								)
-							  )
+                                                    (start-weight (list (sind (/ (angle-between-2-vectors
+                                                                                  (subtract-vectors start-tangent ^start-point)
+                                                                                  (subtract-vectors start-tangent middle-point)
+                                                                                  ) 2) ) ) )
+                                                    (middle-weight (list 1))
+                                                    (end-weight (list (sind (/ (angle-between-2-vectors
+                                                                                (subtract-vectors end-tangent middle-point)
+                                                                                (subtract-vectors end-tangent ^end-point)
+                                                                                ) 2) ) ) )
+                                                    )
+                                                (list (append start-tangent start-weight) (append middle-point middle-weight)
+                                                      (append end-tangent end-weight) )
+                                                )
+                                              )
                                )
                start-weight (list (append ^start-point (list 1)))
                end-weight (list (append ^end-point (list 1)))
@@ -76,7 +76,7 @@
                             (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
                                             for w in ^weight-points
                                             collect (append (the coordinates (:from
-												(nth p-index ^point-ref-list)) ) (list w)) ))
+                                                                              (nth p-index ^point-ref-list)) ) (list w)) ))
                             )
                         (if shape-points
                             (append ^start-weight shape-points ^end-weight)
@@ -85,22 +85,22 @@
                         )
                rational? t
                homogeneous? t
-               ;degree 2
+                                        ;degree 2
 
                line-config (line-pose (the superior))
                inter_points (inter_section (the superior) ^line-config )
                perpendicular-dir (perp-dir (the superior) ^line-config )
 
                param_a (vector-length (subtract-vectors (the origin (:from ^frame_A))
-				   (the origin (:from ^frame_B))))
+                                                        (the origin (:from ^frame_B))))
                param_b (vector-length (subtract-vectors (the origin (:from ^frame_B))
-				   (the origin (:from ^frame_C))))
+                                                        (the origin (:from ^frame_C))))
                param_c (vector-length (subtract-vectors (the origin (:from ^frame_C))
-				   (the origin (:from ^frame_D))))
+                                                        (the origin (:from ^frame_D))))
 
                )
   :subobjects (
-				;;cross section at start of spline
+               ;;cross section at start of spline
                (spline-frame_start :class 'frame-data-model
                    point-ref ^point-ref_D
                    z-vector-ref ^z-vector-ref_D
@@ -109,7 +109,7 @@
                                  direction (subtract-vectors (nth 1 ^points)  (nth 0 ^points))
                                  )
                    )
-				;;cross section at end of spline
+               ;;cross section at end of spline
                (spline-frame_end :class 'frame-data-model
 
                    point-ref ^point-ref_A
@@ -117,7 +117,7 @@
 
                    (x-vector-ref :class 'vector-data-model
                                  direction (subtract-vectors (nth (1- (length ^points)) ^points)
-									 (nth (- (length ^points) 2) ^points))
+                                                             (nth (- (length ^points) 2) ^points))
                                  )
                    )
                ;;augumented frames from SU-convention
@@ -135,30 +135,30 @@
 
                (frame_C :class 'frame-data-model
                    (point-ref :class 'point-data-model
-                               coordinates (nth 1 ^^^inter_points)
-                               )
+                              coordinates (nth 1 ^^^inter_points)
+                              )
                    (z-vector-ref :class 'vector-data-model
                                  direction ^^wjk
                                  )
                    (x-vector-ref :class 'vector-data-model
-                                  direction ^^perpendicular-dir
-                                  )
+                                 direction ^^perpendicular-dir
+                                 )
                    )
 
                )
   )
 
 (define-method get-spline-frame_start connection-model ()
-	!spline-frame_start
-)
+  !spline-frame_start
+  )
 
 (define-method get-spline-frame_end connection-model ()
-	!spline-frame_end
-)
+  !spline-frame_end
+  )
 
 (define-method get-start-weight connection-model ()
-	!start-weight
-)
+  !start-weight
+  )
 ;=================================================================
 ; Finds the middle point between p1 and p2, given the direction d1
 ;=================================================================
@@ -180,8 +180,8 @@
         (l2s (multiply-vector-by-scalar d1 (/ n2d d1s)))
 
         )
-		(add-vectors p1 (subtract-vectors l1s l2s))
-      )
+    (add-vectors p1 (subtract-vectors l1s l2s))
+    )
   )
 
 ;=============================================================
@@ -207,21 +207,21 @@
 ; Calculate intersection between lines
 ;=========================================================
 (define-method inter_section connection-model (line-config)
-   (case line-config
-     ('skew
-      )
-      (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
-     ('intersecting
-      (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
-      )
-     ('coincident
-      (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
-      )
-     ('paralell
-      (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
-      )
+  (case line-config
+    ('skew
      )
-   )
+    (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
+    ('intersecting
+     (list (cl-point !pij !wij !pjk !wjk) (cl-point !pjk !wjk !pij !wij) )
+     )
+    ('coincident
+     (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
+     )
+    ('paralell
+     (list (m-point !pij !wij !pjk) (m-point !pjk !wjk !pij) )
+     )
+    )
+  )
 ;============================================
 ; Returns generalized perpendicular direction
 ;============================================
@@ -272,13 +272,13 @@
 (define-class member-solid-model
   :inherit-from (tagging-object general-sweep-class)
   :properties(
-              mesh-size-factor (default 0.25) ;;25% of the member's smallest dimension
-			  (mesh-element-size :class 'editable-data-property-class
-					formula (calculate-mesh-size (the superior))
-					label "Mesh element size"
-					)
+              mesh-size-factor (default 0.25);;25% of the member's smallest dimension
+              (mesh-element-size :class 'editable-data-property-class
+                  formula (calculate-mesh-size (the superior))
+                  label "Mesh element size"
+                  )
 
-			  tag-dimensions '(1 2 3)
+              tag-dimensions '(1 2 3)
               tag-attributes (list ^mesh-element-size .1
                                    0 0.1 0 20.0 1.0e-5)
 
@@ -286,25 +286,25 @@
                   formula (when (the cross-section-type (:from ^shape-ref)) t)
                   )
 
-              joints-on-member nil ;;List of the two joint elements on the member
+              joints-on-member nil;;List of the two joint elements on the member
               frame_D (the sub-frame (:from (nth 0 ^joints-on-member) ))
               frame_A (the sub-frame (:from (nth 1 ^joints-on-member) ))
               point-ref_D (the point-ref (:from ^frame_D ))
               point-ref_A (the point-ref (:from ^frame_A ))
 
               ;;test for "link twist"
-			  z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A)
-				  (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
-						;;test for opposite joint directions
-					(if (is-joint-directions-opposite
-							(get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D)
-								(get-x-vector-ref_A ^connection) (get-x-vector-ref_D ^connection))
-						(the z-vector-ref (:from ^frame_D))
-						(the z-vector-ref (:from ^frame_A))
-					)
-					(the z-vector-ref (:from ^frame_D))
-				)
-			  z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
+              z-vector-ref_A (if (is-vectors-dependent (get-z-vector-ref_A ^frame_A)
+                                                       (get-z-vector-ref_D ^frame_D) (get-x-vector-ref_D ^connection))
+                                 ;;test for opposite joint directions
+                                 (if (is-joint-directions-opposite
+                                      (get-z-vector-ref_A ^frame_A) (get-z-vector-ref_D ^frame_D)
+                                      (get-x-vector-ref_A ^connection) (get-x-vector-ref_D ^connection))
+                                     (the z-vector-ref (:from ^frame_D))
+                                   (the z-vector-ref (:from ^frame_A))
+                                   )
+                               (the z-vector-ref (:from ^frame_D))
+                               )
+              z-vector-ref_D (the z-vector-ref (:from ^frame_D ))
 
               ;;cross section dimension, width 0.04 / height 0.04
               shape-ref nil
@@ -318,9 +318,9 @@
                           (nth 0 (the solid-dimensions (:from ^shape-ref)))
                           )
               height-end (if (< 3 (length (the solid-dimensions (:from ^shape-ref))))
-                            (nth 3 (the solid-dimensions (:from ^shape-ref)))
-                          (nth 1 (the solid-dimensions (:from ^shape-ref)))
-                          )
+                             (nth 3 (the solid-dimensions (:from ^shape-ref)))
+                           (nth 1 (the solid-dimensions (:from ^shape-ref)))
+                           )
 
               ;;; Sweep parameters
               profile-objects-list (list
@@ -350,24 +350,24 @@
                   mode 'menu
                   formula (if (the cross-section-type (:from ^shape-ref))
                               (nth (position (write-to-string (the cross-section-type (:from ^shape-ref)))
-								  !labels-list)  !options-list)
+                                             !labels-list)  !options-list)
                             (nth (position (write-to-string (the cross-section-type (:from ^default-shape)))
-								!labels-list)  !options-list) )
+                                           !labels-list)  !options-list) )
                   options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
                   labels-list (loop for option in !options-list
                                 collect (remove "-section" (write-to-string option))
                                 )
                   )
 
-			  optimization-object	(default nil)
+              optimization-object	(default nil)
 
               property-objects-list (list
                                      (list (the superior cross-section-type self)
                                            '(automatic-apply? t)
                                            )
-									'("Set cross-section" (button1-parameters :set-c button3-parameters
-										:set-c)
-									 ui-work-area-action-button-class)
+                                     '("Set cross-section" (button1-parameters :set-c button3-parameters
+                                                                               :set-c)
+                                       ui-work-area-action-button-class)
 
                                      (the superior width self)
                                      (the superior height self)
@@ -379,8 +379,8 @@
                                        ui-work-area-action-button-class)
                                      '("Undraw..." (button1-parameters :undraw button3-parameters :undraw)
                                        ui-work-area-action-button-class)
-									   ""
-									   (list (the superior mesh-element-size self)
+                                     ""
+                                     (list (the superior mesh-element-size self)
                                            '(automatic-apply? t))
                                      )
               )
@@ -391,101 +391,101 @@
                (cross-section_D :class !cross-section-type
                    reference-object 	(the spline-frame_start (:from ^connection))
                    orientation 			(list
-											(rotate 90 :x-axis)
-											(rotate 90 :z-axis)
-										)
-				   optimization-object	^^optimization-object
+                                        (rotate 90 :x-axis)
+                                        (rotate 90 :z-axis)
+                                        )
+                   optimization-object	^^optimization-object
                    )
                (cross-section_A :class !cross-section-type
                    width 				(if ^optimization-object
-											(get-width ^optimization-object)
-											^width-end)
+                                        (get-width ^optimization-object)
+                                      ^width-end)
                    height 				(if ^optimization-object
-											(get-height ^optimization-object)
-											^height-end)
+                                        (get-height ^optimization-object)
+                                      ^height-end)
                    reference-object 	(the spline-frame_end (:from ^connection))
                    orientation 			(list
-											(rotate 90 :x-axis)
-											(rotate 90 :z-axis)
-										)
-				   optimization-object 	^^optimization-object
+                                        (rotate 90 :x-axis)
+                                        (rotate 90 :z-axis)
+                                        )
+                   optimization-object 	^^optimization-object
                    )
                )
   )
 
 (define-method get-z-vector-ref_A sub-frame-data-model ()
-	(the direction (:from !z-vector-ref ))
-)
+  (the direction (:from !z-vector-ref ))
+  )
 
 (define-method get-z-vector-ref_D sub-frame-data-model ()
-	(the direction (:from !z-vector-ref))
-)
+  (the direction (:from !z-vector-ref))
+  )
 
 (define-method get-x-vector-ref_D connection-model ()
-	(the direction (:from (the x-vector-ref (:from !spline-frame_start))))
-)
+  (the direction (:from (the x-vector-ref (:from !spline-frame_start))))
+  )
 (define-method get-x-vector-ref_A connection-model ()
-	(the direction (:from (the x-vector-ref (:from !spline-frame_end))))
-)
+  (the direction (:from (the x-vector-ref (:from !spline-frame_end))))
+  )
 
 (define-method get-cross-section_D member-solid-model ()
-	!cross-section_D
-)
+  !cross-section_D
+  )
 
 (define-method get-connection member-solid-model ()
-	!connection
-)
+  !connection
+  )
 
 (define-method is-displayed? member-solid-model ()
-	!display?
-)
+  !display?
+  )
 
 (define-method get-joints-on-member member-solid-model ()
-	(when !joints-on-member
-		!joints-on-member)
-)
+  (when !joints-on-member
+    !joints-on-member)
+  )
 
 ;=====================================================================================================
 ; Returns the smallest dimension of a member times a mesh scaling factor defined in member-solid-model
 ;=====================================================================================================
 (define-method calculate-mesh-size member-solid-model ()
-	(* (min !width !height !width-end !height-end) !mesh-size-factor)
-)
+  (* (min !width !height !width-end !height-end) !mesh-size-factor)
+  )
 
 ;=====================================================================
 ; Returns the members width and height for a given joint-element-model
 ;=====================================================================
 (define-method get-max-dimensions member-solid-model (joint-element)
-	(let (
+  (let (
 		  (pos (position joint-element (get-joints-on-member (the))))
 		  (width (if pos
-					(get-width (get-cross-section-at-joint-element (the) joint-element))
-					0));;A joint not on the member might be sent as input
-					   ;;In that case, return 0
+                   (get-width (get-cross-section-at-joint-element (the) joint-element))
+                 0));;A joint not on the member might be sent as input
+        ;;In that case, return 0
 		  (height (if pos
-					(get-height (get-cross-section-at-joint-element (the) joint-element))
-					0))
+                    (get-height (get-cross-section-at-joint-element (the) joint-element))
+                  0))
 		  )
-		 (list width height)
-	)
-)
+    (list width height)
+    )
+  )
 
 ;====================================================
 ; Returns the member cross-section at a joint element
 ;====================================================
 (define-method get-cross-section-at-joint-element member-solid-model (joint-element)
-	(if (= 0 (position joint-element (get-joints-on-member (the))))
+  (if (= 0 (position joint-element (get-joints-on-member (the))))
 		!cross-section_D
-		!cross-section_A
-	)
-)
+    !cross-section_A
+    )
+  )
 
 (define-method get-spline-frame-at-joint-element member-solid-model (joint-element)
-	(if (= 0 (position joint-element (get-joints-on-member (the))))
+  (if (= 0 (position joint-element (get-joints-on-member (the))))
 		(get-spline-frame_start !connection)
-		(get-spline-frame_end !connection)
-	)
-)
+    (get-spline-frame_end !connection)
+    )
+  )
 
 ;=================================================
 ; Left-click button methods for member-solid-model
@@ -493,9 +493,9 @@
 (define-method work-area-button1-action member-solid-model (params)
   (case params
 	 (:set-c
-			;(draw self :draw-subobjects? nil)
+                                        ;(draw self :draw-subobjects? nil)
      )
-	(:draw
+    (:draw
      (draw self :draw-subobjects? nil)
      )
     (:undraw
@@ -523,8 +523,8 @@
 ; the plane defined by the vectors pv1 and pv2
 ;===================================================
 (defun is-vectors-dependent (v1 pv1 pv2)
-	(line-is-in-plane '(0 0 0) v1 '(0 0 0) (cross-product pv1 pv2))
-)
+  (line-is-in-plane '(0 0 0) v1 '(0 0 0) (cross-product pv1 pv2))
+  )
 
 ;===================================================
 ; Checks whether the joint directions z1 and z2 is
@@ -532,18 +532,18 @@
 ; is the same.
 ;===================================================
 (defun is-joint-directions-opposite (z1 z2 x1 x2)
-	(and (equal (nth 2 z1) (- (nth 2 z2)))
-		(equal (round-point (every-but-last x1) 3) (round-point (every-but-last x2) 3)))
-)
+  (and (equal (nth 2 z1) (- (nth 2 z2)))
+       (equal (round-point (every-but-last x1) 3) (round-point (every-but-last x2) 3)))
+  )
 
 ;==========================================
 ; Returns every element of list except last
 ;==========================================
 (defun every-but-last (list)
-   (loop for l on list
-		 while (rest l)
-		 collect (first l))
-)
+  (loop for l on list
+    while (rest l)
+    collect (first l))
+  )
 ;===================================
 ; END member-solid-model definitions
 ;===================================
@@ -555,16 +555,16 @@
 (define-class members-on-link-collection
   :inherit-from (series-object)
   :properties (
-			   shapes-on-link		(default nil)
+               shapes-on-link		(default nil)
 
-			   quantity 			(length ^connection-between-2-constraints-combinations)
+               quantity 			(length ^connection-between-2-constraints-combinations)
                class-expression		'member-solid-model
                series-prefix 		'member
                optimization-object 	(default nil)
                init-form '(
                            joints-on-member		(nth ^index ^^connection-between-2-constraints-combinations)
                            shape-ref 			(nth ^index ^shapes-on-link)
-						   optimization-object	^^optimization-object
+                           optimization-object	^^optimization-object
                            )
                )
   )
