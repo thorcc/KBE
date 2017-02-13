@@ -1,0 +1,8 @@
+Point	Type			Link-incidence		Joint-direction		DOF		Joint-variable
+0		"revolute"		(nil 0)				(0 0 1)		
+1		"revolute"		(1 nil)				(0 0 1)		
+2		"revolute"		(1 3)				(0 0 1)		
+3		"revolute"		(2 nil)				(0 0 1)		
+4		"revolute"		(2 4)				(0 0 1)		
+5		"revolute"		(4 0)				(0 0 1)
+6		"revolute"		(4 3)				(0 0 1)
