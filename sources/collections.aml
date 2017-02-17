@@ -168,11 +168,31 @@
                                              (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
                            id 			^index
                            )
+              property-objects-list (list
+                                          '("Edit Nodes" (button1-parameters :display-edit-nodes)
+                                            ui-work-area-action-button-class))
                )
+  ;:subobjects (
+  ;    (point-editor :class 'mechanism-user-io)
+  ;  )
+  )
+
+(define-method work-area-button1-action point-collection (params)
+  (case params
+    (:display-edit-nodes
+            (progn (add-object (the interface forms) 'point-editor 'point-editor-widget)
+                   (display (the interface forms point-editor))
+            )
+
+        )
+    )
   )
 
 (define-method get-points point-collection ()
   (children (the) :class 'point-data-model)
+  )
+(define-method get-points-list point-collection ()
+  !points-list
   )
 
 ;===============================================================
