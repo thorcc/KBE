@@ -10,12 +10,8 @@
               x-offset 40
               y-offset 40
 
-                                        ;font nil
-                                        ;background-color 'grey
-                                        ;foreground-color 'grey
 
               loaded-coords-list (get-points-list (the main-mechanism-class points))
-                                        ;loaded-coords-list loaded-coords
               coords-quantity (length ^loaded-coords-list)
 
               )
@@ -47,55 +43,47 @@
                   )
               (toolbar :class ui-toolbar-class
                   measurement 'percentage
-                  height 5
+                  height 10
                   width 20
                   y-offset 90
                   x-offset 70
                   Availability-list nil
                   Button1-action-list '(
-
-                                        (progn
-                                          (print "Apply button pressed")
-                                          (change-value
-                                           ^^loaded-coords-list
-                                           (loop for row from 0 to ^^coords-quantity
-                                             collect (loop for cell from 0 to 3
-                                                       do collect (get-cell-value (the superior sheet) row cell)
-                                                       )
-                                             )
-                                           )
-                                          (print ^^loaded-coords-list)
-                                          (change-points-list (the main-mechanism-class points) (^^loaded-coords-list))
-                                          (update (the superior sheet))
-                                          (hide (the superior point-editor))
+                                         (progn
+                                           (change-value
+                                            ^^loaded-coords-list
+                                            (loop for row from 0 to (- ^^coords-quantity 1)
+                                              collect (loop for cell from 0 to 3
+                                                        collect (read-from-string (get-cell-value (the superior sheet) row cell))
+                                                        )
+                                              )
+                                            )
+                                           (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
+                                            (update (the superior sheet))
+                                           (hide (the superior point-editor))
                                           )
-                                        (progn (
-                                                (print "Plus button pressed")
-                                                (change-value
+                                        (progn (change-value
                                                  ^^loaded-coords-list
-                                                 (loop for row from 0 to ^^coords-quantity
+                                                 (loop for row from 0 to (- ^^coords-quantity 1)
                                                    collect (loop for cell from 0 to 3
-                                                             do collect (get-cell-value (the superior sheet) row cell)
+                                                             collect (read-from-string (get-cell-value (the superior sheet) row cell))
                                                              )
                                                    )
                                                  )
-                                                (print ^^loaded-coords-list)
-                                                (change-points-list (the main-mechanism-class points) (^^loaded-coords-list))
+                                                (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
                                                 (change-value ^^coords-quantity (+ ^^coords-quantity 1))
                                                 (update (the superior sheet))
-                                                ))
+                                                )
                                         (progn
-                                          (print "Minus button pressed")
                                           (change-value
                                            ^^loaded-coords-list
-                                           (loop for row from 0 to ^^coords-quantity
+                                           (loop for row from 0 to (- ^^coords-quantity 1)
                                              collect (loop for cell from 0 to 3
-                                                       do collect (get-cell-value (the superior sheet) row cell)
+                                                       collect (read-from-string (get-cell-value (the superior sheet) row cell))
                                                        )
                                              )
                                            )
-                                          (print ^^loaded-coords-list)
-                                          (change-points-list (the main-mechanism-class points) (^^loaded-coords-list))
+                                          (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
                                           (change-value ^^coords-quantity (- ^^coords-quantity 1))
                                           (update (the superior sheet))
                                           )
@@ -111,9 +99,20 @@
   )
 
 (define-method change-points-list point-collection (new-points-list)
-  (progn
-    (print new-points-list)
-    (print !points-list)
     (change-value !points-list new-points-list)
-    )
   )
+  ;
+  ;
+  ; (define-method work-area-button1-action my-box2-class (params)
+  ;   (case params
+  ;     (:apply
+  ;      (draw self :draw-subobjects? nil)
+  ;      )
+  ;     (:add
+  ;      (undraw self :subobjects? nil)
+  ;      )
+  ;      (:remove
+  ;       (undraw self :subobjects? nil)
+  ;       )
+  ;     )
+  ;   )

@@ -180,7 +180,7 @@
 (define-method work-area-button1-action point-collection (params)
   (case params
     (:display-edit-nodes
-            (progn (add-object (the interface forms) 'point-editor 'point-editor-widget)
+            (progn (unless (subobject? (the interface forms) 'point-editor) (add-object (the interface forms) 'point-editor 'point-editor-widget))
                    (display (the interface forms point-editor))
             )
 
