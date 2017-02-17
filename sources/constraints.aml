@@ -202,7 +202,7 @@
                    label 		"Mesh element size"
                    )
                min-element-size 	(when (and ^max-width ^max-height)
-                                   (/ (min ^max-width ^max-height) 16)
+                                   (/ (min ^max-width ^max-height) 32)
                                    )
 
                display? 			t
