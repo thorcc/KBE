@@ -186,20 +186,24 @@
   :properties (
                main-frame-object (get-main-frame (the superior))
                union-list (when (and (plusp ^max-width) (plusp ^max-height) )
-                            (list ^eye-pin-split)
+                            (list ^imprinted-pin ^eye)
                             )
 
-               object-list (list ^eye-pin-split)
+               object-list (list ^imprinted-pin ^eye)
 
                simplify? nil
 
                mating-nodes-distance (/ ^^max-width 2)
 
-               (pin :class '(tagging-object cylinder-object)
+			   ;;; Imprinted objects are objects that will receive surface nodes, used for meshing
+               (imprinted-pin :class '(tagging-object geometry-with-split-periodic-faces-class)
+                   source-object ^^pin
                    tag-dimensions '(1 2 3)
                    tag-attributes (list ^^max-element-size ^^min-element-size
-                                          0 0.1 0 20.0 1.0e-5)
+                                        0 0.1 0 20.0 1.0e-5)
+                   )
 
+               (pin :class 'cylinder-object
                    reference-object ^main-frame-object
                    height (* 2 ^^max-height ^^scale-factor)
                    diameter (/ ^^max-width 2)
@@ -211,37 +215,10 @@
                    tag-dimensions '(1 2 3)
                    tag-attributes (list ^^max-element-size ^^min-element-size
                                         0 0.1 0 20.0 1.0e-5)
-                   overwrite-other-tags? t
-
                    reference-object ^sub-frame
                    height ^^max-height
                    diameter ^^max-width
                    )
-                (eye-pin-union :class 'union-object
-                         object-list           (list ^eye ^pin)
-                         simplify?             t
-                         )
-                (intersection-eye-pin :class '(tagging-object intersection-object)
-                    tag-dimensions '(1 2 3)
-                    tag-attributes (list ^^max-element-size ^^min-element-size
-                                         0 0.1 0 20.0 1.0e-5)
-                    overwrite-other-tags? t
-
-                        object-list (list ^pin ^eye)
-                  )
-                  (difference-eye-pin :class 'difference-object
-                    object-list (list ^eye-pin-union ^intersection-eye-pin)
-
-                  )
-                  (eye-pin-refined-union :class 'union-object
-                    object-list (list ^intersection-eye-pin ^difference-eye-pin)
-                    simplify? t
-                    )
-                  (eye-pin-split :class 'geometry-with-split-periodic-faces-class
-                    source-object ^eye-pin-refined-union
-                    )
-
-
                (sub-point-ref :class 'sub-point-data-model
                    orientation (list
                                 (translate (list 0 0 (/ (- ^^max-height) 1) ))
