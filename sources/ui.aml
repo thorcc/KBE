@@ -101,18 +101,102 @@
 (define-method change-points-list point-collection (new-points-list)
     (change-value !points-list new-points-list)
   )
-  ;
-  ;
-  ; (define-method work-area-button1-action my-box2-class (params)
-  ;   (case params
-  ;     (:apply
-  ;      (draw self :draw-subobjects? nil)
-  ;      )
-  ;     (:add
-  ;      (undraw self :subobjects? nil)
-  ;      )
-  ;      (:remove
-  ;       (undraw self :subobjects? nil)
-  ;       )
-  ;     )
-  ;   )
+
+
+  (define-class general-appearance-widget-class
+    :inherit-from(ui-form-class)
+    :properties(
+                label "General Appearance"
+                measurement 'pixels
+                width 320
+                height 350
+                x-offset 40
+                y-offset 40
+
+                )
+    :subobjects(
+                (ok-action-button :class ui-action-button-class
+                  measurement 'percentage
+                  height 10
+                  width 40
+                  y-offset 10
+                  x-offset 20
+                  label "Ok"
+                  Button1-action '(hide (the superior general-appearance))
+                  )
+                (draw-labels-action-button :class ui-action-button-class
+                  measurement 'percentage
+                  height 10
+                  width 40
+                  y-offset 20
+                  x-offset 20
+                  label "Draw Node Labels"
+                  Button1-action (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                                      (draw label)
+                                    )
+                  Button3-action (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                                      (draw label)
+                                    )
+                  )
+                  (bigger-labels-action-button :class ui-action-button-class
+                    measurement 'percentage
+                    height 10
+                    width 10
+                    y-offset 20
+                    x-offset 60
+                    label "+"
+                    Button1-action '(progn
+                                          (change-value (the main-mechanism-class points node-label label-size) (+ (the main-mechanism-class points node-label label-size) 0.1))
+                                          (regen)
+                                          (update (the superior general-appearance))
+                                     )
+                    )
+                    (smaller-labels-action-button :class ui-action-button-class
+                      measurement 'percentage
+                      height 10
+                      width 10
+                      y-offset 20
+                      x-offset 70
+                      label "-"
+                      Button1-action '(progn
+                                            (change-value (the main-mechanism-class points node-label label-size) (- (the main-mechanism-class points node-label label-size) 0.1))
+                                            (regen)
+                                            (update (the superior general-appearance))
+                                       )
+                      )
+                     (label-size-property :class ui-property-field-class
+                       measurement 'percentage
+                       label-width 0
+                       height 10
+                       width 10
+                       y-offset 20
+                       x-offset 80
+                       automatic-apply? t
+                       content (the main-mechanism-class points node-label label-size)
+                       apply-action (progn
+                                      (print "apply size")
+                                      (change-value (the main-mechanism-class points node-label label-size) ^content)
+                                      (regen)
+                                    )
+                       )
+                    (zoom-all-action-button :class ui-action-button-class
+                      measurement 'percentage
+                      height 10
+                      width 40
+                      y-offset 30
+                      x-offset 20
+                      label "Zoom All"
+                      Button1-action '(zoom :all)
+                      )
+                      (iso-view-action-button :class ui-action-button-class
+                        measurement 'percentage
+                        height 10
+                        width 40
+                        y-offset 40
+                        x-offset 20
+                        label "Isometric View"
+                        Button1-action '(change-view :iso)
+                        )
+
+                )
+    )

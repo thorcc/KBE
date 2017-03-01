@@ -150,6 +150,37 @@
 ; END constraint-collection definitions
 ;======================================
 
+;======================================
+
+(define-class node-label-class
+  :inherit-from (series-object coordinate-system-class)
+  :properties(
+              draw-label? nil
+              draw-box? nil
+
+              quantity (length ^^points-list)
+              series-prefix 'node
+              class-expression 'text-object
+              label-size 0.03
+              init-form '(
+                          coordinates (list  (nth 1 (nth !index ^^points-list))
+                                             (+ (nth 2 (nth !index ^^points-list)) 0.06)
+                                             (nth 3 (nth !index ^^points-list))
+                                             )
+                          height ^label-size
+                          text-string (format nil "~a" !index)
+
+                          reference-coordinate-system (the superior superior self)
+                          )
+              )
+)
+
+(define-method get-node-labels node-label-class ()
+  (children (the) :class 'text-object)
+  )
+
+;=============================================
+
 ;====================================================================================
 ; Class: point-collection
 ; Executes the read-from-file and creates the corresponding subobjects for the points
@@ -172,9 +203,10 @@
                                           '("Edit Nodes" (button1-parameters :display-edit-nodes)
                                             ui-work-area-action-button-class))
                )
-  ;:subobjects (
-  ;    (point-editor :class 'mechanism-user-io)
-  ;  )
+  :subobjects (
+    (node-label :class 'node-label-class
+      )
+    )
   )
 
 (define-method work-area-button1-action point-collection (params)
@@ -693,7 +725,9 @@
                                         ui-work-area-action-button-class)
                                       '("Export to FEDEM" (button1-parameters :export-fedem)
                                         ui-work-area-action-button-class)
-
+                                      ""
+                                      '("General Appearance" (button1-parameters :display-general-appearance)
+                                        ui-work-area-action-button-class)
                                       )
 
                ;;Property storing folders from library
@@ -904,6 +938,13 @@
 
                                         ;)
      )
+    (:display-general-appearance
+
+      (progn (unless (subobject? (the interface forms) 'general-appearance) (add-object (the interface forms) 'general-appearance 'general-appearance-widget-class))
+             (display (the interface forms general-appearance))
+      )
+
+      )
     )
   )
 ;=====================================
