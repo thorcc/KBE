@@ -1,106 +1,141 @@
-;(progn (add-object (the interface forms) 'point-editor 'mechanism-user-io) (display (the interface forms point-editor)))
+(in-package :aml)
 
-(define-class point-editor-widget
+;properties needed:
+; label "Edit nodes"
+; input-list (get-points-list (the main-mechanism-class points))
+; column-labels(list "Name" "x-coord" "y-coord" "z-coord")
+; row-labels '"node"
+;                        (apply-button-method (the point-collection))
+;                        (add-row-button-method (the point-collection))
+;                      )
+
+(define-class file-editor-class
   :inherit-from(ui-form-class)
   :properties(
-              label "Edit nodes"
-              measurement 'pixels
-              width 320
-              height 350
-              x-offset 40
-              y-offset 40
+                measurement 'pixels
+                width 320
+                height 350
+                x-offset 40
+                y-offset 40
+                input-list-length (length ^input-list)
+                number-of-columns (length ^column-labels)
 
+    )
+    :subobjects(
+                (sheet :class '(ui-spreadsheet-class)
+                      measurement 'percentage
+                      x-offset 5
+                      y-offset 5
+                      width 90
+                      height 80
 
-              loaded-coords-list (get-points-list (the main-mechanism-class points))
-              coords-quantity (length ^loaded-coords-list)
+                      column-labels ^^column-labels
+                      row-labels (loop for row from 0 to ^^input-list-length
+                                    collect (format nil "~a ~a"
+                                                    (^^row-label-text)
+                                                    (- row 1)
+                                                    )
+                                    )
+                      cell-values ^^input-list
+                      number-of-columns ^^number-of-columns
+                      number-of-rows ^^input-list-length
+                      row-height   25
+                      column-width 60
+                      attachment-info-list '(top bottom left right)
+                      editable? t
 
-              )
-  :subobjects(
-              (sheet :class '(ui-spreadsheet-class)
-                  measurement 'percentage
-                  x-offset 5
-                  y-offset 5
-                  width 90
-                  height 80
-
-
-
-
-                  column-labels (list "Name" "x-coord" "y-coord" "z-coord")
-                  row-labels (loop for row from 0 to ^^coords-quantity
-                               collect (format nil "Node ~a"
-                                               (- row 1)
-                                               )
-                               )
-                  cell-values ^^loaded-coords-list
-                  number-of-columns (length ^column-labels)
-                  number-of-rows ^^coords-quantity
-                  row-height   25
-                  column-width 60
-                  attachment-info-list '(top bottom left right)
-                  editable? t
-
-                  )
-              (toolbar :class ui-toolbar-class
-                  measurement 'percentage
-                  height 10
-                  width 20
-                  y-offset 90
-                  x-offset 70
-                  Availability-list nil
-                  Button1-action-list '(
-                                         (progn
-                                           (change-value
-                                            ^^loaded-coords-list
-                                            (loop for row from 0 to (- ^^coords-quantity 1)
-                                              collect (loop for cell from 0 to 3
-                                                        collect (read-from-string (get-cell-value (the superior sheet) row cell))
-                                                        )
-                                              )
+                      )
+                  (toolbar :class ui-toolbar-class
+                      measurement 'percentage
+                      height 10
+                      width 20
+                      y-offset 90
+                      x-offset 70
+                      Availability-list nil
+                      Button1-action-list '(
+                                              (apply-button-pressed (the superior superior))
+                                              (add-row (the superior superior))
+                                              (remove-row (the superior superior))
                                             )
-                                           (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
-                                            (update (the superior sheet))
-                                           (hide (the superior point-editor))
-                                          )
-                                        (progn (change-value
-                                                 ^^loaded-coords-list
-                                                 (loop for row from 0 to (- ^^coords-quantity 1)
-                                                   collect (loop for cell from 0 to 3
-                                                             collect (read-from-string (get-cell-value (the superior sheet) row cell))
-                                                             )
-                                                   )
-                                                 )
-                                                (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
-                                                (change-value ^^coords-quantity (+ ^^coords-quantity 1))
-                                                (update (the superior sheet))
-                                                )
-                                        (progn
-                                          (change-value
-                                           ^^loaded-coords-list
-                                           (loop for row from 0 to (- ^^coords-quantity 1)
-                                             collect (loop for cell from 0 to 3
-                                                       collect (read-from-string (get-cell-value (the superior sheet) row cell))
-                                                       )
-                                             )
-                                           )
-                                          (change-points-list (the main-mechanism-class points) ^^loaded-coords-list)
-                                          (change-value ^^coords-quantity (- ^^coords-quantity 1))
-                                          (update (the superior sheet))
-                                          )
-                                        )
-                  Button3-action-list nil
-                  Images-list (list (concatenate (logical-path :ui-bitmaps) "apply.bmp") (concatenate (logical-path :ui-bitmaps) "add-object.bmp") (concatenate (logical-path :ui-bitmaps) "delete-object.bmp"))
-                  Labels-list (list "Apply" "Add node" "Remove node")
-                  Number-of-buttons (length ^Button1-action-list)
-                  Orient (nth 0 '(:horizontal :vertical))
-                  Tooltips-list nil
+                      Button3-action-list nil
+                      Images-list (list (concatenate (logical-path :ui-bitmaps) "apply.bmp") (concatenate (logical-path :ui-bitmaps) "add-object.bmp") (concatenate (logical-path :ui-bitmaps) "delete-object.bmp"))
+                      Labels-list (list "Apply" "Add node" "Remove node")
+                      Number-of-buttons (length ^Button1-action-list)
+                      Orient (nth 0 '(:horizontal :vertical))
+                      Tooltips-list nil
+                      )
                   )
-              )
   )
 
-(define-method change-points-list point-collection (new-points-list)
-    (change-value !points-list new-points-list)
-  )
+
+
+(define-method apply-button-pressed file-editor-class ()
+            (change-value
+              !input-list
+             (loop for row from 0 to (- !input-list-length 1)
+               collect (loop for cell from 0 to !number-of-columns
+                         collect (read-from-string (get-cell-value (the sheet) row cell))
+                         )
+               )
+             )
+             (case !type
+              ('points (change-points-list (the main-mechanism-class points) !input-list))
+              ('constraints (change-constraints-list (the main-mechanism-class constraints) !input-list)))
+             (update (the sheet))
+             (hide (the))
+    )
+
+(define-method add-row file-editor-class ()
+              (change-value
+               !input-list
+               (loop for row from 0 to (- !input-list-length 1)
+                 collect (loop for cell from 0 to !number-of-columns
+                           collect (read-from-string (get-cell-value (the sheet) row cell))
+                           )
+                 )
+               )
+              (change-value !input-list-length (+ !input-list-length 1))
+              (update (the sheet))
+        )
+(define-method remove-row file-editor-class ()
+              (change-value
+               !input-list
+               (loop for row from 0 to (- !input-list-length 1)
+                 collect (loop for cell from 0 to !number-of-columns
+                           collect (read-from-string (get-cell-value (the sheet) row cell))
+                           )
+                 )
+               )
+              (change-value !input-list-length (- !input-list-length 1))
+              (update (the sheet))
+        )
+
+(defun display-edit-points ()
+      (if (subobject? (the interface forms) 'point-editor) (delete-object (the interface forms point-editor)))
+      (add-object (the interface forms) 'point-editor 'file-editor-class
+                   :init-form '(
+                                 type 'points
+                                 label "Edit nodes"
+                                 input-list (get-points-list (the main-mechanism-class points))
+                                 column-labels(list "Name" "x-coord" "y-coord" "z-coord")
+                                 row-label-text "Node"
+                                )
+                  )
+       (display (the interface forms point-editor))
+    )
+(defun display-edit-constraints ()
+      (if (subobject? (the interface forms) 'constraint-editor) (delete-object (the interface forms constraint-editor)))
+      (add-object (the interface forms) 'constraint-editor 'file-editor-class
+                   :init-form '(
+                                 type 'constraints
+                                 label "Edit Constraints"
+                                 input-list (get-constraints-list (the main-mechanism-class constraints))
+                                 column-labels (list "Point" "Type"  "Link-incidence" "Joint-direction" "DOF" "Joint-variable")
+                                 row-label-text "Point"
+                                )
+                  )
+       (display (the interface forms constraint-editor))
+    )
 
 
   (define-class general-appearance-widget-class
@@ -200,3 +235,53 @@
 
                 )
     )
+
+(define-class main-form-class
+  :inherit-from(ui-form-class)
+  :properties(
+        label "RaMMS"
+        height (* 0.5 (nth 1 (get-screen-size)))
+        width  (* 0.5 (nth 0 (get-screen-size)))
+        y-offset (- ^height (* 0.5 ^height))
+        x-offset (- ^width (* 0.5 ^width))
+        )
+  :subobjects(
+              (canvas :class 'ui-canvas-class
+                measurement 'percentage
+                x-offset 30 y-offset 5 width 70 height 90
+                )
+              (graphic-toolbar :class 'ui-graphic-control-toolbar-class
+                canvas-object ^canvas
+                measurement 'percentage
+                height 5
+                width 70
+                x-offset 30
+                y-offset 95
+                )
+              (draw-mechanism-action-button :class ui-action-button-class
+                measurement 'percentage
+                height 5
+                width 10
+                y-offset 5
+                x-offset 5
+                label "Draw Mechanism"
+                Button1-action '(progn (draw-sewn-wo-mesh (the main-mechanism-class))
+                                        (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
+                                        (update (the superior canvas))
+                                        (zoom :all)
+                                )
+                )
+                (edit-link-mechanism-action-button :class ui-action-button-class
+                    measurement 'percentage
+                    height 5
+                    width 10
+                    y-offset 20
+                    x-offset 5
+                    label "Link Editor"
+                    Button1-action '(progn
+                                          (add-object (the interface forms) 'link-editor 'link-editor-form-class)
+                                          (display (the interface forms link-editor))
+                                    )
+                    )
+        )
+  )
