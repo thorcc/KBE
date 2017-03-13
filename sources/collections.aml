@@ -89,6 +89,9 @@
                                       ""
                                       '("Undraw all joints and nodes" (button1-parameters :undraw)
                                         ui-work-area-action-button-class)
+                                      ""
+                                      '("Edit Constraints.txt" (button1-parameters :display-edit-constraints)
+                                        ui-work-area-action-button-class)
                                       )
                )
   )
@@ -96,6 +99,12 @@
 (define-method get-constraints constraint-collection ()
   (children (the) :class 'master-joint-model)
   )
+(define-method get-constraints-list constraint-collection ()
+     !constraint-list
+    )
+(define-method change-constraints-list constraint-collection (new-constraint-list)
+     (change-value !constraint-list new-constraint-list)
+   )
 
 ;================================================================
 ; Reads each line of the constraints file and adds this to a list
@@ -144,8 +153,13 @@
        )
      (undraw self)
      )
+      (:display-edit-constraints
+          (display-edit-constraints)
+            )
     )
   )
+
+
 ;======================================
 ; END constraint-collection definitions
 ;======================================
@@ -212,10 +226,7 @@
 (define-method work-area-button1-action point-collection (params)
   (case params
     (:display-edit-nodes
-            (progn (unless (subobject? (the interface forms) 'point-editor) (add-object (the interface forms) 'point-editor 'point-editor-widget))
-                   (display (the interface forms point-editor))
-            )
-
+         (display-edit-points)
         )
     )
   )
@@ -225,6 +236,9 @@
   )
 (define-method get-points-list point-collection ()
   !points-list
+  )
+(define-method change-points-list point-collection (new-points-list)
+    (change-value !points-list new-points-list)
   )
 
 ;===============================================================
