@@ -290,6 +290,9 @@
      )
     )
   )
+(define-method draw-link-wo-mesh link-geometry-class ()
+  (draw self :draw-subobjects? nil)
+  )
 ;====================================
 ; END link-geometry-class definitions
 ;====================================

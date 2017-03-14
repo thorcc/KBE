@@ -11,10 +11,6 @@
                pjk (convert-coords ^frame_A '(0 0 0) :from :local :to :global)
                wjk (convert-vector ^frame_A '(0 0 1) :from :local :to :global)
 
-               weight-points (append (the weight-list (:from ^shape-ref))
-                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref)))
-                                                             (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
-                                     )
                start-point (the origin (:from ^frame_D))
                end-point (the origin (:from ^frame_A))
 
@@ -71,18 +67,34 @@
                                )
                start-weight (list (append ^start-point (list 1)))
                end-weight (list (append ^end-point (list 1)))
+               points-list (list ^start-point ^end-point)
 
-               points (let (
-                            (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
-                                            for w in ^weight-points
-                                            collect (append (the coordinates (:from
-                                                                              (nth p-index ^point-ref-list)) ) (list w)) ))
-                            )
-                        (if shape-points
-                            (append ^start-weight shape-points ^end-weight)
-                          (append ^start-weight ^middle-points ^end-weight)
-                          )
-                        )
+
+               weight (append (the weight-list (:from ^shape-ref))
+                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref)))
+                                                             (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
+                                     )
+
+               weight-points (loop for p-index in (the point-list (:from ^shape-ref))
+                               for w in ^weight
+                               collect (append (the coordinates (:from
+                                                                 (nth p-index ^point-ref-list)) ) (list w)) )
+               points (if ^weight-points
+                        (append ^start-weight ^weight-points ^end-weight)
+                        (append ^start-weight ^middle-points ^end-weight)
+                       )
+
+              ;  points (let (
+              ;               (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
+              ;                               for w in ^weight-points
+              ;                               collect (append (the coordinates (:from
+              ;                                                                 (nth p-index ^point-ref-list)) ) (list w)) ))
+              ;               )
+              ;           (if shape-points
+              ;               (append ^start-weight shape-points ^end-weight)
+              ;             (append ^start-weight ^middle-points ^end-weight)
+              ;             )
+              ;           )
                rational? t
                homogeneous? t
                                         ;degree 2
@@ -158,6 +170,31 @@
 
 (define-method get-start-weight connection-model ()
   !start-weight
+  )
+
+(define-method get-points-list connection-model ()
+  !points-list
+  )
+
+(define-method get-weight-points connection-model ()
+  !weight-points
+  )
+(define-method change-model-weight-coords connection-model (point-number position)
+      (change-value !weight-points (let
+                                  ((weight-points !weight-points)
+                                   (new-point (let ((l1 (nth point-number weight-points)) (l2 position)) (replace l1 l2) l1))
+                                   )
+                                  (replace (nth point-number weight-points) new-point)
+                                  (smash-value !weight-points)
+                                  weight-points
+                                  )
+
+               )
+
+   )
+
+(define-method change-model-weight connection-model (new-weight-points)
+ (change-value !weight-points new-weight-points)
   )
 ;=================================================================
 ; Finds the middle point between p1 and p2, given the direction d1

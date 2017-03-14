@@ -5,124 +5,89 @@
 
 ;;;; Model ;;;;
 
-(define-class point-collection
-  :inherit-from (object)
-  :properties (
-              (ref-coord-sys :class coordinate-system-class
-                    origin (list 0.0 0.0 0.0)
-                  )
-               points-list      '((0.0 0.0 0.0) (7.0 0.0 0.0))
-               weight-points 		'((1.0 -1.0 0.0 1.0) (2.0 1.0 0.0 1.0) (3.0 2.0 0.0 1.0) (4.0 1.0 0.0 1.0) (5.0 0.0 0.0 1.0) (6.0 -2.0 0.0 1.0))
-                              )
-  :subobjects (
-              (nurb-curve :class nurb-curve-object
-                    reference-coordinate-system ^^ref-coord-sys
-
-                    start-point (first ^^points-list)
-                    end-point (nth 1 ^^points-list)
-
-                    start-weight (list (append ^start-point (list 1)))
-                    end-weight (list (append ^end-point (list 1)))
-
-                    points (append ^start-weight ^^weight-points ^end-weight)
-                    rational? t
-                    homogeneous? t
-
-                )
+;Method to draw link (draw-link-wo-mesh (the main-mechanism-class links link-0000 link-geometry))
 
 
-    )
-  )
 
 
-(define-method get-points-list point-collection ()
-  !points-list
-  )
-
-(define-method get-weight-points point-collection ()
-  !weight-points
-  )
-
-(define-method get-ref-coord-sys point-collection ()
-  !ref-coord-sys
-  )
-
-(define-method smash-points-method point-collection ()
-  (smash-value !points-list)
-  )
-
-(define-method change-points-list point-collection (new-points-list)
-  (change-value !points-list new-points-list)
-  )
-
-(define-method change-weight-points point-collection (new-weight-points)
-    (progn
-      (smash-value !weight-points)
-      (change-value !weight-points new-weight-points)
-    )
-  )
+; (define-method get-points-list point-collection ()
+;   !points-list
+;   )
+;
+; (define-method get-weight-points point-collection ()
+;   !weight-points
+;   )
+;
+; (define-method get-ref-coord-sys point-collection ()
+;   !ref-coord-sys
+;   )
+;
+; (define-method smash-points-method point-collection ()
+;   (smash-value !points-list)
+;   )
+;
+; (define-method change-points-list point-collection (new-points-list)
+;   (change-value !points-list new-points-list)
+;   )
+;
+; (define-method change-weight-points point-collection (new-weight-points)
+;     (progn
+;       (smash-value !weight-points)
+;       (change-value !weight-points new-weight-points)
+;     )
+;   )
 
 
 ;;;; Controller ;;;;
 
 
 
-(define-class nurbs-controller
-  :inherit-from(object)
-  :properties(
-          model-points (get-points-list (the point-collection))
-          model-weight (get-weight-points (the point-collection))
-          model-coord-sys (get-ref-coord-sys (the point-collection))
-        )
-  )
+; (define-class nurbs-controller
+;   :inherit-from(object)
+;   :properties(
+;           model-points (get-points-list (the point-collection))
+;           model-weight (get-weight-points (the point-collection))
+;           model-coord-sys (get-ref-coord-sys (the point-collection))
+;         )
+;   )
+;
+; (define-method get-controller-points nurbs-controller ()
+;   !model-points
+; )
+; (define-method get-controller-weight nurbs-controller ()
+;   !model-weight
+; )
+;
+; (define-method get-controller-coord-sys nurbs-controller ()
+;   !model-coord-sys
+; )
+;
+; (define-method change-controller-weight nurbs-controller (new-weight-points)
+;   (change-value !model-weight new-weight-points)
+;   (change-weight-points (the point-collection) !model-weight)
+; )
+; (define-method change-controller-points nurbs-controller (new-points)
+;   (change-value !model-points new-points)
+;   (change-points-list (the point-collection) !model-points)
+; )
+;
 
-(define-method get-controller-points nurbs-controller ()
-  !model-points
-)
-(define-method get-controller-weight nurbs-controller ()
-  !model-weight
-)
-
-(define-method get-controller-coord-sys nurbs-controller ()
-  !model-coord-sys
-)
-
-(define-method change-controller-weight nurbs-controller (new-weight-points)
-  (change-value !model-weight new-weight-points)
-  (change-weight-points (the point-collection) !model-weight)
-)
-(define-method change-controller-points nurbs-controller (new-points)
-  (change-value !model-points new-points)
-  (change-points-list (the point-collection) !model-points)
-)
-
-(define-method change-controller-weight-coords nurbs-controller (point-number position)
-   (progn (change-value !model-weight (let
-                                  ((weight-points !model-weight)
-                                   (new-point (let ((l1 (nth point-number weight-points)) (l2 position)) (replace l1 l2) l1))
-                                   )
-                                  (replace (nth point-number weight-points) new-point)
-                                  (smash-value !model-weight)
-                                  weight-points
-                                  )
-
-               )
-           (change-weight-points (the point-collection) !model-weight)
-        )
- )
 
 
 ;;;; View ;;;;
 
 
-(define-class helping-points
+(define-class helping-points-class
   :inherit-from (object)
   :properties(
-              points-list   (get-controller-points (the nurbs-controller))
-              weight-points (loop for w in (get-controller-weight (the nurbs-controller))
+              points-list   (get-view-points-list (the interface forms link-editor))
+              weight-points (get-view-weight (the interface forms link-editor))
+              weight-points-coord (loop for w in ^weight-points
                                   collect (butlast w)
                                   )
-              ref-coord-sys (get-controller-coord-sys (the nurbs-controller))
+              height        (* (points-distance (nth 0 ^points-list) (nth 1 ^points-list)) 0.03)
+              width         ^height
+              depth         (* ^height 0.1)
     )
   :subobjects(
             (ui-end-points :class series-object
@@ -131,19 +96,12 @@
             series-prefix 	'p
             init-form '(
                         id 			^index
-                        reference-coordinate-system ^^ref-coord-sys
                         line-width 	4
                         color 		'green
-                        height 0.03
-                        width  0.03
-                        depth  0.001
-                        ;orientation (list (translate '(^index 0.0 0.0)))
+                        height ^^height
+                        width  ^^width
+                        depth  ^^depth
                         orientation (list (translate (nth ^index ^points-list)))
-
-                        ;coordinates	(list (nth 0 (nth ^index ^points-list))
-                       ;                   (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)))
-
-
                        )
                )
                (ui-weight-points :class series-object
@@ -152,44 +110,54 @@
                series-prefix 	'w
                init-form '(
                            id 			^index
-                           reference-coordinate-system ^^ref-coord-sys
                            line-width 	4
                            color 		'red
-                           height 0.03
-                           width  0.03
-                           depth  0.001
-                           ;orientation (list (translate '(^index 0.0 0.0)))
-                           orientation (list (translate (nth ^index ^^weight-points)))
-
-                           ;coordinates	(list (nth 0 (nth ^index ^points-list))
-                          ;                   (nth 1 (nth ^index ^points-list)) (nth 2 (nth ^index ^points-list)))
-
-
+                           height (* ^^height 0.1)
+                           width  (* ^^width 0.1)
+                           depth  (* ^^depth 0.1)
+                           orientation (list (translate (nth ^index ^^weight-points-coord)))
                           )
                   )
+              ; (nurb-curve :class nurb-curve-object
+              ;
+              ;
+              ;       start-point (first ^^points-list)
+              ;       end-point (nth 1 ^^points-list)
+              ;
+              ;       start-weight (list (append ^start-point (list 1)))
+              ;       end-weight (list (append ^end-point (list 1)))
+              ;
+              ;       points (append ^start-weight ^^weight-points ^end-weight)
+              ;       rational? t
+              ;       homogeneous? t
+              ;
+              ;  )
 
             )
 )
 
-(define-method get-ui-weight-point-instances helping-points ()
-  (series-members (the ui-weight-points))
-  )
-(define-method get-ui-weight-point-coords helping-points ()
-  !weight-points
-)
+; (define-method get-ui-weight-point-instances helping-points ()
+;   (series-members (the ui-weight-points))
+;   )
+; (define-method get-ui-weight-point-coords helping-points ()
+;   !weight-points
+; )
+;
+ (define-method translate-weight-points helping-points-class ()
+     (let   (
+                 (point-number (mouse-select-point-from-display !weight-points-coord))
+                 (point-instance (nth point-number (series-members (the ui-weight-points))))
+                   )
 
-(define-method translate-helping-points helping-points ()
-    (let   (
-                (point-number (mouse-select-point-from-display !weight-points))
-                (point-instance (nth point-number (series-members (the ui-weight-points))))
-                  )
-                (progn
-                  (interactive-translate point-instance)
-                  (change-controller-weight-coords (the nurbs-controller) point-number (nth 0 (the position (:from point-instance))))
-                )
-            )
- )
+                   (interactive-translate point-instance)
+                   (change-model-weight-coords
+                                                (the connection (:from (the interface forms link-editor member-selector selected-option)))
+                                                point-number
+                                                (nth 0 (the position (:from point-instance)))
+                              )
 
+              )
+        )
 
 
 (define-class link-editor-form-class
@@ -204,9 +172,9 @@
 
               button-y-offset 95
 
-              weight-points (get-controller-weight (the nurbs-controller))
+              weight-points (get-weight-points (the connection (:from (the member-selector selected-option))))
               weight-points-quantity (length ^weight-points)
-              points-list (get-controller-points (the nurbs-controller))
+              points-list (get-points-list (the connection (:from (the member-selector selected-option))))
               )
   :subobjects(
 
@@ -222,34 +190,88 @@
                   x-offset 30
                   y-offset 95
                   )
+              (link-selector :class ui-option-menu-class
+                Button1-action '(update (the superior link-editor-form-class))
+                options-list (series-members (the main-mechanism-class links))
+                labels-list (loop for member in (series-members (the main-mechanism-class links))
+                                collect (the label (:from member))
+                                 )
+                selected-option (nth 0 ^options-list)
+                y-offset 0
+                x-offset 2
+                height 5
+               )
+               (member-selector :class ui-option-menu-class
+                 Button1-action (update (the superior link-editor-form-class))
+                 options-list  (series-members (the link-geometry sweeps (:from (the superior link-selector selected-option))))
+                 labels-list (loop for i from 0 to (- (length ^options-list) 1)
+                                    collect (format nil "Member ~a" i))
+                 selected-option (nth 0 ^options-list)
+                 y-offset 5
+                 x-offset 2
+                 height 5
+                )
 
-              (draw-curve-action-button :class 'ui-action-button-class
+              (Sweep-action-button :class 'ui-action-button-class
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 7
+                  y-offset 11
                   x-offset 2
-                  label "Draw Curve"
-                  Button1-action '(progn  (draw (the helping-points))
-                                          (draw (the point-collection))
-                                          (update (the superior link-editor-form-class))
-                                          (update (the superior canvas))
-                                          (regen)
-                                          (zoom :all)
-                                          )
+                  label "Sweep Link"
+                  Button1-action '(progn
+                                    (draw-link-wo-mesh (the link-geometry (:from (the interface forms link-editor link-selector selected-option))))
+                                    (draw (the superior main-mechanism-class helping-points))
+                  ;                         (draw (the point-collection))
+                  ;                         (update (the superior link-editor-form-class))
+                  ;                         (update (the superior canvas))
+                  ;                         (regen)
+                  ;                         (zoom :all)
+                  ;                         )
+                                      )
                   )
+
+              (undraw-all-button :class 'ui-action-button-class
+                    measurement 'percentage
+                    height 5
+                    width 10
+                    y-offset 11
+                    x-offset 12
+                    label "Undraw"
+                    Button1-action (undraw (the main-mechanism-class))
+                  )
+
+            (draw-member-nurb-button :class 'ui-action-button-class
+                measurement 'percentage
+                height 5
+                width 10
+                y-offset 16
+                x-offset 2
+                label "Draw Curves"
+                Button1-action '(draw-member-curves)
+                )
+
+            ; (sweep-member-nurb-button :class 'ui-action-button-class
+            ;     measurement 'percentage
+            ;     height 5
+            ;     width 10
+            ;     y-offset 16
+            ;     x-offset 12
+            ;     label "Sweep Member"
+            ;     Button1-action '(draw (the member-selector selected-option) :draw-subobjects? nil)
+            ;     )
               (move-point-action-button :class 'ui-action-button-class
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 7
-                  x-offset 12
+                  y-offset 21
+                  x-offset 2
                   label "Drag point"
 
-                  Button1-action '(progn (translate-helping-points (the helping-points))
-                                         (update (the superior weight-sheet))
-                                         (regen)
-                                         (draw (the helping-points)))
+                  Button1-action '(progn  (translate-weight-points (the superior main-mechanism-class helping-points))
+                                          (update (the superior weight-sheet))
+                                          (regen)
+                                          (draw (the superior main-mechanism-class helping-points)))
                   )
               (point-sheet :class 'ui-spreadsheet-class
                   measurement 'percentage
@@ -277,8 +299,8 @@
                   height 30
                   column-labels (list "x-coord" "y-coord" "z-coord" "weight")
                   row-labels (loop for row from 0 to ^^weight-points-quantity
-                               collect (format nil "Point ~a" row)
-                               )
+                                collect (format nil "Point ~a" row)
+                                 )
                   cell-values ^^weight-points
                   number-of-columns (length ^column-labels)
                   number-of-rows ^^weight-points-quantity
@@ -296,9 +318,9 @@
                   x-offset 7
                   Availability-list nil
                   Button1-action-list '((weight-sheet-apply (the superior link-editor-form-class))
-                                        (weight-sheet-add-row (the superior link-editor-form-class))
-                                        (weight-sheet-remove-row (the superior link-editor-form-class))
-                                        )
+                                         (weight-sheet-add-row (the superior link-editor-form-class))
+                                         (weight-sheet-remove-row (the superior link-editor-form-class))
+                                         )
                   Button3-action-list nil
                   Images-list (list (concatenate (logical-path :ui-bitmaps) "apply.bmp") (concatenate (logical-path :ui-bitmaps) "add-object.bmp") (concatenate (logical-path :ui-bitmaps) "delete-object.bmp"))
                   Labels-list (list "Apply" "Add node" "Remove node")
@@ -313,64 +335,78 @@
 
 (define-method weight-sheet-apply link-editor-form-class ()
   (progn
-    (change-controller-weight (the nurbs-controller) (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
-                                                      collect (loop for cell from 0 to 3
-                                                                collect (read-from-string (get-cell-value (the weight-sheet) row cell))
-                                                                )
-                                                          )
+    (change-model-weight
+                                 (the connection (:from (the interface forms link-editor member-selector selected-option)))
+                                 (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
+                                        collect (loop for cell from 0 to 3
+                                                  collect (read-from-string (get-cell-value (the weight-sheet) row cell))
+                                                  )
+                                            )
       )
-    (change-controller-points (the nurbs-controller) (loop for row from 0 to (- (the point-sheet number-of-rows) 1)
-                                                          collect (loop for cell from 0 to 2
-                                                                    collect (read-from-string (get-cell-value (the point-sheet) row cell))
-                                                                    )
-                                                              )
-        )
-
     (update (the weight-sheet))
     (regen)
-    (draw (the helping-points))
+    (draw-member-curves)
     )
   )
 
 (define-method weight-sheet-add-row link-editor-form-class ()
   (progn
-    (change-controller-weight (the nurbs-controller) (append
-                                                              (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
-                                                                   collect (loop for cell from 0 to 3
-                                                                             collect (read-from-string (get-cell-value (the weight-sheet) row cell))
-                                                                             )
-                                                                      )
-                                                               (list '(0.0 0.0 0.0 1.0))
-                                                            )
-      )
+    (change-model-weight
+                                 (the connection (:from (the interface forms link-editor member-selector selected-option)))
+                                (append
+                                  (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
+                                       collect (loop for cell from 0 to 3
+                                                     collect (read-from-string (get-cell-value (the weight-sheet) row cell))
+                                                   )
+                                    )
+                                  (list '(0.0 0.0 0.0 1.0))
+                                 )
+            )
      (update (the weight-sheet))
      (regen)
-     (draw (the helping-points))
+     (draw-member-curves)
     )
   )
 
 (define-method weight-sheet-remove-row link-editor-form-class ()
   (progn
-    (change-controller-weight (the nurbs-controller) (butlast (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
-                                                       collect (loop for cell from 0 to 3
-                                                                 collect (read-from-string (get-cell-value (the weight-sheet) row cell))
-                                                                 )
-                                                          ))
+        (change-model-weight
+                           (the connection (:from (the interface forms link-editor member-selector selected-option)))
+                           (butlast (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
+                                           collect (loop for cell from 0 to 3
+                                                         collect (read-from-string (get-cell-value (the weight-sheet) row cell))
+                                                               )
+                                                        ))
         )
      (update (the weight-sheet))
      (regen)
-     (draw (the helping-points))
+     (draw-member-curves)
     )
   )
 
+(define-method get-view-weight link-editor-form-class ()
+  !weight-points
+ )
+(define-method get-view-points-list link-editor-form-class ()
+  !points-list
+ )
+
+(defun draw-member-curves ()
+            (undraw (the main-mechanism-class))
+            (draw (the superior main-mechanism-class helping-points))
+            (loop for member in (series-members (the link-geometry sweeps (:from (the interface forms link-editor link-selector selected-option))))
+                          do (draw (the connection (:from member)) :draw-subobjects? nil)
+                )
+)
+
 (defun display-nurbs-module ()
-  (progn
-      (create-model 'point-collection)
-      (create-model 'nurbs-controller)
-      (create-model 'helping-points)
+      ;(create-model 'point-collection)
+      ; (create-model 'nurbs-controller)
+      (add-object (the) 'helping-points 'helping-points-class)
       (add-object (the interface forms) 'link-editor 'link-editor-form-class)
       (display (the interface forms link-editor))
       (activate-display (the interface forms link-editor canvas))
-      (set-current-display-background-color 'grey49)
-      )
+      (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
+      (draw-member-curves)
+      ;(set-current-display-background-color 'grey49)
    )

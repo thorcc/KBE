@@ -740,6 +740,9 @@
                                       '("Export to FEDEM" (button1-parameters :export-fedem)
                                         ui-work-area-action-button-class)
                                       ""
+                                      '("NURBS-Module" (button1-parameters :display-nurbs-module)
+                                        ui-work-area-action-button-class)
+
                                       '("General Appearance" (button1-parameters :display-general-appearance)
                                         ui-work-area-action-button-class)
                                       )
@@ -951,6 +954,9 @@
      (run-program 	(format nil "start ~a" !fedem-model-file) :windows-batch-file? t :show-window :hide)
 
                                         ;)
+     )
+    (:display-nurbs-module
+      (display-nurbs-module)
      )
     (:display-general-appearance
 

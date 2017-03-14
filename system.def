@@ -28,5 +28,6 @@
 		   "collections.aml"
 		   "geometry-export.aml"
        "ui.aml"
+       "nurbs-module.aml"
            )
   )
