@@ -101,7 +101,7 @@
                         height ^^height
                         width  ^^width
                         depth  ^^depth
-                        orientation (list (translate (nth ^index ^points-list)))
+                        orientation (list (translate (nth ^index ^^points-list)))
                        )
                )
                (ui-weight-points :class series-object
@@ -118,31 +118,33 @@
                            orientation (list (translate (nth ^index ^^weight-points-coord)))
                           )
                   )
-              ; (nurb-curve :class nurb-curve-object
-              ;
-              ;
-              ;       start-point (first ^^points-list)
-              ;       end-point (nth 1 ^^points-list)
-              ;
-              ;       start-weight (list (append ^start-point (list 1)))
-              ;       end-weight (list (append ^end-point (list 1)))
-              ;
-              ;       points (append ^start-weight ^^weight-points ^end-weight)
-              ;       rational? t
-              ;       homogeneous? t
-              ;
-              ;  )
-
+              (ui-end-points-label :class series-object
+                quantity 		(length ^^points-list)
+                class-expression	'text-object
+                series-prefix 	'plabel
+                init-form '(
+                  coordinates (list  (nth 0 (nth ^index ^^points-list))
+                                     (+ (nth 1 (nth ^index ^^points-list)) ^^height)
+                                     (nth 2 (nth ^index ^^points-list))
+                                     )
+                            text-string (if (oddp ^index) "End Point" "Start Point")
+                           )
+                )
+              (ui-weight-points-label :class series-object
+                quantity 		(length ^^weight-points-coord)
+                class-expression	'text-object
+                series-prefix 	'wlabel
+                init-form '(
+                            coordinates (list  (nth 0 (nth ^index ^^weight-points-coord))
+                                               (+ (nth 1 (nth ^index ^^weight-points-coord)) ^^height)
+                                               (nth 2 (nth ^index ^^weight-points-coord))
+                                               )
+                            text-string (write-to-string ^index)
+                           )
+                )
             )
 )
 
-; (define-method get-ui-weight-point-instances helping-points ()
-;   (series-members (the ui-weight-points))
-;   )
-; (define-method get-ui-weight-point-coords helping-points ()
-;   !weight-points
-; )
-;
  (define-method translate-weight-points helping-points-class ()
      (let   (
                  (point-number (mouse-select-point-from-display !weight-points-coord))
@@ -159,7 +161,6 @@
               )
         )
 
-
 (define-class link-editor-form-class
   :inherit-from(ui-form-class)
   :properties(
@@ -170,10 +171,12 @@
               y-offset (- ^height (* 0.5 ^height))
               x-offset (- ^width (* 0.5 ^width))
 
-              button-y-offset 95
 
               weight-points (get-weight-points (the connection (:from (the member-selector selected-option))))
               weight-points-quantity (length ^weight-points)
+              weight-points-coord (loop for w in ^weight-points
+                                  collect (butlast w)
+                                  )
               points-list (get-points-list (the connection (:from (the member-selector selected-option))))
               )
   :subobjects(
@@ -191,23 +194,29 @@
                   y-offset 95
                   )
               (link-selector :class ui-option-menu-class
-                Button1-action '(update (the superior link-editor-form-class))
+                Button1-action '(progn
+                                        (update (the superior link-editor-form-class))
+                                        (draw-member-curves)
+                                 )
                 options-list (series-members (the main-mechanism-class links))
                 labels-list (loop for member in (series-members (the main-mechanism-class links))
                                 collect (the label (:from member))
                                  )
                 selected-option (nth 0 ^options-list)
-                y-offset 0
+                y-offset 2
                 x-offset 2
                 height 5
                )
                (member-selector :class ui-option-menu-class
-                 Button1-action (update (the superior link-editor-form-class))
+                 Button1-action '(progn
+                                         (update (the superior link-editor-form-class))
+                                         (draw-member-curves)
+                                  )
                  options-list  (series-members (the link-geometry sweeps (:from (the superior link-selector selected-option))))
                  labels-list (loop for i from 0 to (- (length ^options-list) 1)
                                     collect (format nil "Member ~a" i))
                  selected-option (nth 0 ^options-list)
-                 y-offset 5
+                 y-offset 7
                  x-offset 2
                  height 5
                 )
@@ -216,18 +225,12 @@
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 11
+                  y-offset 13
                   x-offset 2
                   label "Sweep Link"
                   Button1-action '(progn
                                     (draw-link-wo-mesh (the link-geometry (:from (the interface forms link-editor link-selector selected-option))))
                                     (draw (the superior main-mechanism-class helping-points))
-                  ;                         (draw (the point-collection))
-                  ;                         (update (the superior link-editor-form-class))
-                  ;                         (update (the superior canvas))
-                  ;                         (regen)
-                  ;                         (zoom :all)
-                  ;                         )
                                       )
                   )
 
@@ -235,7 +238,7 @@
                     measurement 'percentage
                     height 5
                     width 10
-                    y-offset 11
+                    y-offset 13
                     x-offset 12
                     label "Undraw"
                     Button1-action (undraw (the main-mechanism-class))
@@ -245,28 +248,28 @@
                 measurement 'percentage
                 height 5
                 width 10
-                y-offset 16
+                y-offset 18
                 x-offset 2
                 label "Draw Curves"
                 Button1-action '(draw-member-curves)
                 )
 
-            ; (sweep-member-nurb-button :class 'ui-action-button-class
-            ;     measurement 'percentage
-            ;     height 5
-            ;     width 10
-            ;     y-offset 16
-            ;     x-offset 12
-            ;     label "Sweep Member"
-            ;     Button1-action '(draw (the member-selector selected-option) :draw-subobjects? nil)
-            ;     )
+            (sweep-member-nurb-button :class 'ui-action-button-class
+                measurement 'percentage
+                height 5
+                width 10
+                y-offset 18
+                x-offset 12
+                label "Sweep Member"
+                Button1-action '(draw (the member-selector selected-option) :draw-subobjects? nil)
+                )
               (move-point-action-button :class 'ui-action-button-class
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 21
+                  y-offset 23
                   x-offset 2
-                  label "Drag point"
+                  label "Move Weight Point"
 
                   Button1-action '(progn  (translate-weight-points (the superior main-mechanism-class helping-points))
                                           (update (the superior weight-sheet))
@@ -359,7 +362,7 @@
                                                      collect (read-from-string (get-cell-value (the weight-sheet) row cell))
                                                    )
                                     )
-                                  (list '(0.0 0.0 0.0 1.0))
+                                  (list (append (get-new-wpoint-coords (the)) (list 1)))
                                  )
             )
      (update (the weight-sheet))
@@ -387,8 +390,15 @@
 (define-method get-view-weight link-editor-form-class ()
   !weight-points
  )
+(define-method get-view-weight-coords link-editor-form-class ()
+   !weight-points-coord
+  )
 (define-method get-view-points-list link-editor-form-class ()
   !points-list
+ )
+
+(define-method get-new-wpoint-coords link-editor-form-class ()
+  (mid-point (nth 1 (get-view-points-list (the))) (nth (- (LENGTH (get-view-weight-coords (the))) 1) (get-view-weight-coords (the))))
  )
 
 (defun draw-member-curves ()
@@ -408,5 +418,6 @@
       (activate-display (the interface forms link-editor canvas))
       (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
       (draw-member-curves)
+      (zoom :all)
       ;(set-current-display-background-color 'grey49)
    )
