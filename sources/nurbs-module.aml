@@ -398,7 +398,10 @@
  )
 
 (define-method get-new-wpoint-coords link-editor-form-class ()
-  (mid-point (nth 1 (get-view-points-list (the))) (nth (- (LENGTH (get-view-weight-coords (the))) 1) (get-view-weight-coords (the))))
+  (if (get-view-weight-coords (the))
+    (mid-point (nth 1 (get-view-points-list (the))) (nth (- (LENGTH (get-view-weight-coords (the))) 1) (get-view-weight-coords (the))))
+    (mid-point (nth 0 (get-view-points-list (the))) (nth 1 (get-view-points-list (the))))
+   )
  )
 
 (defun draw-member-curves ()
