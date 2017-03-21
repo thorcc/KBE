@@ -183,7 +183,7 @@
 
               (canvas :class 'ui-canvas-class
                   measurement 'percentage
-                  x-offset 30 y-offset 5 width 70 height 90
+                  x-offset 32 y-offset 5 width 68 height 90
                   )
               (graphic-toolbar :class 'ui-graphic-control-toolbar-class
                   canvas-object ^canvas
@@ -193,7 +193,15 @@
                   x-offset 30
                   y-offset 95
                   )
-              (link-selector :class ui-option-menu-class
+
+              (link-selector-label :class 'ui-label-class
+                label "Selected Link"
+                label-align :left
+                y-offset 8
+                x-offset 3
+                height 5
+                )
+              (link-selector :class 'ui-option-menu-class
                 Button1-action '(progn
                                         (update (the superior link-editor-form-class))
                                         (draw-member-curves)
@@ -203,10 +211,18 @@
                                 collect (the label (:from member))
                                  )
                 selected-option (nth 0 ^options-list)
-                y-offset 2
-                x-offset 2
+                y-offset 8
+                x-offset 12
                 height 5
                )
+
+               (member-selector-label :class 'ui-label-class
+                 label "Selected Member"
+                 label-align :left
+                 y-offset 13
+                 x-offset 3
+                 height 5
+                 )
                (member-selector :class ui-option-menu-class
                  Button1-action '(progn
                                          (update (the superior link-editor-form-class))
@@ -216,8 +232,8 @@
                  labels-list (loop for i from 0 to (- (length ^options-list) 1)
                                     collect (format nil "Member ~a" i))
                  selected-option (nth 0 ^options-list)
-                 y-offset 7
-                 x-offset 2
+                 y-offset 13
+                 x-offset 12
                  height 5
                 )
 
@@ -225,7 +241,7 @@
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 13
+                  y-offset 18
                   x-offset 2
                   label "Sweep Link"
                   Button1-action '(progn
@@ -238,7 +254,7 @@
                     measurement 'percentage
                     height 5
                     width 10
-                    y-offset 13
+                    y-offset 18
                     x-offset 12
                     label "Undraw"
                     Button1-action (undraw (the main-mechanism-class))
@@ -248,7 +264,7 @@
                 measurement 'percentage
                 height 5
                 width 10
-                y-offset 18
+                y-offset 23
                 x-offset 2
                 label "Draw Curves"
                 Button1-action '(draw-member-curves)
@@ -258,7 +274,7 @@
                 measurement 'percentage
                 height 5
                 width 10
-                y-offset 18
+                y-offset 23
                 x-offset 12
                 label "Sweep Member"
                 Button1-action '(draw (the member-selector selected-option) :draw-subobjects? nil)
@@ -267,7 +283,7 @@
                   measurement 'percentage
                   height 5
                   width 10
-                  y-offset 23
+                  y-offset 28
                   x-offset 2
                   label "Move Weight Point"
 
@@ -276,10 +292,171 @@
                                           (regen)
                                           (draw (the superior main-mechanism-class helping-points)))
                   )
+
+
+                  (cross-section-selector-label :class 'ui-label-class
+                    label "Member Cross-section"
+                    label-align :left
+                    y-offset 33
+                    x-offset 3
+                    height 5
+                    )
+                    (cross-section-start-label :class 'ui-label-class
+                      label "Start Cross-section"
+                      label-align :left
+                      y-offset 38
+                      x-offset 3
+                      height 5
+                      )
+
+                 (cross-section-end-label :class 'ui-label-class
+                   label "End Cross-section"
+                   label-align :left
+                   y-offset 43
+                   x-offset 3
+                   height 5
+                   )
+
+                  (start-cross-section-selector :class ui-option-menu-class
+                    Button1-action '(progn
+                                            (update (the superior link-editor-form-class))
+                                            (draw-member-curves)
+                                     )
+                   options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
+
+                   labels-list (loop for option in !options-list
+                                 collect (remove "-section" (write-to-string option))
+                                 )
+                   selected-option (nth
+                                     (position
+                                      (write-to-string (the type (:from (get-cross-section_D (the superior link-editor member-selector selected-option)))))
+                                      !labels-list
+                                      )
+                                     !options-list)
+                   y-offset 38
+                   x-offset 12
+                   height 5
+                   width 10
+                   )
+                 (end-cross-section-selector :class ui-option-menu-class
+                       Button1-action '(progn
+                                               (update (the superior link-editor-form-class))
+                                               (draw-member-curves)
+                                        )
+                      options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
+                      labels-list (loop for option in !options-list
+                                    collect (remove "-section" (write-to-string option))
+                                    )
+                     selected-option(nth
+                                      (position
+                                        (write-to-string (the type (:from (get-cross-section_A (the superior link-editor member-selector selected-option)))))
+                                        !labels-list
+                                       )
+                                     !options-list)
+                      y-offset 43
+                      x-offset 12
+                      height 5
+                      width 10
+                   )
+
+                 (cs-width-label :class 'ui-label-class
+                   label "w"
+                   y-offset 33
+                   x-offset 22
+                   height 5
+                   width 3
+                   )
+                 (cs-height-label :class 'ui-label-class
+                   label "h"
+                   y-offset 33
+                   x-offset 25
+                   height 5
+                   width 3
+                   )
+
+                   (start-width :Class 'ui-typein-field-class
+                    x-offset 22 y-offset 38 width 3 height 5
+                    editable? t
+                    model-property-object (the width (:from (the superior link-editor member-selector selected-option)))
+                    content       ^model-property-object
+                    ; accept-content-function '(change-cross-section-start-width (the superior link-editor member-selector selected-option) (get-value (the superior)))
+                    ; cancel-action '(smash-value ^content)
+                    Focusout-validation? t
+                    )
+
+                   (start-height :Class 'ui-typein-field-class
+                    x-offset 25 y-offset 38 width 3 height 5
+                    model-property-object (the height (:from (the superior link-editor member-selector selected-option)))
+                    content       ^model-property-object
+                    ; validation-function '(change-cross-section-start-height (the superior link-editor member-selector selected-option) (get-value (the superior)))
+                    ; cancel-action '(smash-value ^content)
+                    Focusout-validation? t
+                    )
+
+                  (start-cs-apply :Class 'ui-action-button-class
+                    x-offset 28 y-offset 38 width 3 height 5
+                    Button1-action (progn
+                                       (change-cross-section-start-width
+                                        (the superior link-editor member-selector selected-option)
+                                        (get-value (the superior link-editor start-width)))
+                                       (change-cross-section-start-height
+                                         (the superior link-editor member-selector selected-option)
+                                         (get-value (the superior link-editor start-height)))
+                                       (change-cross-section_D
+                                         (the superior link-editor member-selector selected-option)
+                                         (the superior link-editor start-cross-section-selector selected-option))
+                                       (regen)
+                                        )
+                    image (concatenate (logical-path :ui-bitmaps) "apply.bmp")
+                   )
+
+                  (end-width :Class 'ui-typein-field-class
+                   x-offset 22 y-offset 43 width 3 height 5
+                   model-property-object (the width-end (:from (the superior link-editor member-selector selected-option)))
+                   content       ^model-property-object
+                   apply-action '(change-cross-section-end-width (the superior link-editor member-selector selected-option) (get-value (the superior)))
+                   cancel-action '(smash-value ^content)
+                   Focusout-validation? t
+                   )
+
+                  (end-height :Class 'ui-typein-field-class
+                   x-offset 25 y-offset 43 width 3 height 5
+                   model-property-object (the height-end (:from (the superior link-editor member-selector selected-option)))
+                   content       ^model-property-object
+                   apply-action '(change-cross-section-end-height (the superior link-editor member-selector selected-option) (get-value (the superior)))
+                   cancel-action '(smash-value ^content)
+                   Focusout-validation? t
+                   )
+                   (end-cs-apply :Class 'ui-action-button-class
+                     x-offset 28 y-offset 43 width 3 height 5
+                     Button1-action (progn
+                                       (change-cross-section-end-width
+                                         (the superior link-editor member-selector selected-option)
+                                         (get-value (the superior link-editor end-width)))
+                                        (change-cross-section-end-height
+                                          (the superior link-editor member-selector selected-option)
+                                          (get-value (the superior link-editor end-height)))
+                                        (change-cross-section_D
+                                          (the superior link-editor member-selector selected-option)
+                                          (the superior link-editor start-cross-section-selector selected-option))
+                                        (regen)
+                                         )
+                     image (concatenate (logical-path :ui-bitmaps) "apply.bmp")
+                    )
+
+
+
+              (point-sheet-label :class 'ui-label-class
+                label "Start/End point"
+                label-align :left
+                y-offset 48
+                x-offset 3
+                height 5
+                )
               (point-sheet :class 'ui-spreadsheet-class
                   measurement 'percentage
                   x-offset 2
-                  y-offset 40
+                  y-offset 53
                   width 21
                   height 12
                   column-labels (list "x-coord" "y-coord" "z-coord")
@@ -293,13 +470,19 @@
                   editable? t
 
                   )
-
+                  (weight-sheet-label :class 'ui-label-class
+                    label "Weight points"
+                    label-align :left
+                    y-offset 66
+                    x-offset 3
+                    height 5
+                    )
               (weight-sheet :class 'ui-spreadsheet-class
                   measurement 'percentage
                   x-offset 2
-                  y-offset 60
+                  y-offset 71
                   width 22
-                  height 30
+                  height 24
                   column-labels (list "x-coord" "y-coord" "z-coord" "weight")
                   row-labels (loop for row from 0 to ^^weight-points-quantity
                                 collect (format nil "Point ~a" row)
@@ -402,6 +585,14 @@
     (mid-point (nth 1 (get-view-points-list (the))) (nth (- (LENGTH (get-view-weight-coords (the))) 1) (get-view-weight-coords (the))))
     (mid-point (nth 0 (get-view-points-list (the))) (nth 1 (get-view-points-list (the))))
    )
+ )
+
+(define-method get-selected-link  link-editor-form-class ()
+  (the link-selector selected-option)
+ )
+
+(define-method get-selected-member  link-editor-form-class ()
+  (the member-selector selected-option)
  )
 
 (defun draw-member-curves ()

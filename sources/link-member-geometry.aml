@@ -396,6 +396,8 @@
                                 )
                   )
 
+
+
               optimization-object	(default nil)
 
               property-objects-list (list
@@ -465,8 +467,50 @@
   (the direction (:from (the x-vector-ref (:from !spline-frame_end))))
   )
 
+
+(define-method get-cross-section-start-width member-solid-model ()
+  !width
+  )
+(define-method change-cross-section-start-width member-solid-model (new-width)
+  (change-value !width new-width)
+  )
+
+(define-method get-cross-section-start-height member-solid-model ()
+  !height
+  )
+(define-method change-cross-section-start-height member-solid-model (new-height)
+  (change-value !height new-height)
+  )
+
+(define-method get-cross-section-end-width member-solid-model ()
+  !width-end
+  )
+(define-method change-cross-section-end-width member-solid-model (new-width)
+  (change-value !width-end new-width)
+  )
+
+(define-method get-cross-section-end-height member-solid-model ()
+  !height-end
+  )
+(define-method change-cross-section-end-height member-solid-model (new-height)
+  (change-value !height-end new-height)
+  )
+
+
 (define-method get-cross-section_D member-solid-model ()
   !cross-section_D
+  )
+
+(define-method change-cross-section_D member-solid-model (new-cs)
+  (change-value !cross-section-type new-cs)
+  )
+
+(define-method get-cross-section_A member-solid-model ()
+  !cross-section_A
+  )
+
+(define-method change-cross-section_A member-solid-model (new-cs)
+  (change-value !cross-section-type new-cs)
   )
 
 (define-method get-connection member-solid-model ()
