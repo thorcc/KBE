@@ -178,6 +178,7 @@
                                   collect (butlast w)
                                   )
               points-list (get-points-list (the connection (:from (the member-selector selected-option))))
+              close-action (close-nurbs-module)
               )
   :subobjects(
 
@@ -205,6 +206,7 @@
                 Button1-action '(progn
                                         (update (the superior link-editor-form-class))
                                         (draw-member-curves)
+                                        (zoom :all)
                                  )
                 options-list (series-members (the main-mechanism-class links))
                 labels-list (loop for member in (series-members (the main-mechanism-class links))
@@ -227,6 +229,7 @@
                  Button1-action '(progn
                                          (update (the superior link-editor-form-class))
                                          (draw-member-curves)
+                                         ;(blink (the connection (:from ^selected-option)) 2 100)
                                   )
                  options-list  (series-members (the link-geometry sweeps (:from (the superior link-selector selected-option))))
                  labels-list (loop for i from 0 to (- (length ^options-list) 1)
@@ -599,8 +602,11 @@
             (undraw (the main-mechanism-class))
             (draw (the superior main-mechanism-class helping-points))
             (loop for member in (series-members (the link-geometry sweeps (:from (the interface forms link-editor link-selector selected-option))))
-                          do (draw (the connection (:from member)) :draw-subobjects? nil)
+                          do (progn (draw (the connection (:from member)) :draw-subobjects? nil)
+                                    (change-color (the connection (:from member)) 'white)
+                                  )
                 )
+            (change-color (the connection (:from (the interface forms link-editor member-selector selected-option))) 'red)
 )
 
 (defun display-nurbs-module ()
@@ -612,6 +618,15 @@
       (activate-display (the interface forms link-editor canvas))
       (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
       (draw-member-curves)
+      (change-color (the connection (:from (the interface forms link-editor member-selector selected-option))) 'red)
       (zoom :all)
       ;(set-current-display-background-color 'grey49)
    )
+(defun close-nurbs-module ()
+     (hide (the interface forms link-editor))
+     (delete-object (the main-mechanism-class helping-points))
+     (delete-object (the interface forms link-editor))
+     (delete-current-display-lights)
+     (activate-display (the model-manager interface sketcher-layout-form-class sketcher-main-form sketcher-main-form work-area-canvas-form canvas canvas canvas canvas))
+     (regen)
+  )
