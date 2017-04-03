@@ -1,0 +1,1 @@
+Type,Point-from,Point-to,Incident-links,Stiffness/Damping 

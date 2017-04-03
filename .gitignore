@@ -10,3 +10,4 @@ nastran-data/
 *.bdf
 *.stl
 sources_old/
+library/wind-turbine/initial-version/Rotor Design for a 10 MW Offshore Wind Turbine.pdf
