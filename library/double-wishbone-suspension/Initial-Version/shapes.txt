@@ -1,13 +1,13 @@
-Name					Link	Member	Cross-section		Dimensions			Points-list		Weights-list
-"Upper-wishbone"		2		0		"rectangular"		(0.05 0.1)			(16)			(0.5)
-"Upper-wishbone"		2		1		"rectangular"		(0.05 0.1)			(15)			(0.5)
-"Upper-wishbone"		2		2		"rectangular"		(0.1 0.05)			(2)				(0.4)
-"Lower-wishbone"		1		0		"rectangular"		(0.05 0.1)			(14)			(0.5)
-"Lower-wishbone"		1		1		"rectangular"		(0.05 0.1)			(13)			(0.5)
-"Lower-wishbone"		1		2		"rectangular"		(0.1 0.05)			(1)				(0.4)
-"Knuckle"				0		0		"rectangular"		(0.6 0.1 0.2 0.1)	(11)			(1)
-"Knuckle"				0		1		"rectangular"		(0.6 0.1 0.2 0.1)	(12)			(1)
-"Steering-link"			0		2		"rectangular"		(0.1 0.1)			(17)			(1)
-"Knuckle invis"			0		3		"nil"			
-"Knuckle invis"			0		4		"nil"			
-"Knuckle invis"			0		5		"nil"			
+Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list 
+"upper-wishbone",2,0,"rectangular",(0.05 0.1),(16),(0.5)
+"upper-wishbone",2,1,"rectangular",(0.05 0.1),(15),(0.5)
+"upper-wishbone",2,2,"rectangular",(0.1 0.05),(2),(0.4)
+"lower-wishbone",1,0,"rectangular",(0.05 0.1),(14),(0.5)
+"lower-wishbone",1,1,"rectangular",(0.05 0.1),(13),(0.5)
+"lower-wishbone",1,2,"rectangular",(0.1 0.05),(1),(0.4)
+"knuckle",0,0,"rectangular",(0.6 0.1 0.2 0.1),(11),(1)
+"knuckle",0,1,"rectangular",(0.6 0.1 0.2 0.1),(12),(1)
+"steering-link",0,2,"rectangular",(0.1 0.1),(17),(1)
+"knuckle",0,3,"nil",nil,nil,nil
+"knuckle",0,4,"nil",nil,nil,nil
+"knuckle",0,5,"nil",nil,nil,nil

@@ -1,5 +1,5 @@
-Type		Point-from	Point-to	Incident-links
-"Spring"	20			21			(2 nil)
-"Damper"	20			21			(2 nil)
-"Spring"	51			52			(11 nil)
-"Damper"	51			52			(11 nil)
+Type,Point-from,Point-to,Incident-links,Stiffness/Damping 
+"spring",20,21,(2 nil),nil
+"damper",20,21,(2 nil),nil
+"spring",51,52,(11 nil),nil
+"damper",51,52,(11 nil),nil

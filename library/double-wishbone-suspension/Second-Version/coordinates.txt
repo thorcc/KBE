@@ -1,31 +1,31 @@
-Index	Name						X-pos	Y-pos	Z-pos
-0		"Spindle"					0.0		0.0		0.0	
-1		"Upper-ball-joint"			0.25	0.0		1.0	
-2		"Lower-ball-joint"			0.25	0.0		-1.0	
-3		"Steering-joint"			0.0		0.55	0.1
-4		"Upper-rev-joint-l"			1.25	0.5		1.0	
-5		"Upper-rev-joint-r"			1.25	-0.5	1.0	
-6		"Lower-rev-jont-l"			1.5		0.5		-1.0
-7		"Lower-rev-jont-r"			1.5		-1.0	-1.0	
-8		"Upper-knuckle-nurb1"		-0.1	0.0		0.8
-9		"Lower-knuckle-nurb1"		-0.1	0.0		-0.8
-10		"Steering-link-nurb"		0.0		0.3		0.0
-11		"Upper-wishbone-l-nurb1"	0.2		0.6		1.0	
-12		"Upper-wishbone-l-nurb2"	0.6		-0.4	1.0
-13		"Upper-wishbone-l-nurb3"	0.4		0.8		1.0	
-14		"Upper-wishbone-r-nurb1"	0.2		-0.6	1.0	
-15		"Upper-wishbone-r-nurb2"	0.6		0.4		1.0	
-16		"Upper-wishbone-r-nurb3"	0.4		-0.8	1.0	
-17		"Lower-wishbone-l-nurb"		1.0		0.7 	-1.0	
-18		"Lower-wishbone-r-nurb1"	0.5		-0.25	-1.0		
-19		"Lower-wishbone-r-nurb2"	1.0		-1.2	-1.0	
-20		"Spring-damper-connection"	0.5		0.0		-1.0
-21		"Spring-damper-ground"		1.5		0.0		1.0
-22		"Upper-knuckle-nurb2"		0.1		0.0		0.2
-23		"Upper-knuckle-nurb2"		0.1		0.0		-0.2
-24		"Upper-wishbone-r-nurb4"	1.1		-0.47	1.0	
-25		"Upper-wishbone-l-nurb4"	1.1		0.47	1.0	
-26		"Lower-wishbone-L-nurb2"	1.0		0.6		-1.0	
-
-
-
+Index,Name,X-pos,Y-pos,Z-pos 
+1,"spindle",0.0,0.0,0.0
+2,"upper-ball-joint",0.25,0.0,1.0
+3,"lower-ball-joint",0.25,0.0,-1.0
+4,"steering-joint",0.0,0.55,0.1
+5,"upper-rev-joint-l",1.25,0.5,1.0
+6,"upper-rev-joint-r",1.25,-0.5,1.0
+7,"lower-rev-jont-l",1.5,0.5,-1.0
+8,"lower-rev-jont-r",1.5,-1.0,-1.0
+9,"upper-knuckle-nurb1",-0.1,0.0,0.8
+10,"lower-knuckle-nurb1",-0.1,0.0,-0.8
+11,"steering-link-nurb",0.0,0.3,0.0
+12,"upper-wishbone-l-nurb1",0.2,0.6,1.0
+13,"upper-wishbone-l-nurb2",0.6,-0.4,1.0
+14,"upper-wishbone-l-nurb3",0.4,0.8,1.0
+15,"upper-wishbone-r-nurb1",0.2,-0.6,1.0
+16,"upper-wishbone-r-nurb2",0.6,0.4,1.0
+17,"upper-wishbone-r-nurb3",0.4,-0.8,1.0
+18,"lower-wishbone-l-nurb",1.0,0.7,-1.0
+19,"lower-wishbone-r-nurb1",0.5,-0.25,-1.0
+20,"lower-wishbone-r-nurb2",1.0,-1.2,-1.0
+21,"spring-damper-connection",0.5,0.0,-1.0
+22,"spring-damper-ground",1.5,0.0,1.0
+23,"upper-knuckle-nurb2",0.1,0.0,0.2
+24,"upper-knuckle-nurb2",0.1,0.0,-0.2
+25,"upper-wishbone-r-nurb4",1.1,-0.47,1.0
+26,"upper-wishbone-l-nurb4",1.1,0.47,1.0
+27,"lower-wishbone-l-nurb2",1.0,0.6,-1.0
+28,"nil",nil,nil,nil
+29,"nil",nil,nil,nil
+30,"nil",nil,nil,nil

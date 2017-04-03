@@ -1,33 +1,33 @@
-Name			Link		Member		Cross-section	Dimensions		Points-list		Weights-list
-"link-3"		3			1			nil	
-"link-3"		3			4			nil	
-"link-3"		3			2			nil	
-"link-3"		3			5			nil	
-"link-4"		4			1			nil	
-"link-4"		4			4			nil	
-"link-4"		4			2			nil	
-"link-4"		4			5			nil	
-"link-5"		5			2			nil	
-"link-5"		5			3			nil	
-"link-5"		5			5			nil	
-"link-5"		5			1			nil	
-"link-5"		5			4			nil	
-"link-5"		5			0			"rectangular"	(1 0.3)	
-"link-3"		3			0			"rectangular"	(1 0.3)		
-"link-3"		3			3			"rectangular"	(0.8 0.2)	
-"link-4"		4			0			"rectangular"	(1 0.3)	
-"link-4"		4			3			"rectangular"	(0.8 0.2)	
-"link-13"		12			1			"rectangular"	(1 0.2 0.6 0.2)		
-"link-12"		13			1			"rectangular"	(1 0.2 0.6 0.2)	
-"link-12"		12			2			nil	
-"link-13"		13			2			nil	
-"link-12"		12			3			nil	
-"link-13"		13			3			nil	
-"link-12"		12			4			nil	
-"link-13"		13			4			nil	
-"link-12"		12			5			"circular"		(15 0.1)		
-"link-13"		13			5			"circular"		(15 0.1)	
-"link-14"		14			0			"rectangular"	(0.8 0.2)		
-"link-15"		15			0			"rectangular"	(0.8 0.2)	
-"default"		default		default		"rectangular"	(0.4 0.1)	
-
+Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list 
+"link-3",3,1,"nil",nil,nil,nil
+"link-3",3,4,"nil",nil,nil,nil
+"link-3",3,2,"nil",nil,nil,nil
+"link-3",3,5,"nil",nil,nil,nil
+"link-4",4,1,"nil",nil,nil,nil
+"link-4",4,4,"nil",nil,nil,nil
+"link-4",4,2,"nil",nil,nil,nil
+"link-4",4,5,"nil",nil,nil,nil
+"link-5",5,2,"nil",nil,nil,nil
+"link-5",5,3,"nil",nil,nil,nil
+"link-5",5,5,"nil",nil,nil,nil
+"link-5",5,1,"nil",nil,nil,nil
+"link-5",5,4,"nil",nil,nil,nil
+"link-5",5,0,"rectangular",(1 0.3),nil,nil
+"link-3",3,0,"rectangular",(1 0.3),nil,nil
+"link-3",3,3,"rectangular",(0.8 0.2),nil,nil
+"link-4",4,0,"rectangular",(1 0.3),nil,nil
+"link-4",4,3,"rectangular",(0.8 0.2),nil,nil
+"link-13",12,1,"rectangular",(1 0.2 0.6 0.2),nil,nil
+"link-12",13,1,"rectangular",(1 0.2 0.6 0.2),nil,nil
+"link-12",12,2,"nil",nil,nil,nil
+"link-13",13,2,"nil",nil,nil,nil
+"link-12",12,3,"nil",nil,nil,nil
+"link-13",13,3,"nil",nil,nil,nil
+"link-12",12,4,"nil",nil,nil,nil
+"link-13",13,4,"nil",nil,nil,nil
+"link-12",12,5,"circular",(15 0.1),nil,nil
+"link-13",13,5,"circular",(15 0.1),nil,nil
+"link-14",14,0,"rectangular",(0.8 0.2),nil,nil
+"link-15",15,0,"rectangular",(0.8 0.2),nil,nil
+"default",default,default,"rectangular",(0.4 0.1),nil,nil
+"nil",nil,nil,"nil",nil,nil,nil
