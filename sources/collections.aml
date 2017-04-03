@@ -36,6 +36,19 @@
       )
     )
   )
+
+(define-method write-to-file collection-class ()
+ (let (
+       (file-name (write-to-string !collection-type))
+       (file-path (logical-path (the version-path (:from ^version-selection))
+                                (concatenate file-name ".txt")))
+       (function-name (read-from-string (concatenate "write-" file-name "-to-file")) )
+       )
+     (with-open-file (file file-path :direction :output)
+         (apply function-name (list file))
+        )
+   )
+ )
 ;================================
 ; END collecion-class definitions
 ;================================
@@ -121,6 +134,14 @@
       )
     )
   )
+
+(defun write-constraints-to-file (stream)
+    		(format stream "Point,Type,Link-incidence,Joint-direction,DOF,Joint-variable ~%")
+								(loop for line in (get-constraints-list (the constraints))
+									do
+									 (format stream "~d,~d,~d,~d,~d,~d~%" (nth 0 line) (write-to-string (nth 1 line)) (nth 2 line) (nth 3 line) (nth 4 line) (nth 5 line))
+								)
+)
 ;====================================================
 ; Left click button methods for constraint-collection
 ;====================================================
@@ -256,6 +277,20 @@
       )
     )
   )
+
+
+(defun write-coordinates-to-file (stream)
+    		(format stream "Index,Name,X-pos,Y-pos,Z-pos ~%")
+					(let (
+								(point (get-points-list (the points)))
+								)
+								(loop for line in point
+									for j from 1 to (length point)
+									do
+									 (format stream "~d,~s,~d,~d,~d~%" j (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line) (nth 3 line))
+								)
+						)
+	)
 ;=================================
 ; END point-collection definitions
 ;=================================
@@ -290,7 +325,9 @@
 (define-method get-input-shapes shape-collection ()
   (children (the) :class 'shape-model)
   )
-
+(define-method get-shapes-list shape-collection ()
+  !shapes-list
+  )
 ;===========================================================
 ; Reads each line of the shapes file and adds this to a list
 ;===========================================================
@@ -307,6 +344,16 @@
       )
     )
   )
+
+
+(defun write-shapes-to-file (stream)
+    		(format stream "Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list ~%")
+								(loop for line in (get-shapes-list (the shapes))
+									do
+									 (format stream "~s,~d,~d,~s,~d,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
+                                                           (write-to-string (nth 3 line)) (nth 4 line) (nth 5 line) (nth 6 line))
+                )
+)
 ;=================================
 ; END shape-collection definitions
 ;=================================
@@ -513,7 +560,9 @@
 (define-method get-dampers spring-damper-collection ()
   (children (the) :class 'damper-model)
   )
-
+(define-method get-sd-list spring-damper-collection ()
+  !sd-list
+  )
 ;==================================================================
 ; Reads each line of the spring-damper file and adds this to a list
 ;==================================================================
@@ -527,6 +576,16 @@
       )
     )
   )
+
+
+(defun write-spring-damper-to-file (stream)
+    		(format stream "Type,Point-from,Point-to,Incident-links,Stiffness/Damping ~%")
+								(loop for line in (get-sd-list (the spring-dampers))
+									do
+									 (format stream "~s,~d,~d,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
+                                                                      (nth 3 line) (nth 4 line))
+                )
+)
 ;=========================================
 ; END spring-damper-collection definitions
 ;=========================================
@@ -566,7 +625,9 @@
 (define-method get-loads load-collection ()
   (children (the) :class 'load-model)
   )
-
+(define-method get-loads-list load-collection ()
+!loads-list
+  )
 ;==========================================================
 ; Reads each line of the loads file and adds this to a list
 ;==========================================================
@@ -580,6 +641,15 @@
       )
     )
   )
+
+
+(defun write-loads-to-file (stream)
+    		(format stream "Type,Point,Direction,Magnitude,Loaded-link ~%")
+								(loop for line in (get-loads-list (the loads))
+									do
+									 (format stream "~d,~d,~d,~d,~d~%" (nth 0 line) (nth 1 line) (nth 2 line) (nth 3 line) (nth 4 line))
+                )
+)
 ;================================
 ; END load-collection definitions
 ;================================
@@ -733,6 +803,8 @@
                                       '("Undraw" (button1-parameters :undraw button3-parameters :unset)
                                         ui-work-area-action-button-class)
                                       ""
+                                      '("Save changes" (button1-parameters :save-changes)
+                                        ui-work-area-action-button-class)
                                       '("Create .bdf-files" (button1-parameters :create-bdf)
                                         ui-work-area-action-button-class)
                                       '("Create .stl-files" (button1-parameters :create-stl)
@@ -932,6 +1004,15 @@
      )
     (:undraw
      (undraw self)
+     )
+    (:save-changes
+      (progn
+        (write-to-file (the points))
+        (write-to-file (the shapes))
+        (write-to-file (the constraints))
+        (write-to-file (the loads))
+        (write-to-file (the spring-dampers))
+      )
      )
     (:create-bdf
      (if (equal "2D" (pop-up-message (format nil "Export to .bdf")
