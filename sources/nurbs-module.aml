@@ -103,6 +103,8 @@
               button-second-row-x-offset 11
 
               cross-section-offset 67
+              mesh-offset 80
+              surface-offset 93
 
 
               weight-points (get-weight-points (the connection (:from (the member-selector selected-option))))
@@ -379,8 +381,116 @@
                      label "Apply Cross-section"
                      Button1-action '(change-cross-section (the superior link-editor))
                     )
-              )
-  )
+    ;;;;;;;;Cross-section end;;;;;;;;;;;;;;
+
+
+    ;;;;;;;;Mesh-size;;;;;;;;;;;;;;;;;;;;;;;
+
+    (mesh-label :class 'ui-label-class
+      label "Member Mesh size"
+      label-align :left
+      height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset ^mesh-offset
+      )
+    (mesh-max-size-label :class 'ui-label-class
+        label "Max"
+        label-align :left
+        height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^mesh-offset 3)
+        )
+
+     (mesh-max-field :Class 'ui-typein-field-class
+      height ^button-height  width 5  x-offset ^button-second-row-x-offset y-offset (+ ^mesh-offset 3)
+      editable? t
+      model-property-object (the link-geometry max-element-size (:from (the superior link-editor link-selector selected-option)))
+      content       ^model-property-object
+      Focusout-validation? t
+      )
+    (mesh-min-size-label :class 'ui-label-class
+        label "Min"
+        label-align :left
+        height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^mesh-offset 6)
+        )
+
+     (mesh-min-field :Class 'ui-typein-field-class
+      height ^button-height  width 5  x-offset ^button-second-row-x-offset y-offset (+ ^mesh-offset 6)
+      editable? t
+      model-property-object (the link-geometry min-element-size (:from (the superior link-editor link-selector selected-option)))
+      content       ^model-property-object
+      Focusout-validation? t
+      )
+
+    (apply-mesh-button :Class 'ui-action-button-class
+       height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^mesh-offset 10)
+       label "Mesh"
+       Button1-action '(progn
+                              (draw (first (get-link-surface-mesh-elements-query-objects-list
+                                (get-mesh-model-object (the superior link-editor link-selector selected-option)))))
+                              (change-max-mesh-size
+                               (the link-geometry (:from (the superior link-editor link-selector selected-option)))
+                               (get-value (the superior link-editor mesh-max-field)))
+                               (change-min-mesh-size
+                                (the link-geometry (:from (the superior link-editor link-selector selected-option)))
+                                (get-value (the superior link-editor mesh-min-field)))
+
+                                )
+      )
+      ;;;;;;;;Mesh-size end;;;;;;;;;;;;;;
+    (misc-label :class 'ui-label-class
+      label "Misc."
+      label-align :left
+      height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset ^surface-offset
+      )
+      (surface-label :class 'ui-label-class
+          label "Link surface"
+          label-align :left
+          height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^surface-offset 3)
+          )
+      (surface-field :class ui-radio-buttons-class
+        height ^button-height  width 7  x-offset (+ ^button-first-row-x-offset 6) y-offset (+ ^surface-offset 3)
+        Labels-list '("Yes" "No")
+        Status (let(
+                     (surface (series-members (the link-geometry surfaces (:from (the superior link-editor link-selector selected-option)))))
+                   )
+                   (if surface
+                     (if (the display? (:from (nth 0 surface))) 0 1)
+                     1)
+                )
+
+        Button1-action '(progn
+
+                              (let(
+                                    (surface (series-members (the link-geometry surfaces (:from (the superior link-editor link-selector selected-option)))))
+                                   )
+                                    (if surface
+                                       (loop for member in surface
+                                           do (change-value (the display? (:from member)) (if (= ^status 0) t nil)))
+                                       (change-value ^status 1))
+                                      )
+
+                            (update (the link-editor))
+                            (regen)
+                        )
+        )
+
+        (blend-label :class 'ui-label-class
+            label "Blend edges"
+            label-align :left
+            height ^button-height  width ^button-width  x-offset (+ ^button-second-row-x-offset 5)  y-offset (+ ^surface-offset 3)
+            )
+        (blend-field :class ui-radio-buttons-class
+          height ^button-height  width 7  x-offset (+ ^button-second-row-x-offset 10) y-offset (+ ^surface-offset 3)
+          Labels-list '("Yes" "No")
+          Status (if (the link-geometry blend? (:from (the superior link-editor link-selector selected-option))) 0 1)
+
+          Button1-action '(progn
+                              (change-value (the link-geometry blend? (:from (the superior link-editor link-selector selected-option))) (if (= ^status 0) t nil))
+                              (update (the link-editor))
+                              (regen)
+                          )
+          )
+
+
+      )
+)
 
 
 
@@ -494,8 +604,6 @@
 )
 
 (defun display-nurbs-module ()
-      ;(create-model 'point-collection)
-      ; (create-model 'nurbs-controller)
       (add-object (the) 'helping-points 'helping-points-class)
       (add-object (the interface forms) 'link-editor 'link-editor-form-class)
       (display (the interface forms link-editor))
