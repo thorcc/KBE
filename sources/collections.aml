@@ -126,7 +126,7 @@
   (when stream
     (loop for line = (read-line stream nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for c-data = (list
                     (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls)
                     )
@@ -269,7 +269,7 @@
   (when stream
     (loop for line = (read-line stream nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for coord-line = (list
                         (read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls))
                         (read-from-string (nth 6 ls)) (nth 7 ls) )
@@ -335,7 +335,7 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for shape-data = (list
                         (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls))
                         (nth 4 ls) (nth 5 ls) (nth 6 ls)
@@ -570,7 +570,7 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
       collect data
       )
@@ -635,7 +635,7 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
       collect data
       )
@@ -884,7 +884,7 @@
       (with-open-file (file !opt-file-path :direction :input)
         (loop for line = (read-line file  nil :eof)
           until (equal line :eof)
-          for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+          for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
           for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
           collect data
           )
