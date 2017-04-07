@@ -70,31 +70,15 @@
                points-list (list ^start-point ^end-point)
 
 
-               weight (append (the weight-list (:from ^shape-ref))
-                                     (make-sequence 'list (- (length (the point-list (:from ^shape-ref)))
-                                                             (length (the weight-list (:from ^shape-ref)))) :initial-element 1)
-                                     )
+               weight-points (get-weight-points-from-ids (the weights) (the w-point-list (:from ^shape-ref)))
 
-               weight-points (loop for p-index in (the point-list (:from ^shape-ref))
-                               for w in ^weight
-                               collect (append (the coordinates (:from
-                                                                 (nth p-index ^point-ref-list)) ) (list w)) )
+
+
                points (if ^weight-points
                         (append ^start-weight ^weight-points ^end-weight)
                         (append ^start-weight ^middle-points ^end-weight)
                        )
 
-              ;  points (let (
-              ;               (shape-points (loop for p-index in (the point-list (:from ^shape-ref))
-              ;                               for w in ^weight-points
-              ;                               collect (append (the coordinates (:from
-              ;                                                                 (nth p-index ^point-ref-list)) ) (list w)) ))
-              ;               )
-              ;           (if shape-points
-              ;               (append ^start-weight shape-points ^end-weight)
-              ;             (append ^start-weight ^middle-points ^end-weight)
-              ;             )
-              ;           )
                rational? t
                homogeneous? t
                                         ;degree 2

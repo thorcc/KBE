@@ -316,8 +316,7 @@
                                                  (list 0 0)
                                                (nth 4 (nth ^index ^shapes-list))
                                                )
-                           point-list 			(nth 5 (nth ^index ^shapes-list))
-                           weight-list 			(nth 6 (nth ^index ^shapes-list))
+                           w-point-list 			(nth 5 (nth ^index ^shapes-list))
                            )
                )
   )
@@ -327,7 +326,25 @@
   )
 (define-method get-shapes-list shape-collection ()
   !shapes-list
+)
+
+(define-method get-member-shape shape-collection (link member)
+        (loop for mem in !shapes-list
+             if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+                       append mem
   )
+)
+
+
+(define-method change-shape-weight shape-collection (link member id)
+    (change-value !shapes-list
+        (loop for mem in !shapes-list
+          if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+              collect (list (nth 0 mem) (nth 1 mem) (nth 2 mem) (nth 3 mem) (nth 4 mem) id)
+          else collect mem
+        )
+    )
+)
 ;===========================================================
 ; Reads each line of the shapes file and adds this to a list
 ;===========================================================
@@ -338,7 +355,7 @@
       for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for shape-data = (list
                         (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls))
-                        (nth 4 ls) (nth 5 ls) (nth 6 ls)
+                        (nth 4 ls) (nth 5 ls)
                         )
       collect shape-data
       )
@@ -350,13 +367,106 @@
     		(format stream "Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list ~%")
 								(loop for line in (get-shapes-list (the shapes))
 									do
-									 (format stream "~s,~d,~d,~s,~d,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
-                                                           (write-to-string (nth 3 line)) (nth 4 line) (nth 5 line) (nth 6 line))
+									 (format stream "~s,~d,~d,~s,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
+                                                           (write-to-string (nth 3 line)) (nth 4 line) (nth 5 line))
                 )
 )
 ;=================================
 ; END shape-collection definitions
 ;=================================
+
+;===========================================================================================
+; Class: weight-points-collection
+; Executes the read-from-file method for the weight-points
+;===========================================================================================
+(define-class weight-collection
+  :inherit-from (series-object collection-class)
+  :properties (
+               collection-type 'weight-points
+               weight-points-list (cdr (read-from-file !superior))
+               quantity 		(length ^weight-points-list)
+               class-expression	'weight-point-data-model
+               series-prefix 	'w
+               init-form '(
+                           label 		(nth 1 (nth ^index ^weight-points-list))
+                           coordinates	(list (nth 2 (nth ^index ^weight-points-list))
+                                             (nth 3 (nth ^index ^weight-points-list)) (nth 4 (nth ^index ^weight-points-list)))
+                           weight (nth 4 (nth ^index ^weight-points-list))
+                           id 			(nth 0 (nth ^index ^weight-points-list))
+                           )
+             )
+  )
+
+(define-method get-weight-points weight-collection ()
+  (children (the) :class 'weight-point-data-model)
+  )
+
+(define-method get-weight-list weight-collection ()
+  !weight-points-list
+  )
+
+(define-method add-weight-point weight-collection (x y z)
+  (change-value !weight-points-list (append (get-weight-list (the weights)) (list (list 'new-weight-point x y z))))
+)
+
+(define-method get-weights-from-ids weight-collection (point-ids)
+  (loop for line in !weight-points-list
+    append (loop for id in point-ids
+          if (= (nth 0 line) id)
+             collect line
+          )
+    )
+)
+
+(define-method get-weight-points-from-ids weight-collection (point-ids)
+  (loop for line in !weight-points-list
+    append (loop for id in point-ids
+          if (= (nth 0 line) id)
+             collect (cddr line)
+          )
+    )
+)
+
+
+(define-method change-weight-points-list weight-collection (new-weight-points-list)
+       (change-value !weight-points-list
+          (append (loop for i in !weight-points-list
+                          unless (member (nth 0 i) (loop for j in new-weight-points-list append (list (nth 0 j))))
+                          collect i
+                            )
+                   new-weight-points-list)
+         )
+)
+
+;===========================================================
+; Reads each line of the weights file and adds this to a list
+;===========================================================
+(defun read-weight-points-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream  nil :eof)
+      until (equal line :eof)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
+      for shape-data = (list
+                        (nth 0 ls) (read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls))
+      collect shape-data
+      )
+    )
+  )
+
+
+(defun write-weight-points-to-file (stream)
+    		(format stream "Number,Name,x,y,z ~%")
+								(loop for line in (get-weight-list (the weights))
+									do
+									 (format stream "~d,~s,~d,~d,~d,~d~%" (nth 0 line) (write-to-string (nth 1 line)) (nth 2 line) (nth 3 line)
+                                                            (nth 4 line) (nth 5 line))
+                )
+)
+;=================================
+; END shape-collection definitions
+;=================================
+
+
 
 ;=========================================
 ; Class: link-collection
@@ -753,6 +863,7 @@
   :inherit-from (series-object)
   :properties (
                point-ref-list (children ^points :class 'point-data-model )
+               weight-point-ref-list (children ^weights :class 'weight-point-data-model)
 
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                shapes-ref-list (children ^shapes :class 'shape-model)
@@ -828,6 +939,8 @@
                                                                        (:from ^version-selection)))
                fedem-model-file	(format nil "~a\\model.fmm" (get-version-path !version-selection))
                (shapes :class 'shape-collection
+                   )
+               (weights :class 'weight-collection
                    )
 
                ;; Optimization defintions. If the optimization.txt file is empty, no optimization models
@@ -1012,6 +1125,7 @@
         (write-to-file (the constraints))
         (write-to-file (the loads))
         (write-to-file (the spring-dampers))
+        (write-to-file (the weights))
       )
      )
     (:create-bdf

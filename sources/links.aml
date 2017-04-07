@@ -11,8 +11,8 @@
                cross-section-type	(read-from-string (remove "-section" (write-to-string
                                                                           (default 'circular-section))))
                solid-dimensions 	'(0.04 0.04)
-               point-list 			nil
-               weight-list 			nil
+               w-point-list 			nil
+              ;  weight-list 			nil
                )
   )
 
