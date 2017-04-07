@@ -540,34 +540,6 @@
   )
 
 
-(defun update-weight-points (link member weight-sheet)
-  (let
-    (
-      (member-shape (get-member-shape (the main-mechanism-class shapes) link member))
-      (point-number (nth 5 member-shape))
-      (new-point-numbers (if (> (length weight-sheet) (length point-number))
-                              (append point-number (loop for i from 1 to (- (length weight-sheet) (length point-number))
-                                                        append (list (+ (length (get-weight-points (the main-mechanism-class weights))) (- i 1)))))
-                              point-number))
-
-      (new-w-list
-                  (loop for w-s-line in weight-sheet
-                  	     for w-point in new-point-numbers
-                  	         collect (append (list w-point (read-from-string (format nil "l-~d,m-~d" link member))) w-s-line)
-                      )
-                  )
-      (new-w-ids
-                   (loop for new-point-numbers in new-w-list
-                          append (list (nth 0 new-point-numbers)))
-                )
-      )
-         (change-weight-points-list (the main-mechanism-class weights) new-w-list)
-         (change-shape-weight (the main-mechanism-class shapes) link member new-w-ids)
-         (smash-value (the connection (:from (the interface forms link-editor member-selector selected-option))))
-         (regen)
-    )
-)
-
 
 (define-method get-view-weight link-editor-form-class ()
   !weight-points
