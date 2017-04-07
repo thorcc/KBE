@@ -1,6 +1,6 @@
-Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list 
-"lower-claw",0,0,"rectangular",(0.16 0.08 0.4 0.14),(7 6 4),(1 1 1)
-"lower-claw",1,0,"rectangular",(0.16 0.08 0.4 0.14),(9 8 5),(1 1 1)
+Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list
+"lower-claw",0,0,"rectangular",(0.16 0.08 0.4 0.14),(7 6 4)
+"lower-claw",1,0,"rectangular",(0.16 0.08 0.4 0.14),(9 8 5)
 "watt-chain",2,0,"nil",nil,nil,nil
 "watt-chain",2,5,"nil",nil,nil,nil
 "watt-chain",2,7,"nil",nil,nil,nil
@@ -33,6 +33,6 @@ Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list
 "lower-claw",5,7,"nil",(0.24 0.08 0.16 0.08),nil,nil
 "lower-claw",5,8,"nil",(0.24 0.08 0.16 0.08),nil,nil
 "lower-claw",5,9,"nil",(0.24 0.08 0.16 0.08),nil,nil
-"upper-claw",5,3,"rectangular",(0.24 0.08 0.16 0.08),(15 16),(0.5 0.5)
+"upper-claw",5,3,"rectangular",(0.24 0.08 0.16 0.08),(15 16)
 "upper-claw",5,1,"rectangular",(0.24 0.08 0.24 0.08),nil,nil
 "default",default,default,"rectangular",(0.12 0.08),nil,nil

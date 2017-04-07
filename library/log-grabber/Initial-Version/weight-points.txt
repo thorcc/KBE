@@ -1,0 +1,9 @@
+id,name,x,y,z,weight
+4,"claw-lower-nurb-l",-0.8,0.0,0.2,1
+5,"claw-lower-nurb-r",-0.8,0.0,-0.2,1
+6,"claw-lower-nurb-l",-0.6,-1.4,0.2,1
+7,"claw-lower-nurb-l",0.0,-1.2,0.2,1
+8,"claw-lower-nurb-r",-0.6,-1.4,-0.2,1
+9,"claw-lower-nurb-r",0.0,-1.2,-0.2,1
+15,"claw-upper-nurb-1",1.2,-0.8,0.0,0.0,0.5
+16,"claw-upper-nurb-2",1.2,0.0,0.0,0.5

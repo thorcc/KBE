@@ -1,7 +1,7 @@
 Index	Name			X-pos	Y-pos	Z-pos	Design-variables
-0		"Crank-start"		0.0		0.0		0.0		
-1		"Crank-rod"			0.0		0.5		0.0		
-2		"Connection-rod"	2.8		0.0		0.0		
-3		"Cylinder-start"	2.5		0.0		0.0		
-4		"Cylinder-end"		3.5		0.0		0.0		
-5		"Slider"			3.0		0.0		0.0		
+0,"Crank-start",0.0,0.0,0.0,
+1,"Crank-rod",0.0,0.5,0.0,
+2,"Connection-rod",2.8,0.0,0.0
+3,"Cylinder-start",2.5,0.0,0.0
+4,"Cylinder-end",3.5,0.0,0.0
+5,"Slider",3.0,0.0,0.0		
