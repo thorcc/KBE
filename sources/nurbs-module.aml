@@ -491,19 +491,60 @@
       )
 )
 
+(define-method weight-sheet-apply link-editor-form-class ()
+    (update-weight-points
+        (the index (:from (the interface forms link-editor link-selector selected-option)))
+        (the index (:from (the interface forms link-editor member-selector selected-option)))
+        (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                          collect (loop for cell from 0 to 3
+                                    collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                                      )
+                                )
+      )
+    (update (the weight-sheet))
+    (regen)
+    (draw-member-curves)
+  )
 
-(define-method apply-weight-points link-editor-form-class()
+(define-method weight-sheet-add-row link-editor-form-class ()
+    (update-weight-points
+          (the index (:from (the interface forms link-editor link-selector selected-option)))
+          (the index (:from (the interface forms link-editor member-selector selected-option)))
+          (append
+            (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                 collect (loop for cell from 0 to 3
+                               collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                             )
+              )
+            (list (append (get-new-wpoint-coords (the interface forms link-editor)) (list 1)))
+           )
+     )
+     (update (the weight-sheet))
+     (regen)
+     (draw-member-curves)
+  )
+
+(define-method weight-sheet-remove-row link-editor-form-class ()
+    (update-weight-points
+           (the index (:from (the interface forms link-editor link-selector selected-option)))
+           (the index (:from (the interface forms link-editor member-selector selected-option)))
+           (butlast (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                           collect (loop for cell from 0 to 3
+                                         collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                                       )
+                                        ))
+     )
+     (update (the weight-sheet))
+     (regen)
+     (draw-member-curves)
+  )
+
+
+(defun update-weight-points (link member weight-sheet)
   (let
     (
-      (link (the index (:from (the interface forms link-editor link-selector selected-option))))
-      (member (the index (:from (the interface forms link-editor member-selector selected-option))))
       (member-shape (get-member-shape (the main-mechanism-class shapes) link member))
       (point-number (nth 5 member-shape))
-      (weight-sheet (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
-                        collect (loop for cell from 0 to 3
-                                  collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
-                                    )
-                              ))
       (new-point-numbers (if (> (length weight-sheet) (length point-number))
                               (append point-number (loop for i from 1 to (- (length weight-sheet) (length point-number))
                                                         append (list (+ (length (get-weight-points (the main-mechanism-class weights))) (- i 1)))))
@@ -527,44 +568,6 @@
     )
 )
 
-
-(define-method weight-sheet-apply link-editor-form-class ()
-    (apply-weight-points (the))
-    (update (the weight-sheet))
-    (regen)
-    (draw-member-curves)
-  )
-
-(define-method weight-sheet-add-row link-editor-form-class ()
-    (change-model-weight
-                                 (the connection (:from (the interface forms link-editor member-selector selected-option)))
-                                (append
-                                  (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
-                                       collect (loop for cell from 0 to 3
-                                                     collect (read-from-string (get-cell-value (the weight-sheet) row cell))
-                                                   )
-                                    )
-                                  (list (append (get-new-wpoint-coords (the)) (list 1)))
-                                 )
-            )
-     (update (the weight-sheet))
-     (regen)
-     (draw-member-curves)
-  )
-
-(define-method weight-sheet-remove-row link-editor-form-class ()
-        (change-model-weight
-                           (the connection (:from (the interface forms link-editor member-selector selected-option)))
-                           (butlast (loop for row from 0 to (- (the weight-sheet number-of-rows) 1)
-                                           collect (loop for cell from 0 to 3
-                                                         collect (read-from-string (get-cell-value (the weight-sheet) row cell))
-                                                               )
-                                                        ))
-        )
-     (update (the weight-sheet))
-     (regen)
-     (draw-member-curves)
-  )
 
 (define-method get-view-weight link-editor-form-class ()
   !weight-points
@@ -612,6 +615,36 @@
                       (the superior link-editor start-cross-section-selector selected-option))
                     (regen)
         )
+
+
+(defun update-weight-points (link member weight-sheet)
+  (let
+    (
+      (member-shape (get-member-shape (the main-mechanism-class shapes) link member))
+      (point-number (nth 5 member-shape))
+      (new-point-numbers (if (> (length weight-sheet) (length point-number))
+                          (append point-number
+                            (list (+ 1 (nth 0 (sort (loop for point in (get-weight-list (the main-mechanism-class weights)) append (list (nth 0 point))) '>))))
+                           )
+                          point-number))
+      (new-w-list
+                  (loop for w-s-line in weight-sheet
+                  	     for w-point in new-point-numbers
+                  	         collect (append (list w-point (read-from-string (format nil "l-~d,m-~d" link member))) w-s-line)
+                      )
+                  )
+      (new-w-ids
+                   (loop for new-point-numbers in new-w-list
+                          append (list (nth 0 new-point-numbers)))
+                )
+      )
+        (change-weight-points-list (the main-mechanism-class weights) new-w-list)
+        (change-shape-weight (the main-mechanism-class shapes) link member new-w-ids)
+        (smash-value (the connection (:from (the interface forms link-editor member-selector selected-option))))
+        (regen)
+    )
+)
+
 
 (defun draw-member-curves ()
             (undraw (the main-mechanism-class))
