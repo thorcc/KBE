@@ -328,6 +328,10 @@
   !shapes-list
 )
 
+(define-method change-shapes-list shape-collection (new-shapes-list)
+  (change-value !shapes-list new-shapes-list)
+)
+
 (define-method get-member-shape shape-collection (link member)
         (loop for mem in !shapes-list
              if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
@@ -673,6 +677,9 @@
 (define-method get-sd-list spring-damper-collection ()
   !sd-list
   )
+  (define-method change-sd-list spring-damper-collection (new-sd-list)
+    (change-value !sd-list new-sd-list)
+      )
 ;==================================================================
 ; Reads each line of the spring-damper file and adds this to a list
 ;==================================================================
@@ -738,6 +745,9 @@
 (define-method get-loads-list load-collection ()
 !loads-list
   )
+(define-method change-loads-list load-collection (new-loads-list)
+  (change-value !loads-list new-loads-list)
+    )
 ;==========================================================
 ; Reads each line of the loads file and adds this to a list
 ;==========================================================
@@ -923,10 +933,20 @@
                                       '("Export to FEDEM" (button1-parameters :export-fedem)
                                         ui-work-area-action-button-class)
                                       ""
-                                      '("NURBS-Module" (button1-parameters :display-nurbs-module)
+                                      '("Link-Editor" (button1-parameters :display-nurbs-module)
                                         ui-work-area-action-button-class)
 
                                       '("General Appearance" (button1-parameters :display-general-appearance)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Points" (button1-parameters :display-edit-points)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Constraints" (button1-parameters :display-edit-constraints)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Shapes" (button1-parameters :display-edit-shapes)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Loads" (button1-parameters :display-edit-loads)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Spring/Dampers" (button1-parameters :display-edit-sd)
                                         ui-work-area-action-button-class)
                                       )
 
@@ -1160,6 +1180,21 @@
       )
 
       )
+      (:display-edit-points
+        (display-edit-points)
+       )
+     (:display-edit-constraints
+       (display-edit-constraints)
+      )
+    (:display-edit-shapes
+      (display-edit-shapes)
+     )
+     (:display-edit-loads
+       (display-edit-loads)
+    )
+      (:display-edit-sd
+        (display-edit-sd)
+       )
     )
   )
 ;=====================================

@@ -80,8 +80,28 @@
              )
              (case !type
               ('points (change-points-list (the main-mechanism-class points) !input-list))
-              ('constraints (change-constraints-list (the main-mechanism-class constraints) !input-list)))
+              ('constraints (change-constraints-list (the main-mechanism-class constraints)
+                                                                (loop for row in !input-list
+                                                                      collect (list
+                                                                       (nth 0 row) (write-to-string (nth 1 row)) (nth 2 row) (nth 3 row) (nth 4 row) (nth 5 row))
+
+                                                                  )))
+
+             ('loads (change-loads-list (the main-mechanism-class loads) !input-list))
+             ('sd (change-sd-list (the main-mechanism-class spring-dampers) (loop for row in !input-list
+                   collect (list
+                    (write-to-string (nth 0 row)) (nth 1 row) (nth 2 row) (nth 3 row) (nth 4 row))
+
+               )))
+             ('shapes (change-shapes-list (the main-mechanism-class shapes) (loop for row in !input-list
+                   collect (list
+                    (write-to-string (nth 0 row)) (nth 1 row) (nth 2 row) (write-to-string (nth 3 row)) (nth 4 row) (nth 5 row) (nth 6 row))
+
+               )))
+             )
              (update (the sheet))
+             (regen)
+             (draw-sewn-wo-mesh (the main-mechanism-class))
              (hide (the))
     )
 
@@ -135,6 +155,47 @@
                                 )
                   )
        (display (the interface forms constraint-editor))
+    )
+(defun display-edit-loads ()
+      (if (subobject? (the interface forms) 'load-editor) (delete-object (the interface forms load-editor)))
+      (add-object (the interface forms) 'load-editor 'file-editor-class
+                   :init-form '(
+                                 type 'loads
+                                 label "Edit Loads"
+                                 input-list (get-loads-list (the main-mechanism-class loads))
+                                 column-labels (list "Type" "Point" "Direction" "Magnitude" "Loaded-link")
+                                 row-label-text "Load"
+                                )
+                  )
+       (display (the interface forms load-editor))
+    )
+
+(defun display-edit-sd ()
+      (if (subobject? (the interface forms) 'sd-editor) (delete-object (the interface forms sd-editor)))
+      (add-object (the interface forms) 'sd-editor 'file-editor-class
+                   :init-form '(
+                                 type 'sd
+                                 label "Edit sds"
+                                 input-list (get-sd-list (the main-mechanism-class spring-dampers))
+                                 column-labels (list "Type" "Point-from" "Point-to" "Incident-links" "Stiffness/Damping")
+                                 row-label-text "Spring/Damper"
+                                )
+                  )
+       (display (the interface forms sd-editor))
+    )
+
+(defun display-edit-shapes ()
+      (if (subobject? (the interface forms) 'shapes-editor) (delete-object (the interface forms shapes-editor)))
+      (add-object (the interface forms) 'shapes-editor 'file-editor-class
+                   :init-form '(
+                                 type 'shapes
+                                 label "Edit shapess"
+                                 input-list (get-shapes-list (the main-mechanism-class shapes))
+                                 column-labels (list "Name" "Link" "Member" "Cross-section" "Dimensions" "Points-list" "Weights-list")
+                                 row-label-text "Member"
+                                )
+                  )
+       (display (the interface forms shapes-editor))
     )
 
 
