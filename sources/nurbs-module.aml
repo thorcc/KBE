@@ -595,9 +595,11 @@
       (member-shape (get-member-shape (the main-mechanism-class shapes) link member))
       (point-number (nth 5 member-shape))
       (new-point-numbers (if (> (length weight-sheet) (length point-number))
-                          (append point-number
-                            (list (+ 1 (nth 0 (sort (loop for point in (get-weight-list (the main-mechanism-class weights)) append (list (nth 0 point))) '>))))
-                           )
+                            (if (get-weight-list (the main-mechanism-class weights))
+                                  (append point-number
+                                    (list (+ 1 (nth 0 (sort (loop for point in (get-weight-list (the main-mechanism-class weights)) append (list (nth 0 point))) '>))))
+                                   )
+                                  (list 0))
                           point-number))
       (new-w-list
                   (loop for w-s-line in weight-sheet
@@ -616,7 +618,6 @@
         (regen)
     )
 )
-
 
 (defun draw-member-curves ()
             (undraw (the main-mechanism-class))
