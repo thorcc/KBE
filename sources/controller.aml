@@ -1,5 +1,0 @@
-(defun get-model-weight-points (link mem)
-  (get-weights-from-ids (the main-mechanism-class weights)
-      (nth 5 (get-member-shape (the main-mechanism-class shapes) link mem))
-      )
-    )
