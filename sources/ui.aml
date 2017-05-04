@@ -13,10 +13,7 @@
   :inherit-from(ui-form-class)
   :properties(
                 measurement 'pixels
-                width 320
-                height 350
-                x-offset 40
-                y-offset 40
+                width 320 height 350 x-offset 40 y-offset 40
                 input-list-length (length ^input-list)
                 number-of-columns (length ^column-labels)
 
@@ -24,16 +21,13 @@
     :subobjects(
                 (sheet :class '(ui-spreadsheet-class)
                       measurement 'percentage
-                      x-offset 5
-                      y-offset 5
-                      width 90
-                      height 80
+                      x-offset 5 y-offset 5 width 90 height 80
 
                       column-labels ^^column-labels
                       row-labels (loop for row from 0 to ^^input-list-length
                                     collect (format nil "~a ~a"
                                                     (^^row-label-text)
-                                                    (- row 1)
+                                                    row
                                                     )
                                     )
                       cell-values ^^input-list
@@ -95,7 +89,7 @@
                )))
              ('shapes (change-shapes-list (the main-mechanism-class shapes) (loop for row in !input-list
                    collect (list
-                    (write-to-string (nth 0 row)) (nth 1 row) (nth 2 row) (write-to-string (nth 3 row)) (nth 4 row) (nth 5 row) (nth 6 row))
+                                (nth 0 row) (nth 1 row) (nth 2 row) (nth 3 row) (nth 4 row) (nth 5 row) (nth 6 row))
 
                )))
              )
@@ -142,6 +136,12 @@
                                 )
                   )
        (display (the interface forms point-editor))
+       (undraw (the main-mechanism-class))
+       (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                           (draw label)
+                         )
+       (loop for point in (children (the points))
+        do (draw point :draw-subobjects? nil))
     )
 (defun display-edit-constraints ()
       (if (subobject? (the interface forms) 'constraint-editor) (delete-object (the interface forms constraint-editor)))
@@ -155,7 +155,14 @@
                                 )
                   )
        (display (the interface forms constraint-editor))
-    )
+       (undraw (the main-mechanism-class))
+       (loop for constraint in (children (the constraints))
+             do (draw (the symbol (:from constraint))))
+       (loop for link in (children (the links))
+              do (loop for member in (children (the link-geometry sweeps (:from link)))
+                do (draw (the connection (:from member)) :draw-subobjects? nil))
+         )
+)
 (defun display-edit-loads ()
       (if (subobject? (the interface forms) 'load-editor) (delete-object (the interface forms load-editor)))
       (add-object (the interface forms) 'load-editor 'file-editor-class
@@ -293,7 +300,129 @@
                         label "Isometric View"
                         Button1-action '(change-view :iso)
                         )
-
+                          (y-transplus-labels-action-button :class ui-action-button-class
+                            measurement 'percentage
+                            height 10
+                            width 10
+                            y-offset 50
+                            x-offset 60
+                            label "+"
+                            Button1-action '(progn
+                                                  (change-value (the main-mechanism-class points node-label label-trans-y) (+ (the main-mechanism-class points node-label label-trans-y) 0.1))
+                                                  (regen)
+                                                  (update (the superior general-appearance))
+                                             )
+                            )
+                            (y-transminus-labels-action-button :class ui-action-button-class
+                              measurement 'percentage
+                              height 10
+                              width 10
+                              y-offset 50
+                              x-offset 70
+                              label "-"
+                              Button1-action '(progn
+                                                    (change-value (the main-mechanism-class points node-label label-trans-y) (- (the main-mechanism-class points node-label label-trans-y) 0.1))
+                                                    (regen)
+                                                    (update (the superior general-appearance))
+                                               )
+                              )
+                             (y-trans-size-property :class ui-property-field-class
+                               measurement 'percentage
+                               label-width 0
+                               height 10
+                               width 10
+                               y-offset 50
+                               x-offset 80
+                               automatic-apply? t
+                               content (the main-mechanism-class points node-label label-trans-y)
+                               apply-action (progn
+                                              (print "apply trans")
+                                              (change-value (the main-mechanism-class points node-label label-trans-y) ^content)
+                                              (regen)
+                                            )
+                               )
+                               (x-transplus-labels-action-button :class ui-action-button-class
+                                 measurement 'percentage
+                                 height 10
+                                 width 10
+                                 y-offset 60
+                                 x-offset 60
+                                 label "+"
+                                 Button1-action '(progn
+                                                       (change-value (the main-mechanism-class points node-label label-trans-x) (+ (the main-mechanism-class points node-label label-trans-x) 0.1))
+                                                       (regen)
+                                                       (update (the superior general-appearance))
+                                                  )
+                                 )
+                                 (x-transminus-labels-action-button :class ui-action-button-class
+                                   measurement 'percentage
+                                   height 10
+                                   width 10
+                                   y-offset 60
+                                   x-offset 70
+                                   label "-"
+                                   Button1-action '(progn
+                                                         (change-value (the main-mechanism-class points node-label label-trans-x) (- (the main-mechanism-class points node-label label-trans-x) 0.1))
+                                                         (regen)
+                                                         (update (the superior general-appearance))
+                                                    )
+                                   )
+                                  (x-trans-size-property :class ui-property-field-class
+                                    measurement 'percentage
+                                    label-width 0
+                                    height 10
+                                    width 10
+                                    y-offset 60
+                                    x-offset 80
+                                    automatic-apply? t
+                                    content (the main-mechanism-class points node-label label-trans-x)
+                                    apply-action (progn
+                                                   (print "apply trans")
+                                                   (change-value (the main-mechanism-class points node-label label-trans-x) ^content)
+                                                   (regen)
+                                                 )
+                                    )
+                                    (z-transplus-labels-action-button :class ui-action-button-class
+                                      measurement 'percentage
+                                      height 10
+                                      width 10
+                                      y-offset 70
+                                      x-offset 60
+                                      label "+"
+                                      Button1-action '(progn
+                                                            (change-value (the main-mechanism-class points node-label label-trans-z) (+ (the main-mechanism-class points node-label label-trans-z) 0.1))
+                                                            (regen)
+                                                            (update (the superior general-appearance))
+                                                       )
+                                      )
+                                      (z-transminus-labels-action-button :class ui-action-button-class
+                                        measurement 'percentage
+                                        height 10
+                                        width 10
+                                        y-offset 70
+                                        x-offset 70
+                                        label "-"
+                                        Button1-action '(progn
+                                                              (change-value (the main-mechanism-class points node-label label-trans-z) (- (the main-mechanism-class points node-label label-trans-z) 0.1))
+                                                              (regen)
+                                                              (update (the superior general-appearance))
+                                                         )
+                                        )
+                                       (z-trans-size-property :class ui-property-field-class
+                                         measurement 'percentage
+                                         label-width 0
+                                         height 10
+                                         width 10
+                                         y-offset 70
+                                         x-offset 80
+                                         automatic-apply? t
+                                         content (the main-mechanism-class points node-label label-trans-z)
+                                         apply-action (progn
+                                                        (print "apply trans")
+                                                        (change-value (the main-mechanism-class points node-label label-trans-z) ^content)
+                                                        (regen)
+                                                      )
+                                         )
                 )
     )
 
