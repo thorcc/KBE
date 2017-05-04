@@ -3,9 +3,33 @@
 ; An free constraint is a joint with no geometry
 ; Used for leaving the end of a link free
 ;===============================================
+
+(define-class free-constraint-symbol
+    :inherit-from (object)
+    :properties(
+                reference-object ^point-ref
+                size ^max-width
+                    )
+      :subobjects(
+                (arc :class 'arc-object
+                  radius ^size
+                  start-angle 0
+                  end-angle 90
+                  orientation (list (translate ^origin)))
+                (line1 :class 'line-object
+                  point1 ^origin
+                  point2 (list (+ (nth 0 ^origin)  ^size) (nth 1 ^origin) (nth 2 ^origin)))
+                (line2 :class 'line-object
+                  point1 ^origin
+                  point2 (list (nth 0 ^origin) (+ (nth 1 ^origin) ^size) (nth 2 ^origin)))
+            )
+)
+
+
 (define-class free-constraint-class
   :inherit-from (master-joint-model)
   :properties (
+                (symbol :class free-constraint-symbol)
                )
   )
 ;======================================
@@ -107,6 +131,15 @@
 (define-class fixed-constraint-class
   :inherit-from (master-joint-model)
   :properties (
+                  (symbol :class 'box-object
+                        reference-object ^point-ref
+                        height (* ^max-width 2)
+                        width (* ^max-width 2)
+                        depth (* ^max-width 2)
+                        orientation (list
+                                     (translate ^origin)
+                                     )
+                )
                )
   )
 ;=======================================
@@ -253,6 +286,13 @@
 (define-class revolute-constraint-class
   :inherit-from (master-joint-model)
   :properties (
+                (symbol :class 'circle-object
+                    reference-object ^point-ref
+                    diameter (* ^max-width 2)
+                    orientation (list
+                                 (translate ^origin)
+                                 )
+      )
                )
   )
 ;==========================================
@@ -348,7 +388,7 @@
 
                (pin-hole :class 'cylinder-object
                    reference-object ^^main-frame-object
-                   height ^^max-height
+                   height (* ^^max-height 10)
                    diameter (/ ^^max-width 2)
                    )
 
@@ -383,7 +423,16 @@
 (define-class ball-constraint-class
   :inherit-from (master-joint-model)
   :properties (
-               )
+                (symbol :class 'box-object
+                      reference-object ^point-ref
+                      height (* ^max-width 2)
+                      width (* ^max-width 2)
+                      depth (* ^max-width 2)
+                      orientation (list
+                                   (translate ^origin)
+                                   )
+              )
+            )
   )
 ;======================================
 ; END ball-constraint-class definitions
@@ -550,6 +599,13 @@
 (define-class knuckle-constraint-class
 	:inherit-from (master-joint-model)
 	:properties (
+                (symbol :class 'circle-object
+                    reference-object ^point-ref
+                    diameter (* ^max-width 2)
+                    orientation (list
+                                 (translate ^origin)
+                                 )
+            )
 				 )
  )
 ;===============================================
