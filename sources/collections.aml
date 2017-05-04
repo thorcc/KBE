@@ -197,10 +197,13 @@
               series-prefix 'node
               class-expression 'text-object
               label-size 0.03
+              label-trans-y 0.06
+              label-trans-x 0.0
+              label-trans-z 0.0
               init-form '(
-                          coordinates (list  (nth 1 (nth !index ^^points-list))
-                                             (+ (nth 2 (nth !index ^^points-list)) 0.06)
-                                             (nth 3 (nth !index ^^points-list))
+                          coordinates (list  (+ (nth 1 (nth !index ^^points-list)) ^label-trans-x)
+                                             (+ (nth 2 (nth !index ^^points-list)) ^label-trans-y)
+                                             (+ (nth 3 (nth !index ^^points-list)) ^label-trans-z)
                                              )
                           height ^label-size
                           text-string (format nil "~a" !index)
@@ -237,11 +240,10 @@
               property-objects-list (list
                                           '("Edit Nodes" (button1-parameters :display-edit-nodes)
                                             ui-work-area-action-button-class))
-               )
-  :subobjects (
-    (node-label :class 'node-label-class
-      )
-    )
+              (node-label :class 'node-label-class
+                )
+        )
+
   )
 
 (define-method work-area-button1-action point-collection (params)
