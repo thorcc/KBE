@@ -1,3 +1,6 @@
 
-# Automating tasks in the design loop for mechanism design
-This is the repository for the master thesis of Eivind Kristoffersen and Anders Kristiansen, Automating tasks in the design loop for mechanism design. 
+![alt text](/RAMMS-logo.png?raw=true "Rapid Mechanism Modelling System")
+
+# RaMMS
+
+This is the repository for RaMMS (Rapid Mechanism Modelling System) mechanism modelling system, automating tasks in the design loop for mechanism model design.
