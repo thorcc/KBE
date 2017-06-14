@@ -351,6 +351,17 @@
         )
     )
 )
+
+(define-method change-member-cross-section shape-collection (link member cs h1 w1 h2 w2)
+    (change-value !shapes-list
+        (loop for mem in !shapes-list
+          if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+              collect (list (nth 0 mem) (nth 1 mem) (nth 2 mem) cs (list h1 w1 h2 w2) (nth 5 mem))
+          else collect mem
+        )
+    )
+)
+
 ;===========================================================
 ; Reads each line of the shapes file and adds this to a list
 ;===========================================================

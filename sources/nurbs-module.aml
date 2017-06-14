@@ -92,7 +92,7 @@
   :inherit-from(ui-form-class)
   :properties(
               ;background-color 'snow2
-              label "NURBS Module"
+              label "Shapes Editor"
               height 840 ;pixels (* 0.7 (nth 1 (get-screen-size)))
               width  1344 ;pixels (* 0.7 (nth 0 (get-screen-size)))
               y-offset (* 0.2 (nth 1 (get-screen-size)))
@@ -308,35 +308,16 @@
                                             (update (the superior link-editor-form-class))
                                             (draw-member-curves)
                                      )
-                   options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
-
-                   labels-list (loop for option in !options-list
-                                 collect (remove "-section" (write-to-string option))
-                                 )
-                   selected-option (nth
-                                     (position
-                                      (write-to-string (the type (:from (get-cross-section_D (the superior link-editor member-selector selected-option)))))
-                                      !labels-list
+                   options-list (append (list "nil") (loop for line in (reverse (class-direct-defined-subclasses 'cross-section-model))
+                                     collect (remove "-section" (write-to-string line))
+                                     ))
+                   labels-list !options-list
+                   selected-option (write-to-string (nth 3 (get-member-shape (the main-mechanism-class shapes)
+                                                  (the index (:from (the interface forms link-editor link-selector selected-option)))
+                                                  (the index (:from (the interface forms link-editor member-selector selected-option))))))
                                       )
-                                     !options-list)
-                   )
-                 (end-cross-section-selector :class ui-option-menu-class
-                     height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^cross-section-offset 6)
-                       Button1-action '(progn
-                                               (update (the superior link-editor-form-class))
-                                               (draw-member-curves)
-                                        )
-                      options-list (reverse (class-direct-defined-subclasses 'cross-section-model))
-                      labels-list (loop for option in !options-list
-                                    collect (remove "-section" (write-to-string option))
-                                    )
-                     selected-option(nth
-                                      (position
-                                        (write-to-string (the type (:from (get-cross-section_A (the superior link-editor member-selector selected-option)))))
-                                        !labels-list
-                                       )
-                                     !options-list)
-                   )
+
+
 
                  (cs-width-label :class 'ui-label-class
                    label "w"
@@ -378,7 +359,7 @@
                   (apply-cross-section-button :Class 'ui-action-button-class
                      height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^cross-section-offset 10)
                      label "Apply Cross-section"
-                     Button1-action '(change-cross-section (the superior link-editor))
+                     Button1-action '(apply-cs (the superior link-editor))
                     )
     ;;;;;;;;Cross-section end;;;;;;;;;;;;;;
 
@@ -566,27 +547,24 @@
   (the member-selector selected-option)
  )
 
-(define-method change-cross-section link-editor-form-class ()
-                     (change-cross-section-start-width
-                      (the superior link-editor member-selector selected-option)
-                      (get-value (the superior link-editor start-width)))
-                     (change-cross-section-start-height
-                       (the superior link-editor member-selector selected-option)
-                       (get-value (the superior link-editor start-height)))
-                     (change-cross-section_D
-                       (the superior link-editor member-selector selected-option)
-                       (the superior link-editor start-cross-section-selector selected-option))
-                   (change-cross-section-end-width
-                     (the superior link-editor member-selector selected-option)
-                     (get-value (the superior link-editor end-width)))
-                    (change-cross-section-end-height
-                      (the superior link-editor member-selector selected-option)
-                      (get-value (the superior link-editor end-height)))
-                    (change-cross-section_D
-                      (the superior link-editor member-selector selected-option)
-                      (the superior link-editor start-cross-section-selector selected-option))
-                    (regen)
-        )
+
+ (define-method apply-cs link-editor-form-class ()
+     (change-member-cross-section
+            (the main-mechanism-class shapes)
+            (the index (:from (the interface forms link-editor link-selector selected-option)))
+            (the index (:from (the interface forms link-editor member-selector selected-option)))
+            (read-from-string (the superior link-editor start-cross-section-selector selected-option))
+            (get-value (the superior link-editor start-width))
+            (get-value (the superior link-editor start-height))
+            (get-value (the superior link-editor end-width))
+            (get-value (the superior link-editor end-height))
+
+      )
+      (update (the weight-sheet))
+      (regen)
+      (draw-member-curves)
+   )
+
 
 
 (defun update-weight-points (link member weight-sheet)
