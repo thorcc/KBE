@@ -34,7 +34,8 @@
     ('line				nil)
     ('i-beam			(+ (* !width !flange-thickness 2) (* !height !web-thickness)))
     ('h-beam			(+ (* !height !flange-thickness 2) (* !width !web-thickness)))
-    ('hexagonal			(* 2 (sqrt 3) !R))
+    ('polygonal			(* 2 (sqrt 3) !R))
+    ('polygon     (* 0.25 !n (expt (points-distance (nth 0 (the poly vertices)) (nth 1 (the poly vertices))) 2) (/ 1 (tan (/ pi !n))) ))
     )
   )
 ;========================
@@ -343,40 +344,44 @@
 ;===============================
 
 ;=========================
-; Class: hexagonal-section
+; Class: polygonal-section
 ;=========================
-(define-class hexagonal-section
+(define-class polygonal-section
   :inherit-from (imprint-class cross-section-model)
   :properties (
-               type 			'hexagonal
+               type 			'polygonal
 
                target-object 	^poly
                tool-object-list	(list ^p1)
-               R 				(/ (average ^width ^height) 2)
+
+               r 				(/ ^height 2)
+               n        32
                (poly :class 'polygon-object
-                   vertices (list
-                             (list ^R 0 0)
-                             (list (/ ^R 2) (- (/ (* ^R (sqrt 3)) 2)) 0)
-                             (list (- (/ ^R 2)) (- (/ (* ^R (sqrt 3)) 2)) 0)
-                             (list (- ^R) 0 0)
-                             (list (- (/ ^R 2)) (/ (* ^R (sqrt 3)) 2) 0)
-                             (list (/ ^R 2)  (/ (* ^R (sqrt 3)) 2) 0)
-                             )
-                   dimension 2
+                     vertices (loop for i from 1 to ^n
+                                    collect (list (* ^r (cos (/ (* 2 pi i) ^n))) (* ^r (sin (/ (* 2 pi i) ^n))) 0))
+
+                     dimension 2
                    )
                (p1 :class 'point-object
-                   coordinates (list 0 (/ (* ^R (sqrt 3)) 2) 0)
+                   coordinates (mid-point (nth 0 (the poly vertices)) (nth 1 (the poly vertices)))
                    )
 
                )
   )
 
-(define-method get-width hexagonal-section ()
-  (* 2 !R)
-  )
-(define-method get-height hexagonal-section ()
-  (* !R (sqrt 3))
+  ;get-height = the diameter of the  circle
+    (define-method get-width polygonal-section ()
+      (let ((side-length (points-distance (nth 0 (the poly vertices)) (nth 1 (the poly vertices)))))
+          (* side-length (/ 1 (sin (/ pi !n))))
+      )
+    )
+
+  ;get-height = the diameter of the inscribed circle
+  (define-method get-height polygonal-section ()
+    (let ((side-length (points-distance (nth 0 (the poly vertices)) (nth 1 (the poly vertices)))))
+        (* side-length (/ 1 (tan (/ pi !n))))
+    )
   )
 ;==================================
-; END hexagonal-section definitions
+; END polygonal-section definitions
 ;==================================

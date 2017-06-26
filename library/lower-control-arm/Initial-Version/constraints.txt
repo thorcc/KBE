@@ -1,4 +1,4 @@
-Point	Type			Link-incidence	Joint-direction		DOF		Joint-variable
-0		"revolute"		(nil 0)			(-1 0 0)	
-1		"revolute"		(nil 0)			(1 0 0)	
-2		"ball"			(0 nil)			(0 0 1)				()		(0 0 1)
+Point,Type,Link-incidence,Joint-direction,DOF,Joint-variable 
+0,"revolute",(nil 0),(-1 0 0),nil,nil
+1,"revolute",(nil 0),(1 0 0),nil,nil
+2,"ball",(0 nil),(0 0 1),nil,(0 0 1)

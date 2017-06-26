@@ -28,6 +28,36 @@
 ; END point-data-model definitions
 ;=================================
 
+;====================================
+; Class: weight-point-data-model
+; Used for define position properties
+;====================================
+(define-class weight-point-data-model
+  :inherit-from (point-object create-event)
+  :properties (
+               (coordinates :class 'editable-data-property-class
+                   label "Coordinates"
+                   )
+               coord-ref	(nth 1 ^coordinates)
+               label 		nil
+               id 			nil
+               line-width 	4
+               color 		'red
+
+               property-objects-list (list
+                                      (list (the superior coordinates self)
+                                            '(apply-formula? t))
+                                      )
+               )
+  )
+
+(define-method get-coordinates weight-point-data-model ()
+  !coordinates
+  )
+;=================================
+; END weight-point-data-model definitions
+;=================================
+
 ;=====================================
 ; Class: vector-data-model
 ; Used for defining a direction vector

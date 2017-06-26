@@ -1,2 +1,2 @@
-Type		Point-from	Point-to	Incident-links	Stiffness/Damping
-"Damper"	5			7			(0 nil)			50
+Type,Point-from,Point-to,Incident-links,Stiffness/Damping 
+"damper",5,7,(0 nil),50

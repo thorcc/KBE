@@ -1,0 +1,477 @@
+(in-package :aml)
+
+;properties needed:
+; label "Edit nodes"
+; input-list (get-points-list (the main-mechanism-class points))
+; column-labels(list "Name" "x-coord" "y-coord" "z-coord")
+; row-labels '"node"
+;                        (apply-button-method (the point-collection))
+;                        (add-row-button-method (the point-collection))
+;                      )
+
+(define-class file-editor-class
+  :inherit-from(ui-form-class)
+  :properties(
+                measurement 'pixels
+                width 320 height 350 x-offset 40 y-offset 40
+                input-list-length (length ^input-list)
+                number-of-columns (length ^column-labels)
+
+    )
+    :subobjects(
+                (sheet :class '(ui-spreadsheet-class)
+                      measurement 'percentage
+                      x-offset 5 y-offset 5 width 90 height 80
+
+                      column-labels ^^column-labels
+                      row-labels (loop for row from 0 to ^^input-list-length
+                                    collect (format nil "~a ~a"
+                                                    (^^row-label-text)
+                                                    row
+                                                    )
+                                    )
+                      cell-values ^^input-list
+                      number-of-columns ^^number-of-columns
+                      number-of-rows ^^input-list-length
+                      row-height   25
+                      column-width 60
+                      attachment-info-list '(top bottom left right)
+                      editable? t
+
+                      )
+                  (toolbar :class ui-toolbar-class
+                      measurement 'percentage
+                      height 10
+                      width 20
+                      y-offset 90
+                      x-offset 70
+                      Availability-list nil
+                      Button1-action-list '(
+                                              (apply-button-pressed (the superior superior))
+                                              (add-row (the superior superior))
+                                              (remove-row (the superior superior))
+                                            )
+                      Button3-action-list nil
+                      Images-list (list (concatenate (logical-path :ui-bitmaps) "apply.bmp") (concatenate (logical-path :ui-bitmaps) "add-object.bmp") (concatenate (logical-path :ui-bitmaps) "delete-object.bmp"))
+                      Labels-list (list "Apply" "Add node" "Remove node")
+                      Number-of-buttons (length ^Button1-action-list)
+                      Orient (nth 0 '(:horizontal :vertical))
+                      Tooltips-list nil
+                      )
+                  )
+  )
+
+
+
+(define-method apply-button-pressed file-editor-class ()
+            (change-value
+              !input-list
+             (loop for row from 0 to (- !input-list-length 1)
+               collect (loop for cell from 0 to !number-of-columns
+                         collect (read-from-string (get-cell-value (the sheet) row cell))
+                         )
+               )
+             )
+             (case !type
+              ('points (change-points-list (the main-mechanism-class points) !input-list))
+              ('constraints (change-constraints-list (the main-mechanism-class constraints)
+                                                                (loop for row in !input-list
+                                                                      collect (list
+                                                                       (nth 0 row) (write-to-string (nth 1 row)) (nth 2 row) (nth 3 row) (nth 4 row) (nth 5 row))
+
+                                                                  )))
+
+             ('loads (change-loads-list (the main-mechanism-class loads) !input-list))
+             ('sd (change-sd-list (the main-mechanism-class spring-dampers) (loop for row in !input-list
+                   collect (list
+                    (write-to-string (nth 0 row)) (nth 1 row) (nth 2 row) (nth 3 row) (nth 4 row))
+
+               )))
+             ('shapes (change-shapes-list (the main-mechanism-class shapes) (loop for row in !input-list
+                   collect (list
+                                (nth 0 row) (nth 1 row) (nth 2 row) (nth 3 row) (nth 4 row) (nth 5 row) (nth 6 row))
+
+               )))
+             )
+             (update (the sheet))
+             (regen)
+             (draw-sewn-wo-mesh (the main-mechanism-class))
+             (hide (the))
+    )
+
+(define-method add-row file-editor-class ()
+              (change-value
+               !input-list
+               (loop for row from 0 to (- !input-list-length 1)
+                 collect (loop for cell from 0 to !number-of-columns
+                           collect (read-from-string (get-cell-value (the sheet) row cell))
+                           )
+                 )
+               )
+              (change-value !input-list-length (+ !input-list-length 1))
+              (update (the sheet))
+        )
+(define-method remove-row file-editor-class ()
+              (change-value
+               !input-list
+               (loop for row from 0 to (- !input-list-length 1)
+                 collect (loop for cell from 0 to !number-of-columns
+                           collect (read-from-string (get-cell-value (the sheet) row cell))
+                           )
+                 )
+               )
+              (change-value !input-list-length (- !input-list-length 1))
+              (update (the sheet))
+        )
+
+(defun display-edit-points ()
+      (if (subobject? (the interface forms) 'point-editor) (delete-object (the interface forms point-editor)))
+      (add-object (the interface forms) 'point-editor 'file-editor-class
+                   :init-form '(
+                                 type 'points
+                                 label "Edit nodes"
+                                 input-list (get-points-list (the main-mechanism-class points))
+                                 column-labels(list "Name" "x-coord" "y-coord" "z-coord")
+                                 row-label-text "Node"
+                                )
+                  )
+       (display (the interface forms point-editor))
+       (undraw (the main-mechanism-class))
+       (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                           (draw label)
+                         )
+       (loop for point in (children (the points))
+        do (draw point :draw-subobjects? nil))
+    )
+(defun display-edit-constraints ()
+      (if (subobject? (the interface forms) 'constraint-editor) (delete-object (the interface forms constraint-editor)))
+      (add-object (the interface forms) 'constraint-editor 'file-editor-class
+                   :init-form '(
+                                 type 'constraints
+                                 label "Edit Constraints"
+                                 input-list (get-constraints-list (the main-mechanism-class constraints))
+                                 column-labels (list "Point" "Type"  "Link-incidence" "Joint-direction" "DOF" "Joint-variable")
+                                 row-label-text "Point"
+                                )
+                  )
+       (display (the interface forms constraint-editor))
+       (undraw (the main-mechanism-class))
+       (loop for constraint in (children (the constraints))
+             do (draw (the symbol (:from constraint))))
+       (loop for link in (children (the links))
+              do (loop for member in (children (the link-geometry sweeps (:from link)))
+                do (draw (the connection (:from member)) :draw-subobjects? nil))
+         )
+)
+(defun display-edit-loads ()
+      (if (subobject? (the interface forms) 'load-editor) (delete-object (the interface forms load-editor)))
+      (add-object (the interface forms) 'load-editor 'file-editor-class
+                   :init-form '(
+                                 type 'loads
+                                 label "Edit Loads"
+                                 input-list (get-loads-list (the main-mechanism-class loads))
+                                 column-labels (list "Type" "Point" "Direction" "Magnitude" "Loaded-link")
+                                 row-label-text "Load"
+                                )
+                  )
+       (display (the interface forms load-editor))
+    )
+
+(defun display-edit-sd ()
+      (if (subobject? (the interface forms) 'sd-editor) (delete-object (the interface forms sd-editor)))
+      (add-object (the interface forms) 'sd-editor 'file-editor-class
+                   :init-form '(
+                                 type 'sd
+                                 label "Edit sds"
+                                 input-list (get-sd-list (the main-mechanism-class spring-dampers))
+                                 column-labels (list "Type" "Point-from" "Point-to" "Incident-links" "Stiffness/Damping")
+                                 row-label-text "Spring/Damper"
+                                )
+                  )
+       (display (the interface forms sd-editor))
+    )
+
+(defun display-edit-shapes ()
+      (if (subobject? (the interface forms) 'shapes-editor) (delete-object (the interface forms shapes-editor)))
+      (add-object (the interface forms) 'shapes-editor 'file-editor-class
+                   :init-form '(
+                                 type 'shapes
+                                 label "Edit shapess"
+                                 input-list (get-shapes-list (the main-mechanism-class shapes))
+                                 column-labels (list "Name" "Link" "Member" "Cross-section" "Dimensions" "Points-list" "Weights-list")
+                                 row-label-text "Member"
+                                )
+                  )
+       (display (the interface forms shapes-editor))
+    )
+
+
+  (define-class general-appearance-widget-class
+    :inherit-from(ui-form-class)
+    :properties(
+                label "General Appearance"
+                measurement 'pixels
+                width 320
+                height 350
+                x-offset 40
+                y-offset 40
+
+                )
+    :subobjects(
+                (ok-action-button :class ui-action-button-class
+                  measurement 'percentage
+                  height 10
+                  width 40
+                  y-offset 10
+                  x-offset 20
+                  label "Ok"
+                  Button1-action '(hide (the superior general-appearance))
+                  )
+                (draw-labels-action-button :class ui-action-button-class
+                  measurement 'percentage
+                  height 10
+                  width 40
+                  y-offset 20
+                  x-offset 20
+                  label "Draw Node Labels"
+                  Button1-action (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                                      (draw label)
+                                    )
+                  Button3-action (loop for label in (get-node-labels (the main-mechanism-class points node-label)) do
+                                      (draw label)
+                                    )
+                  )
+                  (bigger-labels-action-button :class ui-action-button-class
+                    measurement 'percentage
+                    height 10
+                    width 10
+                    y-offset 20
+                    x-offset 60
+                    label "+"
+                    Button1-action '(progn
+                                          (change-value (the main-mechanism-class points node-label label-size) (+ (the main-mechanism-class points node-label label-size) 0.1))
+                                          (regen)
+                                          (update (the superior general-appearance))
+                                     )
+                    )
+                    (smaller-labels-action-button :class ui-action-button-class
+                      measurement 'percentage
+                      height 10
+                      width 10
+                      y-offset 20
+                      x-offset 70
+                      label "-"
+                      Button1-action '(progn
+                                            (change-value (the main-mechanism-class points node-label label-size) (- (the main-mechanism-class points node-label label-size) 0.1))
+                                            (regen)
+                                            (update (the superior general-appearance))
+                                       )
+                      )
+                     (label-size-property :class ui-property-field-class
+                       measurement 'percentage
+                       label-width 0
+                       height 10
+                       width 10
+                       y-offset 20
+                       x-offset 80
+                       automatic-apply? t
+                       content (the main-mechanism-class points node-label label-size)
+                       apply-action (progn
+                                      (print "apply size")
+                                      (change-value (the main-mechanism-class points node-label label-size) ^content)
+                                      (regen)
+                                    )
+                       )
+                    (zoom-all-action-button :class ui-action-button-class
+                      measurement 'percentage
+                      height 10
+                      width 40
+                      y-offset 30
+                      x-offset 20
+                      label "Zoom All"
+                      Button1-action '(zoom :all)
+                      )
+                      (iso-view-action-button :class ui-action-button-class
+                        measurement 'percentage
+                        height 10
+                        width 40
+                        y-offset 40
+                        x-offset 20
+                        label "Isometric View"
+                        Button1-action '(change-view :iso)
+                        )
+                          (y-transplus-labels-action-button :class ui-action-button-class
+                            measurement 'percentage
+                            height 10
+                            width 10
+                            y-offset 50
+                            x-offset 60
+                            label "+"
+                            Button1-action '(progn
+                                                  (change-value (the main-mechanism-class points node-label label-trans-y) (+ (the main-mechanism-class points node-label label-trans-y) 0.1))
+                                                  (regen)
+                                                  (update (the superior general-appearance))
+                                             )
+                            )
+                            (y-transminus-labels-action-button :class ui-action-button-class
+                              measurement 'percentage
+                              height 10
+                              width 10
+                              y-offset 50
+                              x-offset 70
+                              label "-"
+                              Button1-action '(progn
+                                                    (change-value (the main-mechanism-class points node-label label-trans-y) (- (the main-mechanism-class points node-label label-trans-y) 0.1))
+                                                    (regen)
+                                                    (update (the superior general-appearance))
+                                               )
+                              )
+                             (y-trans-size-property :class ui-property-field-class
+                               measurement 'percentage
+                               label-width 0
+                               height 10
+                               width 10
+                               y-offset 50
+                               x-offset 80
+                               automatic-apply? t
+                               content (the main-mechanism-class points node-label label-trans-y)
+                               apply-action (progn
+                                              (print "apply trans")
+                                              (change-value (the main-mechanism-class points node-label label-trans-y) ^content)
+                                              (regen)
+                                            )
+                               )
+                               (x-transplus-labels-action-button :class ui-action-button-class
+                                 measurement 'percentage
+                                 height 10
+                                 width 10
+                                 y-offset 60
+                                 x-offset 60
+                                 label "+"
+                                 Button1-action '(progn
+                                                       (change-value (the main-mechanism-class points node-label label-trans-x) (+ (the main-mechanism-class points node-label label-trans-x) 0.1))
+                                                       (regen)
+                                                       (update (the superior general-appearance))
+                                                  )
+                                 )
+                                 (x-transminus-labels-action-button :class ui-action-button-class
+                                   measurement 'percentage
+                                   height 10
+                                   width 10
+                                   y-offset 60
+                                   x-offset 70
+                                   label "-"
+                                   Button1-action '(progn
+                                                         (change-value (the main-mechanism-class points node-label label-trans-x) (- (the main-mechanism-class points node-label label-trans-x) 0.1))
+                                                         (regen)
+                                                         (update (the superior general-appearance))
+                                                    )
+                                   )
+                                  (x-trans-size-property :class ui-property-field-class
+                                    measurement 'percentage
+                                    label-width 0
+                                    height 10
+                                    width 10
+                                    y-offset 60
+                                    x-offset 80
+                                    automatic-apply? t
+                                    content (the main-mechanism-class points node-label label-trans-x)
+                                    apply-action (progn
+                                                   (print "apply trans")
+                                                   (change-value (the main-mechanism-class points node-label label-trans-x) ^content)
+                                                   (regen)
+                                                 )
+                                    )
+                                    (z-transplus-labels-action-button :class ui-action-button-class
+                                      measurement 'percentage
+                                      height 10
+                                      width 10
+                                      y-offset 70
+                                      x-offset 60
+                                      label "+"
+                                      Button1-action '(progn
+                                                            (change-value (the main-mechanism-class points node-label label-trans-z) (+ (the main-mechanism-class points node-label label-trans-z) 0.1))
+                                                            (regen)
+                                                            (update (the superior general-appearance))
+                                                       )
+                                      )
+                                      (z-transminus-labels-action-button :class ui-action-button-class
+                                        measurement 'percentage
+                                        height 10
+                                        width 10
+                                        y-offset 70
+                                        x-offset 70
+                                        label "-"
+                                        Button1-action '(progn
+                                                              (change-value (the main-mechanism-class points node-label label-trans-z) (- (the main-mechanism-class points node-label label-trans-z) 0.1))
+                                                              (regen)
+                                                              (update (the superior general-appearance))
+                                                         )
+                                        )
+                                       (z-trans-size-property :class ui-property-field-class
+                                         measurement 'percentage
+                                         label-width 0
+                                         height 10
+                                         width 10
+                                         y-offset 70
+                                         x-offset 80
+                                         automatic-apply? t
+                                         content (the main-mechanism-class points node-label label-trans-z)
+                                         apply-action (progn
+                                                        (print "apply trans")
+                                                        (change-value (the main-mechanism-class points node-label label-trans-z) ^content)
+                                                        (regen)
+                                                      )
+                                         )
+                )
+    )
+
+(define-class main-form-class
+  :inherit-from(ui-form-class)
+  :properties(
+        label "RaMMS"
+        height (* 0.5 (nth 1 (get-screen-size)))
+        width  (* 0.5 (nth 0 (get-screen-size)))
+        y-offset (- ^height (* 0.5 ^height))
+        x-offset (- ^width (* 0.5 ^width))
+        )
+  :subobjects(
+              (canvas :class 'ui-canvas-class
+                measurement 'percentage
+                x-offset 30 y-offset 5 width 70 height 90
+                )
+              (graphic-toolbar :class 'ui-graphic-control-toolbar-class
+                canvas-object ^canvas
+                measurement 'percentage
+                height 5
+                width 70
+                x-offset 30
+                y-offset 95
+                )
+              (draw-mechanism-action-button :class ui-action-button-class
+                measurement 'percentage
+                height 5
+                width 10
+                y-offset 5
+                x-offset 5
+                label "Draw Mechanism"
+                Button1-action '(progn (draw-sewn-wo-mesh (the main-mechanism-class))
+                                        (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
+                                        (update (the superior canvas))
+                                        (zoom :all)
+                                )
+                )
+                (edit-link-mechanism-action-button :class ui-action-button-class
+                    measurement 'percentage
+                    height 5
+                    width 10
+                    y-offset 20
+                    x-offset 5
+                    label "Link Editor"
+                    Button1-action '(progn
+                                          (add-object (the interface forms) 'link-editor 'link-editor-form-class)
+                                          (display (the interface forms link-editor))
+                                    )
+                    )
+        )
+  )

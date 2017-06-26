@@ -11,8 +11,8 @@
                cross-section-type	(read-from-string (remove "-section" (write-to-string
                                                                           (default 'circular-section))))
                solid-dimensions 	'(0.04 0.04)
-               point-list 			nil
-               weight-list 			nil
+               w-point-list 			nil
+              ;  weight-list 			nil
                )
   )
 
@@ -35,7 +35,7 @@
                                         ;source-object 	^difference-element ;; Used for geometry-with-split-periodic-faces-class
                source-object 	(if ^blend? ^blend-object ^difference-element)
 
-               max-element-size 0.2
+               max-element-size 0.02
                min-element-size 0.01
                default-shape 	(let(
                                    (def (loop for shape in (children ^^^shapes :class 'shape-model)
@@ -74,7 +74,7 @@
                (imprint-union-element :class '(tagging-object geometry-with-split-periodic-faces-class)
                    tag-dimensions 	'(1 2 3)
                    tag-attributes 	(list ^max-element-size ^min-element-size
-                                          0 0.01 0 20.0 1.0e-5)
+                                          0 0.1 0 20.0 1.0e-5)
                    source-object 	^^union-element
                    )
 			   ;;; Imprints the union-element with the point reference
@@ -88,7 +88,7 @@
                (difference-element :class '(tagging-object difference-object)
                    tag-dimensions 	'(1 2 3)
                    tag-attributes 	(list ^max-element-size ^min-element-size
-                                          0 0.01 0 20.0 1.0e-5)
+                                          0 0.1 0 20.0 1.0e-5)
                    object-list 		(append (list ^union-element) ^difference-list)
                    simplify? 		t
                    )
@@ -242,6 +242,13 @@
     collect (get-rbe2-dependent-nodes c)
     )
   )
+(define-method change-max-mesh-size link-geometry-class (size)
+  (change-value !max-element-size size)
+  )
+
+(define-method change-min-mesh-size link-geometry-class (size)
+  (change-value !min-element-size size)
+  )
 
 ;==========================================================
 ; Returns all possible connections with all incident joints
@@ -290,6 +297,9 @@
        )
      )
     )
+  )
+(define-method draw-link-wo-mesh link-geometry-class ()
+  (draw self :draw-subobjects? nil)
   )
 ;====================================
 ; END link-geometry-class definitions

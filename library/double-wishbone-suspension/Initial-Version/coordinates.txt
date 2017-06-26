@@ -1,21 +1,21 @@
-Index	Name						X-pos	Y-pos	Z-pos
-0		"Spindle"					0.0		0.0		0.0			
-1		"Upper-ball-joint"			0.25	0.0		1.0			
-2		"Upper-ball-joint"			0.25	0.0		-1.0			
-3		"Steering-joint"			0.0		0.55	0.1			
-4		"Upper-rev-jont-l"			1.25	0.5		1.0			
-5		"upper-rev-jont-r"			1.25	-0.5	1.0			
-6		"Lower-rev-jont-l"			1.25	0.5		-1.0			
-7		"Lower-rev-jont-r"			1.25	-0.5	-1.0			
-8		"Control-point-1"			1.75	0.25	0.0			
-9		"Control-point-2"			1.5		0.0		1.0			
-10		"Control-point-3"			1.5		0.0		-1.0			
-11		"Control-point-4"			0.0		0.0		0.8			
-12		"Control-point-5"			0.0		0.0		-0.8			
-13		"Control-point-6"			1.0		-0.5	1.0			
-14		"Control-point-7"			1.0		0.5		1.0			
-15		"Control-point-8"			1.0		-0.5	-1.0			
-16		"Control-point-9"			1.0		0.5		-1.0			
-17		"Control-point-10"			0.0		0.3		0.0		
-18		"Spring-damper-connection"	0.5		0.0		-1.0
-19		"Spring-damper-ground"		1.5		0.0		1.0
+Index,Name,X-pos,Y-pos,Z-pos 
+1,"spindle",0.0,0.0,0.0
+2,"upper-ball-joint",0.25,0.0,1.0
+3,"upper-ball-joint",0.25,0.0,-1.0
+4,"steering-joint",0.0,0.55,0.1
+5,"upper-rev-jont-l",1.25,0.5,1.0
+6,"upper-rev-jont-r",1.25,-0.5,1.0
+7,"lower-rev-jont-l",1.25,0.5,-1.0
+8,"lower-rev-jont-r",1.25,-0.5,-1.0
+9,"control-point-1",1.75,0.25,0.0
+10,"control-point-2",1.5,0.0,1.0
+11,"control-point-3",1.5,0.0,-1.0
+12,"control-point-4",0.0,0.0,0.8
+13,"control-point-5",0.0,0.0,-0.8
+14,"control-point-6",1.0,-0.5,1.0
+15,"control-point-7",1.0,0.5,1.0
+16,"control-point-8",1.0,-0.5,-1.0
+17,"control-point-9",1.0,0.5,-1.0
+18,"control-point-10",0.0,0.3,0.0
+19,"spring-damper-connection",0.5,0.0,-1.0
+20,"spring-damper-ground",1.5,0.0,1.0

@@ -1,0 +1,629 @@
+;To display the nurbs module run the following function:
+;(display-nurbs-module)
+
+(in-package :aml)
+
+
+(define-class helping-points-class
+  :inherit-from (object)
+  :properties(
+              points-list   (get-view-points-list (the interface forms link-editor))
+              weight-points (get-view-weight (the interface forms link-editor))
+              weight-points-coord (loop for w in ^weight-points
+                                  collect (butlast w)
+                                  )
+              height        (* (points-distance (nth 0 ^points-list) (nth 1 ^points-list)) 0.03)
+              width         ^height
+              depth         (* ^height 0.1)
+    )
+  :subobjects(
+            (ui-end-points :class series-object
+            quantity 		(length ^^points-list)
+            class-expression	'box-object
+            series-prefix 	'p
+            init-form '(
+                        id 			^index
+                        line-width 	4
+                        color 		'green
+                        height ^^height
+                        width  ^^width
+                        depth  ^^depth
+                        orientation (list (translate (nth ^index ^^points-list)))
+                       )
+               )
+               (ui-weight-points :class series-object
+               quantity 		(length ^^weight-points)
+               class-expression	'box-object
+               series-prefix 	'w
+               init-form '(
+                           id 			^index
+                           line-width 	4
+                           color 		'red
+                           height (* ^^height 0.1)
+                           width  (* ^^width 0.1)
+                           depth  (* ^^depth 0.1)
+                           orientation (list (translate (nth ^index ^^weight-points-coord)))
+                          )
+                  )
+              (ui-end-points-label :class series-object
+                quantity 		(length ^^points-list)
+                class-expression	'text-object
+                series-prefix 	'plabel
+                init-form '(
+                  coordinates (list  (nth 0 (nth ^index ^^points-list))
+                                     (+ (nth 1 (nth ^index ^^points-list)) ^^height)
+                                     (nth 2 (nth ^index ^^points-list))
+                                     )
+                            text-string (if (oddp ^index) "End Point" "Start Point")
+                           )
+                )
+              (ui-weight-points-label :class series-object
+                quantity 		(length ^^weight-points-coord)
+                class-expression	'text-object
+                series-prefix 	'wlabel
+                init-form '(
+                            coordinates (list  (nth 0 (nth ^index ^^weight-points-coord))
+                                               (+ (nth 1 (nth ^index ^^weight-points-coord)) ^^height)
+                                               (nth 2 (nth ^index ^^weight-points-coord))
+                                               )
+                            text-string (write-to-string ^index)
+                           )
+                )
+            )
+)
+
+ (define-method translate-weight-points helping-points-class ()
+     (let   (
+                 (point-number (mouse-select-point-from-display !weight-points-coord))
+                 (point-instance (nth point-number (series-members (the ui-weight-points))))
+                   )
+
+                   (interactive-translate point-instance)
+                   (change-model-weight-coords
+                                                (the connection (:from (the interface forms link-editor member-selector selected-option)))
+                                                point-number
+                                                (nth 0 (the position (:from point-instance)))
+                              )
+
+              )
+        )
+
+(define-class link-editor-form-class
+  :inherit-from(ui-form-class)
+  :properties(
+              ;background-color 'snow2
+              label "Shapes Editor"
+              height 840 ;pixels (* 0.7 (nth 1 (get-screen-size)))
+              width  1344 ;pixels (* 0.7 (nth 0 (get-screen-size)))
+              y-offset (* 0.2 (nth 1 (get-screen-size)))
+              x-offset (* 0.2 (nth 0 (get-screen-size)))
+              button-height 3
+              button-width 8
+              button-first-row-x-offset 3
+              button-second-row-x-offset 11
+
+              cross-section-offset 67
+              mesh-offset 80
+              surface-offset 93
+
+              weight-points (get-weight-points (the connection (:from (the member-selector selected-option))))
+              weight-points-quantity (length ^weight-points)
+              weight-points-coord (loop for w in ^weight-points
+                                  collect (butlast w)
+                                  )
+              points-list (get-points-list (the connection (:from (the member-selector selected-option))))
+              close-action (close-nurbs-module)
+              )
+  :subobjects(
+
+              (canvas :class 'ui-canvas-class
+                  measurement 'percentage
+                  x-offset 32 y-offset 5 width 68 height 90
+                  )
+              (graphic-toolbar :class 'ui-graphic-control-toolbar-class
+                  canvas-object ^canvas
+                  measurement 'percentage
+                  height 5
+                  width 70
+                  x-offset 30
+                  y-offset 95
+                  )
+
+              (link-selector-label :class 'ui-label-class
+                label "Selected Link"
+                label-align :left
+                height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset 10
+                )
+              (link-selector :class 'ui-option-menu-class
+                Button1-action '(progn
+                                        (update (the superior link-editor-form-class))
+                                        (draw-member-curves)
+                                        (zoom :all)
+                                 )
+                options-list (series-members (the main-mechanism-class links))
+                labels-list (loop for member in (series-members (the main-mechanism-class links))
+                                collect (the label (:from member))
+                                 )
+                selected-option (nth 0 ^options-list)
+                height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 10
+               )
+
+               (member-selector-label :class 'ui-label-class
+                 label "Selected Member"
+                 label-align :left
+                 height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset 13
+                 )
+               (member-selector :class ui-option-menu-class
+                 Button1-action '(progn
+                                         (update (the superior link-editor-form-class))
+                                         (draw-member-curves)
+                                         ;(blink (the connection (:from ^selected-option)) 2 100)
+                                  )
+                 options-list  (series-members (the link-geometry sweeps (:from (the superior link-selector selected-option))))
+                 labels-list (loop for i from 0 to (- (length ^options-list) 1)
+                                    collect (format nil "Member ~a" i))
+                 selected-option (nth 0 ^options-list)
+                 height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 13
+                )
+
+              (Sweep-action-button :class 'ui-action-button-class
+                  measurement 'percentage
+                  height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset 17
+                  label "Sweep Link"
+                  Button1-action '(progn
+                                    (draw-link-wo-mesh (the link-geometry (:from (the interface forms link-editor link-selector selected-option))))
+                                    (draw (the superior main-mechanism-class helping-points))
+                                      )
+                  )
+
+              (undraw-all-button :class 'ui-action-button-class
+                    measurement 'percentage
+                    height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 17
+                    label "Undraw"
+                    Button1-action (undraw (the main-mechanism-class))
+                  )
+
+            (draw-member-nurb-button :class 'ui-action-button-class
+                measurement 'percentage
+                height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset 20
+                label "Draw Curves"
+                Button1-action '(draw-member-curves)
+                )
+
+            (sweep-member-nurb-button :class 'ui-action-button-class
+                measurement 'percentage
+                height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 20
+                label "Sweep Member"
+                Button1-action '(draw (the member-selector selected-option) :draw-subobjects? nil)
+                )
+
+
+
+              (point-sheet-label :class 'ui-label-class
+                label "Start/End point"
+                label-align :left
+                y-offset 27
+                x-offset ^button-first-row-x-offset
+                height 3
+                )
+              (point-sheet :class 'ui-spreadsheet-class
+                  measurement 'percentage
+                  x-offset ^button-first-row-x-offset
+                  y-offset 30
+                  width 19
+                  height 10
+                  column-labels (list "x-coord" "y-coord" "z-coord")
+                  row-labels (list "Start point" "End point")
+                  cell-values ^^points-list
+                  number-of-columns (length ^column-labels)
+                  number-of-rows 2
+                  row-height   28
+                  column-width 61
+                  attachment-info-list '(top bottom left right)
+                  editable? nil
+
+                  )
+                  (weight-sheet-label :class 'ui-label-class
+                    label "Weight points"
+                    label-align :left
+                    y-offset 40
+                    x-offset ^button-first-row-x-offset
+                    height 3
+                    )
+              (weight-sheet :class 'ui-spreadsheet-class
+                  measurement 'percentage
+                  x-offset ^button-first-row-x-offset
+                  y-offset 43
+                  width 19
+                  height 16
+                  column-labels (list "x-coord" "y-coord" "z-coord" "weight")
+                  row-labels (loop for row from 0 to ^^weight-points-quantity
+                                collect (format nil "Point ~a" row)
+                                 )
+                  cell-values ^^weight-points
+                  number-of-columns (length ^column-labels)
+                  number-of-rows ^^weight-points-quantity
+                  row-height   27
+                  column-width 50
+                  attachment-info-list '(top bottom left right)
+                  editable? t
+
+                  )
+
+                  (add-row-action-button :class 'ui-action-button-class
+                      measurement 'percentage
+                      height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset 60
+                      label "Add Weight Point"
+                      Button1-action '(weight-sheet-add-row (the superior link-editor-form-class))
+                      )
+
+                  (remove-row-action-button :class 'ui-action-button-class
+                      measurement 'percentage
+                      height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 60
+                      label "Remove Weight Point"
+                      Button1-action '(weight-sheet-remove-row (the superior link-editor-form-class))
+                      )
+                  (move-point-action-button :class 'ui-action-button-class
+                      measurement 'percentage
+                    height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset 63
+                      label "Move Weight Point"
+
+                      Button1-action '(progn  (translate-weight-points (the superior main-mechanism-class helping-points))
+                                              (update (the superior weight-sheet))
+                                              (regen)
+                                              (draw (the superior main-mechanism-class helping-points)))
+                      )
+                      (weight-apply-action-button :class 'ui-action-button-class
+                          measurement 'percentage
+                          height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset 63
+                          label "Apply Weight"
+                          Button1-action '(weight-sheet-apply (the superior link-editor-form-class))
+                          )
+
+
+
+
+
+                  ;;;;;Cross-section;;;
+                  (cross-section-selector-label :class 'ui-label-class
+                    label "Member Cross-section"
+                    label-align :left
+                    height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset ^cross-section-offset
+                    )
+                  (cross-section-start-label :class 'ui-label-class
+                      label "Start"
+                      label-align :left
+                      height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^cross-section-offset 3)
+                      )
+
+                 (cross-section-end-label :class 'ui-label-class
+                      label "End"
+                      label-align :left
+                      height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^cross-section-offset 6)
+                   )
+
+                  (start-cross-section-selector :class ui-option-menu-class
+                     height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^cross-section-offset 3)
+                    Button1-action '(progn
+                                            (update (the superior link-editor-form-class))
+                                            (draw-member-curves)
+                                     )
+                   options-list (append (list "nil") (loop for line in (reverse (class-direct-defined-subclasses 'cross-section-model))
+                                     collect (remove "-section" (write-to-string line))
+                                     ))
+                   labels-list !options-list
+                   selected-option (write-to-string (nth 3 (get-member-shape (the main-mechanism-class shapes)
+                                                  (the index (:from (the interface forms link-editor link-selector selected-option)))
+                                                  (the index (:from (the interface forms link-editor member-selector selected-option))))))
+                                      )
+
+
+
+                 (cs-width-label :class 'ui-label-class
+                   label "w"
+                     height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width) y-offset ^cross-section-offset
+                   )
+                 (cs-height-label :class 'ui-label-class
+                   label "h"
+                     height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width ^width)  y-offset ^cross-section-offset
+                   )
+
+                   (start-width :Class 'ui-typein-field-class
+                    height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width) y-offset (+ ^cross-section-offset 3)
+                    editable? t
+                    model-property-object (the width (:from (the superior link-editor member-selector selected-option)))
+                    content       ^model-property-object
+                    Focusout-validation? t
+                    )
+
+                   (start-height :Class 'ui-typein-field-class
+                    height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width ^width) y-offset (+ ^cross-section-offset 3)
+                    model-property-object (the height (:from (the superior link-editor member-selector selected-option)))
+                    content       ^model-property-object
+                    Focusout-validation? t
+                    )
+
+                  (end-width :Class 'ui-typein-field-class
+                   height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width) y-offset (+ ^cross-section-offset 6)
+                   model-property-object (the width-end (:from (the superior link-editor member-selector selected-option)))
+                   content       ^model-property-object
+                   Focusout-validation? t
+                   )
+
+                  (end-height :Class 'ui-typein-field-class
+                   height ^button-height  width 2  x-offset (+ ^button-second-row-x-offset ^button-width ^width) y-offset (+ ^cross-section-offset 6)
+                   model-property-object (the height-end (:from (the superior link-editor member-selector selected-option)))
+                   content       ^model-property-object
+                   Focusout-validation? t
+                   )
+                  (apply-cross-section-button :Class 'ui-action-button-class
+                     height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^cross-section-offset 10)
+                     label "Apply Cross-section"
+                     Button1-action '(apply-cs (the superior link-editor))
+                    )
+    ;;;;;;;;Cross-section end;;;;;;;;;;;;;;
+
+
+    ;;;;;;;;Mesh-size;;;;;;;;;;;;;;;;;;;;;;;
+
+    (mesh-label :class 'ui-label-class
+      label "Member Mesh size"
+      label-align :left
+      height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset ^mesh-offset
+      )
+    (mesh-max-size-label :class 'ui-label-class
+        label "Max"
+        label-align :left
+        height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^mesh-offset 3)
+        )
+
+     (mesh-max-field :Class 'ui-typein-field-class
+      height ^button-height  width 5  x-offset ^button-second-row-x-offset y-offset (+ ^mesh-offset 3)
+      editable? t
+      model-property-object (the link-geometry max-element-size (:from (the superior link-editor link-selector selected-option)))
+      content       ^model-property-object
+      Focusout-validation? t
+      )
+    (mesh-min-size-label :class 'ui-label-class
+        label "Min"
+        label-align :left
+        height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^mesh-offset 6)
+        )
+
+     (mesh-min-field :Class 'ui-typein-field-class
+      height ^button-height  width 5  x-offset ^button-second-row-x-offset y-offset (+ ^mesh-offset 6)
+      editable? t
+      model-property-object (the link-geometry min-element-size (:from (the superior link-editor link-selector selected-option)))
+      content       ^model-property-object
+      Focusout-validation? t
+      )
+
+    (apply-mesh-button :Class 'ui-action-button-class
+       height ^button-height  width ^button-width  x-offset ^button-second-row-x-offset  y-offset (+ ^mesh-offset 10)
+       label "Mesh"
+       Button1-action '(progn
+                              (draw (first (get-link-surface-mesh-elements-query-objects-list
+                                (get-mesh-model-object (the superior link-editor link-selector selected-option)))))
+                              (change-max-mesh-size
+                               (the link-geometry (:from (the superior link-editor link-selector selected-option)))
+                               (get-value (the superior link-editor mesh-max-field)))
+                               (change-min-mesh-size
+                                (the link-geometry (:from (the superior link-editor link-selector selected-option)))
+                                (get-value (the superior link-editor mesh-min-field)))
+
+                                )
+      )
+      ;;;;;;;;Mesh-size end;;;;;;;;;;;;;;
+    (misc-label :class 'ui-label-class
+      label "Misc."
+      label-align :left
+      height ^button-height  width ^button-width  x-offset ^button-first-row-x-offset  y-offset ^surface-offset
+      )
+      (surface-label :class 'ui-label-class
+          label "Link surface"
+          label-align :left
+          height ^button-height  width ^button-width  x-offset (+ ^button-first-row-x-offset 1)  y-offset (+ ^surface-offset 3)
+          )
+      (surface-field :class ui-radio-buttons-class
+        height ^button-height  width 7  x-offset (+ ^button-first-row-x-offset 6) y-offset (+ ^surface-offset 3)
+        Labels-list '("Yes" "No")
+        Status (let(
+                     (surface (series-members (the link-geometry surfaces (:from (the superior link-editor link-selector selected-option)))))
+                   )
+                   (if surface
+                     (if (the display? (:from (nth 0 surface))) 0 1)
+                     1)
+                )
+
+        Button1-action '(progn
+
+                              (let(
+                                    (surface (series-members (the link-geometry surfaces (:from (the superior link-editor link-selector selected-option)))))
+                                   )
+                                    (if surface
+                                       (loop for member in surface
+                                           do (change-value (the display? (:from member)) (if (= ^status 0) t nil)))
+                                       (change-value ^status 1))
+                                      )
+
+                            (update (the link-editor))
+                            (regen)
+                        )
+        )
+
+        (blend-label :class 'ui-label-class
+            label "Blend edges"
+            label-align :left
+            height ^button-height  width ^button-width  x-offset (+ ^button-second-row-x-offset 5)  y-offset (+ ^surface-offset 3)
+            )
+        (blend-field :class ui-radio-buttons-class
+          height ^button-height  width 7  x-offset (+ ^button-second-row-x-offset 10) y-offset (+ ^surface-offset 3)
+          Labels-list '("Yes" "No")
+          Status (if (the link-geometry blend? (:from (the superior link-editor link-selector selected-option))) 0 1)
+
+          Button1-action '(progn
+                              (change-value (the link-geometry blend? (:from (the superior link-editor link-selector selected-option))) (if (= ^status 0) t nil))
+                              (update (the link-editor))
+                              (regen)
+                          )
+          )
+
+
+      )
+)
+
+(define-method weight-sheet-apply link-editor-form-class ()
+    (update-weight-points
+        (the index (:from (the interface forms link-editor link-selector selected-option)))
+        (the index (:from (the interface forms link-editor member-selector selected-option)))
+        (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                          collect (loop for cell from 0 to 3
+                                    collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                                      )
+                                )
+      )
+    (update (the weight-sheet))
+    (regen)
+    (draw-member-curves)
+  )
+
+(define-method weight-sheet-add-row link-editor-form-class ()
+    (update-weight-points
+          (the index (:from (the interface forms link-editor link-selector selected-option)))
+          (the index (:from (the interface forms link-editor member-selector selected-option)))
+          (append
+            (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                 collect (loop for cell from 0 to 3
+                               collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                             )
+              )
+            (list (append (get-new-wpoint-coords (the interface forms link-editor)) (list 1)))
+           )
+     )
+     (update (the weight-sheet))
+     (regen)
+     (draw-member-curves)
+  )
+
+(define-method weight-sheet-remove-row link-editor-form-class ()
+    (update-weight-points
+           (the index (:from (the interface forms link-editor link-selector selected-option)))
+           (the index (:from (the interface forms link-editor member-selector selected-option)))
+           (butlast (loop for row from 0 to (- (the interface forms link-editor weight-sheet number-of-rows) 1)
+                           collect (loop for cell from 0 to 3
+                                         collect (read-from-string (get-cell-value (the interface forms link-editor weight-sheet) row cell))
+                                       )
+                                        ))
+     )
+     (update (the weight-sheet))
+     (regen)
+     (draw-member-curves)
+  )
+
+
+
+(define-method get-view-weight link-editor-form-class ()
+  !weight-points
+ )
+(define-method get-view-weight-coords link-editor-form-class ()
+   !weight-points-coord
+  )
+(define-method get-view-points-list link-editor-form-class ()
+  !points-list
+ )
+
+(define-method get-new-wpoint-coords link-editor-form-class ()
+  (if (get-view-weight-coords (the))
+    (mid-point (nth 1 (get-view-points-list (the))) (nth (- (LENGTH (get-view-weight-coords (the))) 1) (get-view-weight-coords (the))))
+    (mid-point (nth 0 (get-view-points-list (the))) (nth 1 (get-view-points-list (the))))
+   )
+ )
+
+(define-method get-selected-link  link-editor-form-class ()
+  (the link-selector selected-option)
+ )
+
+(define-method get-selected-member  link-editor-form-class ()
+  (the member-selector selected-option)
+ )
+
+
+ (define-method apply-cs link-editor-form-class ()
+     (change-member-cross-section
+            (the main-mechanism-class shapes)
+            (the index (:from (the interface forms link-editor link-selector selected-option)))
+            (the index (:from (the interface forms link-editor member-selector selected-option)))
+            (read-from-string (the superior link-editor start-cross-section-selector selected-option))
+            (get-value (the superior link-editor start-width))
+            (get-value (the superior link-editor start-height))
+            (get-value (the superior link-editor end-width))
+            (get-value (the superior link-editor end-height))
+
+      )
+      (update (the weight-sheet))
+      (regen)
+      (draw-member-curves)
+   )
+
+
+
+(defun update-weight-points (link member weight-sheet)
+  (let
+    (
+      (member-shape (get-member-shape (the main-mechanism-class shapes) link member))
+      (point-number (nth 5 member-shape))
+      (new-point-numbers (if (> (length weight-sheet) (length point-number))
+                            (if (get-weight-list (the main-mechanism-class weights))
+                                  (append point-number
+                                    (list (+ 1 (nth 0 (sort (loop for point in (get-weight-list (the main-mechanism-class weights)) append (list (nth 0 point))) '>))))
+                                   )
+                                  (list 0))
+                          point-number))
+      (new-w-list
+                  (loop for w-s-line in weight-sheet
+                  	     for w-point in new-point-numbers
+                  	         collect (append (list w-point (read-from-string (format nil "l-~d,m-~d" link member))) w-s-line)
+                      )
+                  )
+      (new-w-ids
+                   (loop for new-point-numbers in new-w-list
+                          append (list (nth 0 new-point-numbers)))
+                )
+      )
+        (change-weight-points-list (the main-mechanism-class weights) new-w-list)
+        (change-shape-weight (the main-mechanism-class shapes) link member new-w-ids)
+        (smash-value (the connection (:from (the interface forms link-editor member-selector selected-option))))
+        (regen)
+    )
+)
+
+(defun draw-member-curves ()
+            (undraw (the main-mechanism-class))
+            (draw (the superior main-mechanism-class helping-points))
+            (loop for member in (series-members (the link-geometry sweeps (:from (the interface forms link-editor link-selector selected-option))))
+                          do (progn (draw (the connection (:from member)) :draw-subobjects? nil)
+                                    (change-color (the connection (:from member)) 'white)
+                                  )
+                )
+            (change-color (the connection (:from (the interface forms link-editor member-selector selected-option))) 'red)
+)
+
+(defun display-nurbs-module ()
+      (add-object (the) 'helping-points 'helping-points-class)
+      (add-object (the interface forms) 'link-editor 'link-editor-form-class)
+      (display (the interface forms link-editor))
+      (activate-display (the interface forms link-editor canvas))
+      (add-light :name 'light1 :color 'white :x 0.7 :y 0.5 :z -0.3)
+      (draw-member-curves)
+      (change-color (the connection (:from (the interface forms link-editor member-selector selected-option))) 'red)
+      (zoom :all)
+      ;(set-current-display-background-color 'grey49)
+   )
+(defun close-nurbs-module ()
+     (hide (the interface forms link-editor))
+     (delete-object (the main-mechanism-class helping-points))
+     (delete-object (the interface forms link-editor))
+     (delete-current-display-lights)
+     (activate-display (the model-manager interface sketcher-layout-form-class sketcher-main-form sketcher-main-form work-area-canvas-form canvas canvas canvas canvas))
+     (regen)
+  )

@@ -36,6 +36,19 @@
       )
     )
   )
+
+(define-method write-to-file collection-class ()
+ (let (
+       (file-name (write-to-string !collection-type))
+       (file-path (logical-path (the version-path (:from ^version-selection))
+                                (concatenate file-name ".txt")))
+       (function-name (read-from-string (concatenate "write-" file-name "-to-file")) )
+       )
+     (with-open-file (file file-path :direction :output)
+         (apply function-name (list file))
+        )
+   )
+ )
 ;================================
 ; END collecion-class definitions
 ;================================
@@ -89,6 +102,9 @@
                                       ""
                                       '("Undraw all joints and nodes" (button1-parameters :undraw)
                                         ui-work-area-action-button-class)
+                                      ""
+                                      '("Edit Constraints.txt" (button1-parameters :display-edit-constraints)
+                                        ui-work-area-action-button-class)
                                       )
                )
   )
@@ -96,6 +112,12 @@
 (define-method get-constraints constraint-collection ()
   (children (the) :class 'master-joint-model)
   )
+(define-method get-constraints-list constraint-collection ()
+     !constraint-list
+    )
+(define-method change-constraints-list constraint-collection (new-constraint-list)
+     (change-value !constraint-list new-constraint-list)
+   )
 
 ;================================================================
 ; Reads each line of the constraints file and adds this to a list
@@ -104,7 +126,7 @@
   (when stream
     (loop for line = (read-line stream nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for c-data = (list
                     (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls)
                     )
@@ -112,6 +134,14 @@
       )
     )
   )
+
+(defun write-constraints-to-file (stream)
+    		(format stream "Point,Type,Link-incidence,Joint-direction,DOF,Joint-variable ~%")
+								(loop for line in (get-constraints-list (the constraints))
+									do
+									 (format stream "~d,~d,~d,~d,~d,~d~%" (nth 0 line) (write-to-string (nth 1 line)) (nth 2 line) (nth 3 line) (nth 4 line) (nth 5 line))
+								)
+)
 ;====================================================
 ; Left click button methods for constraint-collection
 ;====================================================
@@ -144,11 +174,50 @@
        )
      (undraw self)
      )
+      (:display-edit-constraints
+          (display-edit-constraints)
+            )
     )
   )
+
+
 ;======================================
 ; END constraint-collection definitions
 ;======================================
+
+;======================================
+
+(define-class node-label-class
+  :inherit-from (series-object coordinate-system-class)
+  :properties(
+              draw-label? nil
+              draw-box? nil
+
+              quantity (length ^^points-list)
+              series-prefix 'node
+              class-expression 'text-object
+              label-size 0.03
+              label-trans-y 0.06
+              label-trans-x 0.0
+              label-trans-z 0.0
+              init-form '(
+                          coordinates (list  (+ (nth 1 (nth !index ^^points-list)) ^label-trans-x)
+                                             (+ (nth 2 (nth !index ^^points-list)) ^label-trans-y)
+                                             (+ (nth 3 (nth !index ^^points-list)) ^label-trans-z)
+                                             )
+                          height ^label-size
+                          text-string (format nil "~a" !index)
+
+                          reference-coordinate-system (the superior superior self)
+                          )
+              )
+)
+
+(define-method get-node-labels node-label-class ()
+  (children (the) :class 'text-object)
+  )
+
+;=============================================
 
 ;====================================================================================
 ; Class: point-collection
@@ -168,11 +237,31 @@
                                              (nth 2 (nth ^index ^points-list)) (nth 3 (nth ^index ^points-list)))
                            id 			^index
                            )
-               )
+              property-objects-list (list
+                                          '("Edit Nodes" (button1-parameters :display-edit-nodes)
+                                            ui-work-area-action-button-class))
+              (node-label :class 'node-label-class
+                )
+        )
+
+  )
+
+(define-method work-area-button1-action point-collection (params)
+  (case params
+    (:display-edit-nodes
+         (display-edit-points)
+        )
+    )
   )
 
 (define-method get-points point-collection ()
   (children (the) :class 'point-data-model)
+  )
+(define-method get-points-list point-collection ()
+  !points-list
+  )
+(define-method change-points-list point-collection (new-points-list)
+    (change-value !points-list new-points-list)
   )
 
 ;===============================================================
@@ -182,7 +271,7 @@
   (when stream
     (loop for line = (read-line stream nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for coord-line = (list
                         (read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (read-from-string (nth 5 ls))
                         (read-from-string (nth 6 ls)) (nth 7 ls) )
@@ -190,6 +279,20 @@
       )
     )
   )
+
+
+(defun write-coordinates-to-file (stream)
+    		(format stream "Index,Name,X-pos,Y-pos,Z-pos ~%")
+					(let (
+								(point (get-points-list (the points)))
+								)
+								(loop for line in point
+									for j from 1 to (length point)
+									do
+									 (format stream "~d,~s,~d,~d,~d~%" j (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line) (nth 3 line))
+								)
+						)
+	)
 ;=================================
 ; END point-collection definitions
 ;=================================
@@ -215,8 +318,7 @@
                                                  (list 0 0)
                                                (nth 4 (nth ^index ^shapes-list))
                                                )
-                           point-list 			(nth 5 (nth ^index ^shapes-list))
-                           weight-list 			(nth 6 (nth ^index ^shapes-list))
+                           w-point-list 			(nth 5 (nth ^index ^shapes-list))
                            )
                )
   )
@@ -224,6 +326,41 @@
 (define-method get-input-shapes shape-collection ()
   (children (the) :class 'shape-model)
   )
+(define-method get-shapes-list shape-collection ()
+  !shapes-list
+)
+
+(define-method change-shapes-list shape-collection (new-shapes-list)
+  (change-value !shapes-list new-shapes-list)
+)
+
+(define-method get-member-shape shape-collection (link member)
+        (loop for mem in !shapes-list
+             if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+                       append mem
+  )
+)
+
+
+(define-method change-shape-weight shape-collection (link member id)
+    (change-value !shapes-list
+        (loop for mem in !shapes-list
+          if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+              collect (list (nth 0 mem) (nth 1 mem) (nth 2 mem) (nth 3 mem) (nth 4 mem) id)
+          else collect mem
+        )
+    )
+)
+
+(define-method change-member-cross-section shape-collection (link member cs h1 w1 h2 w2)
+    (change-value !shapes-list
+        (loop for mem in !shapes-list
+          if (and (= (nth 1 mem) link) (= (nth 2 mem) member))
+              collect (list (nth 0 mem) (nth 1 mem) (nth 2 mem) cs (list h1 w1 h2 w2) (nth 5 mem))
+          else collect mem
+        )
+    )
+)
 
 ;===========================================================
 ; Reads each line of the shapes file and adds this to a list
@@ -232,18 +369,121 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for shape-data = (list
                         (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (read-from-string (nth 3 ls))
-                        (nth 4 ls) (nth 5 ls) (nth 6 ls)
+                        (nth 4 ls) (nth 5 ls)
                         )
       collect shape-data
       )
     )
   )
+
+
+(defun write-shapes-to-file (stream)
+    		(format stream "Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list ~%")
+								(loop for line in (get-shapes-list (the shapes))
+									do
+									 (format stream "~s,~d,~d,~s,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
+                                                           (write-to-string (nth 3 line)) (nth 4 line) (nth 5 line))
+                )
+)
 ;=================================
 ; END shape-collection definitions
 ;=================================
+
+;===========================================================================================
+; Class: weight-points-collection
+; Executes the read-from-file method for the weight-points
+;===========================================================================================
+(define-class weight-collection
+  :inherit-from (series-object collection-class)
+  :properties (
+               collection-type 'weight-points
+               weight-points-list (cdr (read-from-file !superior))
+               quantity 		(length ^weight-points-list)
+               class-expression	'weight-point-data-model
+               series-prefix 	'w
+               init-form '(
+                           label 		(nth 1 (nth ^index ^weight-points-list))
+                           coordinates	(list (nth 2 (nth ^index ^weight-points-list))
+                                             (nth 3 (nth ^index ^weight-points-list)) (nth 4 (nth ^index ^weight-points-list)))
+                           weight (nth 4 (nth ^index ^weight-points-list))
+                           id 			(nth 0 (nth ^index ^weight-points-list))
+                           )
+             )
+  )
+
+(define-method get-weight-points weight-collection ()
+  (children (the) :class 'weight-point-data-model)
+  )
+
+(define-method get-weight-list weight-collection ()
+  !weight-points-list
+  )
+
+(define-method add-weight-point weight-collection (x y z)
+  (change-value !weight-points-list (append (get-weight-list (the weights)) (list (list 'new-weight-point x y z))))
+)
+
+(define-method get-weights-from-ids weight-collection (point-ids)
+  (loop for line in !weight-points-list
+    append (loop for id in point-ids
+          if (= (nth 0 line) id)
+             collect line
+          )
+    )
+)
+
+(define-method get-weight-points-from-ids weight-collection (point-ids)
+  (loop for line in !weight-points-list
+    append (loop for id in point-ids
+          if (= (nth 0 line) id)
+             collect (cddr line)
+          )
+    )
+)
+
+
+(define-method change-weight-points-list weight-collection (new-weight-points-list)
+       (change-value !weight-points-list
+          (append (loop for i in !weight-points-list
+                          unless (member (nth 0 i) (loop for j in new-weight-points-list append (list (nth 0 j))))
+                          collect i
+                            )
+                   new-weight-points-list)
+         )
+)
+
+;===========================================================
+; Reads each line of the weights file and adds this to a list
+;===========================================================
+(defun read-weight-points-from-file (stream)
+  (when stream
+    (loop for line = (read-line stream  nil :eof)
+      until (equal line :eof)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
+      for shape-data = (list
+                        (nth 0 ls) (read-from-string (nth 1 ls)) (nth 2 ls) (nth 3 ls) (nth 4 ls) (nth 5 ls))
+      collect shape-data
+      )
+    )
+  )
+
+
+(defun write-weight-points-to-file (stream)
+    		(format stream "Number,Name,x,y,z ~%")
+								(loop for line in (get-weight-list (the weights))
+									do
+									 (format stream "~d,~s,~d,~d,~d,~d~%" (nth 0 line) (write-to-string (nth 1 line)) (nth 2 line) (nth 3 line)
+                                                            (nth 4 line) (nth 5 line))
+                )
+)
+;=================================
+; END shape-collection definitions
+;=================================
+
+
 
 ;=========================================
 ; Class: link-collection
@@ -447,7 +687,12 @@
 (define-method get-dampers spring-damper-collection ()
   (children (the) :class 'damper-model)
   )
-
+(define-method get-sd-list spring-damper-collection ()
+  !sd-list
+  )
+  (define-method change-sd-list spring-damper-collection (new-sd-list)
+    (change-value !sd-list new-sd-list)
+      )
 ;==================================================================
 ; Reads each line of the spring-damper file and adds this to a list
 ;==================================================================
@@ -455,12 +700,22 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for data = (list (read-from-string (nth 0 ls)) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
       collect data
       )
     )
   )
+
+
+(defun write-spring-damper-to-file (stream)
+    		(format stream "Type,Point-from,Point-to,Incident-links,Stiffness/Damping ~%")
+								(loop for line in (get-sd-list (the spring-dampers))
+									do
+									 (format stream "~s,~d,~d,~d,~d~%" (write-to-string (nth 0 line)) (nth 1 line) (nth 2 line)
+                                                                      (nth 3 line) (nth 4 line))
+                )
+)
 ;=========================================
 ; END spring-damper-collection definitions
 ;=========================================
@@ -500,7 +755,12 @@
 (define-method get-loads load-collection ()
   (children (the) :class 'load-model)
   )
-
+(define-method get-loads-list load-collection ()
+!loads-list
+  )
+(define-method change-loads-list load-collection (new-loads-list)
+  (change-value !loads-list new-loads-list)
+    )
 ;==========================================================
 ; Reads each line of the loads file and adds this to a list
 ;==========================================================
@@ -508,12 +768,21 @@
   (when stream
     (loop for line = (read-line stream  nil :eof)
       until (equal line :eof)
-      for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+      for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
       for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
       collect data
       )
     )
   )
+
+
+(defun write-loads-to-file (stream)
+    		(format stream "Type,Point,Direction,Magnitude,Loaded-link ~%")
+								(loop for line in (get-loads-list (the loads))
+									do
+									 (format stream "~d,~d,~d,~d,~d~%" (nth 0 line) (nth 1 line) (nth 2 line) (nth 3 line) (nth 4 line))
+                )
+)
 ;================================
 ; END load-collection definitions
 ;================================
@@ -617,6 +886,7 @@
   :inherit-from (series-object)
   :properties (
                point-ref-list (children ^points :class 'point-data-model )
+               weight-point-ref-list (children ^weights :class 'weight-point-data-model)
 
                constraints-ref-list (children ^constraints :class 'master-joint-model)
                shapes-ref-list (children ^shapes :class 'shape-model)
@@ -667,13 +937,30 @@
                                       '("Undraw" (button1-parameters :undraw button3-parameters :unset)
                                         ui-work-area-action-button-class)
                                       ""
+                                      '("Save changes" (button1-parameters :save-changes)
+                                        ui-work-area-action-button-class)
                                       '("Create .bdf-files" (button1-parameters :create-bdf)
                                         ui-work-area-action-button-class)
                                       '("Create .stl-files" (button1-parameters :create-stl)
                                         ui-work-area-action-button-class)
                                       '("Export to FEDEM" (button1-parameters :export-fedem)
                                         ui-work-area-action-button-class)
+                                      ""
+                                      '("Link-Editor" (button1-parameters :display-nurbs-module)
+                                        ui-work-area-action-button-class)
 
+                                      '("General Appearance" (button1-parameters :display-general-appearance)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Points" (button1-parameters :display-edit-points)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Constraints" (button1-parameters :display-edit-constraints)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Shapes" (button1-parameters :display-edit-shapes)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Loads" (button1-parameters :display-edit-loads)
+                                        ui-work-area-action-button-class)
+                                      '("Edit Spring/Dampers" (button1-parameters :display-edit-sd)
+                                        ui-work-area-action-button-class)
                                       )
 
                ;;Property storing folders from library
@@ -685,6 +972,8 @@
                                                                        (:from ^version-selection)))
                fedem-model-file	(format nil "~a\\model.fmm" (get-version-path !version-selection))
                (shapes :class 'shape-collection
+                   )
+               (weights :class 'weight-collection
                    )
 
                ;; Optimization defintions. If the optimization.txt file is empty, no optimization models
@@ -741,7 +1030,7 @@
       (with-open-file (file !opt-file-path :direction :input)
         (loop for line = (read-line file  nil :eof)
           until (equal line :eof)
-          for ls = (string-to-delimited-token-list line :delimiter #\tab :string-token? nil)
+          for ls = (string-to-delimited-token-list line :delimiter #\, :string-token? nil)
           for data = (list (nth 0 ls) (nth 1 ls) (nth 2 ls) (nth 3 ls) (nth 4 ls))
           collect data
           )
@@ -862,6 +1151,16 @@
     (:undraw
      (undraw self)
      )
+    (:save-changes
+      (progn
+        (write-to-file (the points))
+        (write-to-file (the shapes))
+        (write-to-file (the constraints))
+        (write-to-file (the loads))
+        (write-to-file (the spring-dampers))
+        (write-to-file (the weights))
+      )
+     )
     (:create-bdf
      (if (equal "2D" (pop-up-message (format nil "Export to .bdf")
                                      :width 200 :done-label "2D" :cancel-label "3D")) ; The pop-up-message returns the label
@@ -884,8 +1183,40 @@
 
                                         ;)
      )
+    (:display-nurbs-module
+      (display-nurbs-module)
+     )
+    (:display-general-appearance
+
+      (progn (unless (subobject? (the interface forms) 'general-appearance) (add-object (the interface forms) 'general-appearance 'general-appearance-widget-class))
+             (display (the interface forms general-appearance))
+      )
+
+      )
+      (:display-edit-points
+        (display-edit-points)
+       )
+     (:display-edit-constraints
+       (display-edit-constraints)
+      )
+    (:display-edit-shapes
+      (display-edit-shapes)
+     )
+     (:display-edit-loads
+       (display-edit-loads)
+    )
+      (:display-edit-sd
+        (display-edit-sd)
+       )
     )
   )
 ;=====================================
 ; END main-mechanism-class definitions
 ;=====================================
+
+ (defun start-ramms ()
+;     (compile-system :mechanism-system)
+     (create-model 'main-mechanism-class)
+     (display-sketcher-main-form)
+     (print "RaMMS-startup-done")
+    )

@@ -1,73 +1,73 @@
-Name					Link	Member		Cross-section		Dimensions				Points-list		Weights-list
-"Lower-wishbone l"		2		0			"rectangular"		(0.05 0.1)				(17)			(0.8)
-"Lower-wishbone r"		2		1			"rectangular"		(0.05 0.1)				(18)			(1)
-"Lower-wishbone m"		2		2			"rectangular"		(0.1 0.05)				(2)				(0.4)
-"Lower-wishbone invis"	2		3			"nil"				
-"Lower-wishbone invis"	2		4			"nil"				
-"Lower-wishbone invis"	2		5			"nil"				
-"Lower-wishbone invis"	2		6			"nil"				
-"Lower-wishbone invis"	2		7			"nil"				
-"Lower-wishbone invis"	2		8			"nil"				
-"Lower-wishbone invis"	2		9			"nil"	
-"Upper-wishbone l"		1		0			"circular"			(0.1 0.1)				(11 12 13)		(1 0.8 1)
-"Upper-wishbone r"		1		1			"circular"			(0.1 0.1)				(14 15 16)		(1 0.8 1)
-"Upper-wishbone invis"	1		2			"nil"	
-"Upper-wishbone invis"	1		3			"nil"				
-"Upper-wishbone invis"	1		4			"nil"				
-"Upper-wishbone invis"	1		5			"nil"				
-"Upper-wishbone invis"	1		6			"nil"				
-"Upper-wishbone invis"	1		7			"nil"				
-"Upper-wishbone invis"	1		8			"nil"				
-"Upper-wishbone invis"	1		9			"nil"		
-"Knuckle upper"			0		0			"rectangular"		(0.6 0.1 0.2 0.1)		(8)"
-"Knuckle lower"			0		1			"rectangular"		(0.6 0.1 0.2 0.1)		(9)"
-"Steering-link"			0		2			"rectangular"		(0.1 0.1)				(10)"			(1)
-"Knuckle invis"			0		3			"nil"			
-"Knuckle invis"			0		4			"nil"			
-"Knuckle invis"			0		5			"nil"	
-"Spindle"				3		0			"circular"			(0.35 0.35)				
-"Wheel"					4		0			"circular-tube"		(3 3)		
-"Rim1"					5		0			"rectangular"		(0.05 0.2)			
-"Rim2"					6		0			"rectangular"		(0.05 0.2)			
-"Rim3"					7		0			"rectangular"		(0.05 0.2)			
-"Rim4"					8		0			"rectangular"		(0.05 0.2)	
-"Lower-wishbone l"		11		0			"rectangular"		(0.05 0.1)				(48)"			(0.8)
-"Lower-wishbone r"		11		1			"rectangular"		(0.05 0.1)				(49)"			(1)
-"Lower-wishbone m"		11		2			"rectangular"		(0.1 0.05)				(33)"			(0.4)
-"Lower-wishbone invis"	11		3			"nil"				
-"Lower-wishbone invis"	11		4			"nil"				
-"Lower-wishbone invis"	11		5			"nil"				
-"Lower-wishbone invis"	11		6			"nil"				
-"Lower-wishbone invis"	11		7			"nil"				
-"Lower-wishbone invis"	11		8			"nil"				
-"Lower-wishbone invis"	11		9			"nil"	
-"Upper-wishbone l"		10		0			"circular"			(0.1 0.1)				(42 43 44)		(1 0.8 1)
-"Upper-wishbone r"		10		1			"circular"			(0.1 0.1)				(45 46 47)		(1 0.8 1)
-"Upper-wishbone invis"	10		2			"nil"				
-"Upper-wishbone invis"	10		3			"nil"				
-"Upper-wishbone invis"	10		4			"nil"				
-"Upper-wishbone invis"	10		5			"nil"				
-"Upper-wishbone invis"	10		6			"nil"				
-"Upper-wishbone invis"	10		7			"nil"				
-"Upper-wishbone invis"	10		8			"nil"				
-"Upper-wishbone invis"	10		9			"nil"				
-"Knuckle upper"			9		0			"rectangular"		(0.6 0.1 0.2 0.1)		(39)
-"Knuckle lower"			9		1			"rectangular"		(0.6 0.1 0.2 0.1)		(40)
-"Steering-link"			9		2			"rectangular"		(0.1 0.1)				(41)			(1)"
-"Knuckle invis"			9		3			"nil"			
-"Knuckle invis"			9		4			"nil"			
-"Knuckle invis"			9		5			"nil"	
-"Spindle"				12		0			"circular"			(0.35 0.35)				
-"Wheel"					13		0			"circular-tube"		(3 3)		
-"Rim1"					14		0			"rectangular"		(0.05 0.2)		
-"Rim2"					15		0			"rectangular"		(0.05 0.2)		
-"Rim3"					16		0			"rectangular"		(0.05 0.2)		
-"Rim4"					17		0			"rectangular"		(0.05 0.2)	
-"Grounding"				18		0			"rectangular"		(0.1 0.25)	
-"Grounding"				19		0			"rectangular"		(0.1 0.25)		
-"Grounding"				20		0			"rectangular"		(0.1 0.25)		
-"Grounding"				21		0			"rectangular"		(0.1 0.25)		
-"Steering-link"			22		2			"circular"			(0.1 0.1)				
-
-
-
+Name,Link,Member,Cross-section,Dimensions,Points-list,Weights-list 
+"lower-wishbone",2,0,"rectangular",(0.05 0.1),(17),(0.8)
+"lower-wishbone",2,1,"rectangular",(0.05 0.1),(18),(1)
+"lower-wishbone",2,2,"rectangular",(0.1 0.05),(2),(0.4)
+"lower-wishbone",2,3,"nil",nil,nil,nil
+"lower-wishbone",2,4,"nil",nil,nil,nil
+"lower-wishbone",2,5,"nil",nil,nil,nil
+"lower-wishbone",2,6,"nil",nil,nil,nil
+"lower-wishbone",2,7,"nil",nil,nil,nil
+"lower-wishbone",2,8,"nil",nil,nil,nil
+"lower-wishbone",2,9,"nil",nil,nil,nil
+"upper-wishbone",1,0,"circular",(0.1 0.1),(11 12 13),(1 0.8 1)
+"upper-wishbone",1,1,"circular",(0.1 0.1),(14 15 16),(1 0.8 1)
+"upper-wishbone",1,2,"nil",nil,nil,nil
+"upper-wishbone",1,3,"nil",nil,nil,nil
+"upper-wishbone",1,4,"nil",nil,nil,nil
+"upper-wishbone",1,5,"nil",nil,nil,nil
+"upper-wishbone",1,6,"nil",nil,nil,nil
+"upper-wishbone",1,7,"nil",nil,nil,nil
+"upper-wishbone",1,8,"nil",nil,nil,nil
+"upper-wishbone",1,9,"nil",nil,nil,nil
+"knuckle",0,0,"rectangular",(0.6 0.1 0.2 0.1),(8),nil
+"knuckle",0,1,"rectangular",(0.6 0.1 0.2 0.1),(9),nil
+"steering-link",0,2,"rectangular",(0.1 0.1),(10),(1)
+"knuckle",0,3,"nil",nil,nil,nil
+"knuckle",0,4,"nil",nil,nil,nil
+"knuckle",0,5,"nil",nil,nil,nil
+"spindle",3,0,"circular",(0.35 0.35),nil,nil
+"wheel",4,0,"circular-tube",(3 3),nil,nil
+"rim1",5,0,"rectangular",(0.05 0.2),nil,nil
+"rim2",6,0,"rectangular",(0.05 0.2),nil,nil
+"rim3",7,0,"rectangular",(0.05 0.2),nil,nil
+"rim4",8,0,"rectangular",(0.05 0.2),nil,nil
+"lower-wishbone",11,0,"rectangular",(0.05 0.1),(48),(0.8)
+"lower-wishbone",11,1,"rectangular",(0.05 0.1),(49),(1)
+"lower-wishbone",11,2,"rectangular",(0.1 0.05),(33),(0.4)
+"lower-wishbone",11,3,"nil",nil,nil,nil
+"lower-wishbone",11,4,"nil",nil,nil,nil
+"lower-wishbone",11,5,"nil",nil,nil,nil
+"lower-wishbone",11,6,"nil",nil,nil,nil
+"lower-wishbone",11,7,"nil",nil,nil,nil
+"lower-wishbone",11,8,"nil",nil,nil,nil
+"lower-wishbone",11,9,"nil",nil,nil,nil
+"upper-wishbone",10,0,"circular",(0.1 0.1),(42 43 44),(1 0.8 1)
+"upper-wishbone",10,1,"circular",(0.1 0.1),(45 46 47),(1 0.8 1)
+"upper-wishbone",10,2,"nil",nil,nil,nil
+"upper-wishbone",10,3,"nil",nil,nil,nil
+"upper-wishbone",10,4,"nil",nil,nil,nil
+"upper-wishbone",10,5,"nil",nil,nil,nil
+"upper-wishbone",10,6,"nil",nil,nil,nil
+"upper-wishbone",10,7,"nil",nil,nil,nil
+"upper-wishbone",10,8,"nil",nil,nil,nil
+"upper-wishbone",10,9,"nil",nil,nil,nil
+"knuckle",9,0,"rectangular",(0.6 0.1 0.2 0.1),(39),nil
+"knuckle",9,1,"rectangular",(0.6 0.1 0.2 0.1),(40),nil
+"steering-link",9,2,"rectangular",(0.1 0.1),(41),(1)
+"knuckle",9,3,"nil",nil,nil,nil
+"knuckle",9,4,"nil",nil,nil,nil
+"knuckle",9,5,"nil",nil,nil,nil
+"spindle",12,0,"circular",(0.35 0.35),nil,nil
+"wheel",13,0,"circular-tube",(3 3),nil,nil
+"rim1",14,0,"rectangular",(0.05 0.2),nil,nil
+"rim2",15,0,"rectangular",(0.05 0.2),nil,nil
+"rim3",16,0,"rectangular",(0.05 0.2),nil,nil
+"rim4",17,0,"rectangular",(0.05 0.2),nil,nil
+"grounding",18,0,"rectangular",(0.1 0.25),nil,nil
+"grounding",19,0,"rectangular",(0.1 0.25),nil,nil
+"grounding",20,0,"rectangular",(0.1 0.25),nil,nil
+"grounding",21,0,"rectangular",(0.1 0.25),nil,nil
+"steering-link",22,2,"circular",(0.1 0.1),nil,nil
+"nil",nil,nil,"nil",nil,nil,nil
+"nil",nil,nil,"nil",nil,nil,nil
+"nil",nil,nil,"nil",nil,nil,nil

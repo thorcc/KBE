@@ -1,8 +1,8 @@
-Index	Name			X-pos	Y-pos	Z-pos	
-0	"Crank-bearing"		0.0		0.0		0.0		
-1	"Crank-top"			0.0		0.75	0.0		
-2	"Rocker-bearing"	1.5		0.0		0.0		
-3	"Rocker-top"		1.5		1.875	0.0		
-4	"Coupler-end"		3.0		3.0		0.0		
-5	"Spring-top"		3.0		3.0		-0.12
-6	"Spring-ground"		3.0		0.0		0.0
+Index,Name,X-pos,Y-pos,Z-pos 
+1,"crank-bearing",0.0,0.0,0.0
+2,"crank-top",0.0,0.75,0.0
+3,"rocker-bearing",1.5,0.0,0.0
+4,"rocker-top",1.5,1.875,0.0
+5,"coupler-end",3.0,3.0,0.0
+6,"spring-top",3.0,3.0,-0.12
+7,"spring-ground",3.0,0.0,0.0

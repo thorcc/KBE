@@ -1,0 +1,10 @@
+Point,Type,Link-incidence,Joint-direction,DOF,Joint-variable 
+0,"ball",(0 2),(0 0 1),nil,nil
+1,"revolute",(nil 2),(-0.167 0 0.03),nil,nil
+2,"revolute",(nil 2),(0.167 0 -0.03),nil,nil
+3,"ball",(nil 1),(-1 0 0),nil,nil
+4,"ball",(1 nil),(1 0 0),nil,nil
+5,"ball",(0 1),(0 0 -1),nil,nil
+6,"ball",(0 nil),(0 0 1),nil,nil
+7,"revolute",(nil 0),(0 -1 0),nil,nil
+8,"revolute",(1 nil),(1 0 0),nil,nil
