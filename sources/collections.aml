@@ -1213,3 +1213,10 @@
 ;=====================================
 ; END main-mechanism-class definitions
 ;=====================================
+
+ (defun start-ramms ()
+;     (compile-system :mechanism-system)
+     (create-model 'main-mechanism-class)
+     (display-sketcher-main-form)
+     (print "RaMMS-startup-done")
+    )
