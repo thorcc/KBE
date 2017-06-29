@@ -110,7 +110,7 @@
                    model-name (format nil "~a - ~a" (the folder (:from ^^mechanism-selection))
                                       (the version-name (:from ^^version-selection)))
                    nastran-file-name (concatenate (write-to-string (object-name ^^superior)) ".bdf")
-                   nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
+                   ;nastran-version (nth 2 '(:nei-nastran :msc-nastran :nx-nastran))
                    ;; could write 'nastran-version :nx-nastran' but this also shows the available versions
                    )
                )

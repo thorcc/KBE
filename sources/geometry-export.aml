@@ -44,7 +44,7 @@
 ; Writes one link to a nastran .bdf file, stored in :nastran-data
 ;=================================================================
 (define-method write-nastran-bdf-file main-mechanism-class (link)
-  (the analysis nastran-interface run-nastran@ (:from link))
+  (the analysis nastran-interface analysis-output-file-path (:from link))
   )
 
 ;======================================================================
