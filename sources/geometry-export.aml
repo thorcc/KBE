@@ -4,11 +4,39 @@
 (define-method write-nastran-bdf-files main-mechanism-class ()
   (loop for link in !final-link-ref-list do
     (write-nastran-bdf-file (the) link)
-    (run-program (format nil "pythonw.exe ~a ~a" (concatenate "\"" (logical-path :mechanism-system "bdf_fixer.py") "\"") (concatenate "\""
-                                                                                                                                      (logical-path :nastran-data)
-                                                                                                                                      (the analysis nastran-interface model-name (:from link)) "\\"
-                                                                                                                                      (the analysis nastran-interface nastran-file-name (:from link)) "\"")))
+
+      (let (
+        (file_path (concatenate   (logical-path :nastran-data)
+                                  (the analysis nastran-interface model-name (:from link)) "\\"
+                                  (the analysis nastran-interface nastran-file-name (:from link))))
+
+        (old_bdf   (with-open-file (file file_path
+                                :direction :input
+                                )
+            (loop for line = (read-line file nil :eof)
+              until (equal line :eof)
+              collect line
+              )
+            ))
+        (new_bdf   (loop for i in old_bdf
+          	       collect
+                      (if (equal (search "CTETRA" i) nil)
+                          i
+                          (let (
+                                (a (string-to-delimited-token-list i :delimiter #\,))
+                                (b (format nil "~{~a,~}" (remove (nth 5 a) (append a (list (nth 5 a))) :start 3 :count 1))))
+                               (remove #\, b :from-end t :count 1))​
+                          )
+                   ))
+            )
+        (with-open-file (file (logical-path file_path)
+                     :direction :output)
+                         collect (format file "~a~%" i)))
     )
+
+
+
+     )
   )
 
 ;================================
