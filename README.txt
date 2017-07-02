@@ -1,11 +1,9 @@
 AML Mechanism system
-https://github.com/NTNU-IPM/KBE
 
-Latest version: https://github.com/thorcc/KBE
-
+Latest version: https://github.com/thorcc/RaMMS
 ========
 
-The mechanism system is an application for automating mechanism design.
+RaMMS is an application for automating mechanism design.
 It is written in the Adaptive Modeling Language (AML).
 
 Features
@@ -19,9 +17,8 @@ Required software
 =========
 
 AML 6.31
-Siemens PLM Software NX (with NX Nastran)
 Fedem
-Python 3.5+
+
 
 Required AML modules
 =========
@@ -42,45 +39,37 @@ usually:
 --
 Add the following entries in logical.pth
 
-    :mechanism-system "Path to the folder of the mechanism-system"
-    :nastran-path, "Path to the \bin\ folder in your Nastran installation folder"
+    :ramms "Path to the folder of the mechanism-system"
     :nastran-data, "Path to wherever the nastran output files is to be stored"
     :AMOpt-files, "Path to wherever the AMOpt output files is to be stored"
 
 e.g.:
 
-    :mechanism-system "C:\AML\NTNU-IPM-KBE-d87408d\"
-    :nastran-path "C:\Program Files\Siemens\NX 10.0\NXNASTRAN\bin\"
-    :nastran-data "C:\AML\NTNU-IPM-KBE\nastran-data\"
+    :ramms "C:\AML\NTNU-IPM-KBE-d87408d\"
+    :nastran-data "C:\AML\RAMMS\nastran-data\"
     :AMOpt-files "C:\AML\AMOpt\"
 
 --
 
 In aml-init.tsi replace the contents with the following:
 
-(in-package :tsi)
+  (in-package :tsi)
 
-(export '(
-          right-click-menu-action
+  (export '(
+            right-click-menu-action
+            )
           )
-        )
 
-(in-package :aml)
+  (in-package :aml)
 
-;; Loading patches
-(patch-system :aml)
+  ;; Loading patches
+  (patch-system :aml)
 
 
-(load-module "aml-analysis-module-pack-type-3")
-(load-module "amopt")
-(load-module "amsketcher-module")
-(load-module "aml-analysis-module-pack-type-3_ui")
-
-;;optional, for automatic startup:
-(compile-system :mechanism-system)
-(create-model 'main-mechanism-class)
-(display-sketcher-main-form)
-(print "startup-done")
+  (load-module "aml-analysis-module-pack-type-3")
+  (load-module "amopt")
+  (load-module "amsketcher-module")
+  (load-module "aml-analysis-module-pack-type-3_ui")
 
 --
 Create an environment variable for FEDEM
@@ -97,6 +86,15 @@ Create the folder "analysis" in the temp folder.
 Note: If the paths from the :tmp and :temp entries in logical.pth does not exist,
       change the paths or create the subsequent folder
 
+--
+
+To start RaMMS do the following:
+
+Compile the system, e.g. write:
+    (compile-system :ramms)
+
+Then start RaMMS by running the command:
+    (start-ramms)
 
 --
 
@@ -105,3 +103,4 @@ Authors
 Anders Kristiansen
 Eivind Kristoffersen
 Rasmus Korvald Skaare
+Thor Christian Coward

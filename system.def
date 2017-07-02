@@ -1,5 +1,5 @@
 ;==========================================================================
-; System : :mechanism-system
+; System : :ramms
 ; Purpose : AML Mechanism Model
 ;
 ;
@@ -9,9 +9,9 @@
 (in-package :AML)
 
 (defvar #MECHANISM-LIBRARY# "")
-(setf #MECHANISM-LIBRARY# (logical-path :mechanism-system "library"))
+(setf #MECHANISM-LIBRARY# (logical-path :ramms "library"))
 
-(define-system :mechanism-system
+(define-system :ramms
   :files '(
            "data-models.aml"
 		   "springs-dampers.aml"

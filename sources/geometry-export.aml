@@ -31,6 +31,7 @@
             )
         (with-open-file (file (logical-path file_path)
                      :direction :output)
+                       (loop for i in new_bdf
                          collect (format file "~a~%" i)))
     )
 
